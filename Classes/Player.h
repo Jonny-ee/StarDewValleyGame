@@ -3,17 +3,55 @@
 
 /*
  * 玩家类
- * 功能：管理玩家角色的行为和属性
+ * 功能：管理玩家角色的所有行为和属性
+ * 包括：
+ * 1. 玩家的移动控制
+ * 2. 碰撞检测
+ * 3. 键盘输入处理
+ * 4. 动画状态管理
  */
 class Player : public cocos2d::Sprite
 {
 public:
-
-    static Player* create();                        // 创建玩家对象
-    virtual bool init();                            // 初始化玩家对象
-    void moveInDirection(cocos2d::Vec2 direction);  // 移动玩家
-    float getMoveSpeed() const;                     // 获取玩家移动速度
+    static Player* create();                                // 创建玩家对象
+    virtual bool init();                                    // 初始化玩家对象
+    void initKeyboardListener();                            // 初始化键盘监听器
+    void initMouseListener();                               // 初始化鼠标监听器
+    void update(float dt);                                  // 更新玩家状态
+    void setCollisionGroup(cocos2d::TMXObjectGroup* group); // 设置碰撞检测组
+    void performAction(const cocos2d::Vec2& clickPos);      // 执行动作
 
 private:
-    float moveSpeed = 200.0f;                       // 玩家移动速度（可调）
+    float moveSpeed = 200.0f;                               // 玩家移动速度（像素/秒）
+    cocos2d::TMXObjectGroup* collisionsGroup = nullptr;     // 碰撞检测组指针
+    std::map<cocos2d::EventKeyboard::KeyCode, bool> keys;   // 按键状态映射表
+
+    // 移动相关的私有方法
+    bool isKeyPressed(cocos2d::EventKeyboard::KeyCode code);                                        // 检查按键是否被按下
+    bool checkCollision(const cocos2d::Vec2& nextPosition);                                         // 检测指定位置是否发生碰撞
+    bool isPointInPolygon(const cocos2d::Vec2& point, const std::vector<cocos2d::Vec2>& vertices);  // 判断点是否在碰撞层多边形内
+
+    // 动画相关
+    int currentDirection = 0;                   // 当前朝向(0:下, 1:上, 2:左, 3:右)
+    int currentFrame = 0;                       // 当前帧索引
+    float animationTimer = 0;                   // 动画计时器
+    const float FRAME_INTERVAL = 0.3f;          // 帧间隔时间
+
+    // 动作相关
+    cocos2d::Sprite* actionSprite = nullptr;    // 动作精灵
+    bool isActioning = false;                   // 是否正在执行动作
+    float actionTimer = 0;                      // 动作计时器
+    const float ACTION_DURATION = 0.4f;         // 动作持续时间
+    void updateAction(float dt);                // 更新动作动画
+
+    // 工具状态
+    enum class ToolType {
+        NONE,       // 无工具
+        SHOVEL,     // 铲子
+        AXE,        // 斧头
+        WATERING,   // 水壶
+        ROD         // 鱼竿（暂时没素材，没实现）
+    };
+    ToolType currentTool = ToolType::WATERING;    // 当前装备的工具（先默认为铲子）
+    void setCurrentTool(ToolType tool);
 };
