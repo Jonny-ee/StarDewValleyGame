@@ -1,7 +1,7 @@
 #include "Player.h"
 #include"GameMap.h"
-
 USING_NS_CC;
+
 
 Player* Player::create()
 {
@@ -24,7 +24,7 @@ bool Player::init()
 
     // 设置初始帧
     this->setTextureRect(cocos2d::Rect(0, 0, 48, 48));
-    this->setScale(2.0f);
+    this->setScale(3.0f);
     this->setOpacity(255);              // 确保主精灵初始时完全不透明
 
     // 创建动作精灵
@@ -104,7 +104,6 @@ void Player::initKeyboardListener()
     {
         keys[keyCode] = false;
     };
-
     _eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardListener, this);
 }
 

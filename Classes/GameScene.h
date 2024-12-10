@@ -23,14 +23,10 @@ public:
 
     // 地图切换相关
     void switchToMap(const std::string& mapName, const cocos2d::Vec2& targetTilePos);   // 切换到指定地图
-    void switchToFarmMap();                                                             // 切换到农场地图
 
     // 相机控制
     void updateCamera();                    // 更新相机位置
 
-    // 事件处理
-    void onKeyPressed(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event);  // 按键按下事件处理
-    void onKeyReleased(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event); // 按键释放事件处理
 
 private:
     // 场景对象

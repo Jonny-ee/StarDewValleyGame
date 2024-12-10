@@ -27,6 +27,7 @@ public:
     ToolType getCurrentTool() const { return currentTool; }
     void switchTool();                                  // 切换工具的方法
 
+
     // 基础功能
     static Player* create();                            // 创建玩家对象
     virtual bool init();                                // 初始化玩家对象
@@ -48,7 +49,7 @@ public:
     void setCurrentTool(ToolType tool);                     // 设置当前工具
 
 private:
-    GameMap* gameMap = nullptr;                             // GameMap 引用
+    GameMap* gameMap = nullptr;                             // GameMap 引用                  
 
     // 基础属性
     float moveSpeed = 200.0f;                               // 玩家移动速度（像素/秒）

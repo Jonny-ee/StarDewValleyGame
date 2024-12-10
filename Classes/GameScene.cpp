@@ -1,5 +1,4 @@
 #include "GameScene.h"
-
 USING_NS_CC;
 
 Scene* GameScene::createScene()
@@ -75,20 +74,22 @@ bool GameScene::init()
     {
         return false;
     }
-    // 设置关联
+
+
+        // 设置玩家初始位置
+        Vec2 tilePos = Vec2(23, 6);
+        Vec2 worldPos = _gameMap->convertToWorldCoord(tilePos);
+        player->setPosition(worldPos);
+        player->setScale(3.0f);
+
+        this->addChild(player, 1);
+    
+
+    // 设置关联和事件监听
     player->setGameMap(_gameMap);
-
-    // 设置玩家初始位置
-    Vec2 tilePos = Vec2(23, 6);
-    Vec2 worldPos = _gameMap->convertToWorldCoord(tilePos);
-    player->setPosition(worldPos);
-    player->setScale(3.0f);
-
-    // 初始化玩家的事件监听
+    player->removeAllListeners(); // 移除可能存在的旧监听器
     player->initKeyboardListener();
     player->initMouseListener();
-
-    this->addChild(player, 1);
 
     // 创建背包UI
     _inventoryUI = InventoryUI::create();
@@ -97,11 +98,6 @@ bool GameScene::init()
         this->addChild(_inventoryUI, 10);  // 确保UI在最上层
     }
 
-    // 设置键盘事件监听
-    auto keyboardListener = EventListenerKeyboard::create();
-    keyboardListener->onKeyPressed = CC_CALLBACK_2(GameScene::onKeyPressed, this);
-    keyboardListener->onKeyReleased = CC_CALLBACK_2(GameScene::onKeyReleased, this);
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardListener, this);
 
     // 启动更新
     this->scheduleUpdate();
@@ -113,38 +109,6 @@ bool GameScene::init()
     initToolIcon();
 
     return true;
-}
-
-void GameScene::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
-{
-    // 只保留特殊按键的处理（如 B 键传送），其他移动相关的按键交给 Player 处理
-    if (keyCode == EventKeyboard::KeyCode::KEY_B) {
-        //CCLOG("按键事件：按下B键 - 触发传送");
-        switchToFarmMap();
-    }
-
-    else if (keyCode == EventKeyboard::KeyCode::KEY_Q)
-    {
-        if (player)
-        {
-            player->switchTool();  // 切换工具
-        }
-    }
-}
-
-void GameScene::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event)
-{
-    // 同上，只保留特殊按键的处理
-    if (keyCode == EventKeyboard::KeyCode::KEY_B) {
-        // 如果需要在释放时处理
-    }
-    if (keyCode == EventKeyboard::KeyCode::KEY_ENTER)
-    {
-        if (_inventoryUI)
-        {
-            _inventoryUI->toggleVisibility();  // 切换背包显示状态
-        }
-    }
 }
 
 void GameScene::update(float dt)
@@ -205,7 +169,7 @@ void GameScene::updateCamera()
 void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& targetTilePos)
 {
     try {
-        // 创建新场景
+        //创建新场景
         auto newScene = GameScene::create();
         if (!newScene) {
             //throw std::runtime_error("无法创建新场景");
@@ -218,30 +182,27 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         }
         newScene->addChild(newScene->_gameMap);
 
-        // 创建新玩家
         newScene->player = Player::create();
         if (!newScene->player) {
-            //throw std::runtime_error("无法创建新玩家");
+            return;
         }
+      
+        // 移除旧的事件监听器
+        newScene->player->removeAllListeners();
 
-        // 设置玩家位置
+        // 设置玩家位置和关联
         Vec2 worldPos = newScene->_gameMap->convertToWorldCoord(targetTilePos);
         newScene->player->setPosition(worldPos);
-        newScene->player->setScale(3.0f);
-        newScene->addChild(newScene->player, 1);
-
-        // 创建淡出效果
-        auto visibleSize = Director::getInstance()->getVisibleSize();
-        auto blackLayer = LayerColor::create(Color4B::BLACK);
-        blackLayer->setContentSize(visibleSize);
-        newScene->addChild(blackLayer, 999);
+        player->setScale(3.0f);
+        newScene->player->setGameMap(newScene->_gameMap);
+        // 重新初始化事件监听
+        newScene->player->initKeyboardListener();
+        newScene->player->initMouseListener();
+        // 将玩家添加到新场景
+       newScene->addChild(newScene->player, 1);
 
         // 切换场景
         Director::getInstance()->replaceScene(newScene);
-
-        auto fadeOut = FadeOut::create(0.5f);
-        auto removeSelf = RemoveSelf::create();
-        blackLayer->runAction(Sequence::create(fadeOut, removeSelf, nullptr));
 
         // 更新相机位置
         newScene->updateCamera();
@@ -249,10 +210,4 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
     catch (const std::exception& e) {
         //CCLOG("切换地图时发生错误: %s", e.what());
     }
-}
-
-void GameScene::switchToFarmMap()
-{
-    //CCLOG("传送：开始切换到Farm地图");
-    switchToMap("Farm1", Vec2(29, 11));
 }
