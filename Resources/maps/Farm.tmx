@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="1">
+ <properties>
+  <property name="Warp" value="28 11 House 9 10"/>
+ </properties>
+ <tileset firstgid="1" source="../AllTSX/spring_outdoorsTileSheet.tsx"/>
+ <tileset firstgid="1976" source="../AllTSX/houses.tsx"/>
+ <layer id="3" name="Back" width="40" height="40">
+  <data encoding="base64" compression="zlib">
+   eJzVmDtOw0AQhjcouQCKxOMMVByAEnoKWsgJEB3cBN8iIDgEz6SniwOYnjqwVnaUYTKzM7t2QBS/VrbXs5/n5bX7Hef6mZo456ZBr46fc+nmwsf0umR/iK6VYZ2UcYKOa75hUGxNyhubB3wax6yzkJVvaGDQmK18G2sLWfiGiK8Q1i7cMp/EWdu/V1Qy5zDfNcNXq3A/WSRe/Eyp/ksZb4JSaw0/E/BfroCvDL589Nr3tg8S9Ft8kI/H3vaJQbthHJA4W+M7zug/KXzAOAj5mco3CpKOp+EZcvnu3MJ/mKtJfCkf579zb/vCoEPft178+Nnhe5QUx6pB/kGN3Cp6QPecov6a67/K6D88lsZ5lC8l/yz2ubzEfJqdVfLR+ijJNUtfoHz4/WbhAnsVEncfnKfnUuNr5eOe37Ke5MtcPkscIL8k/+H1S4UH5oMfzjzfntcRUhHJB2v+a/7T+gGX36Cc/gy+03gsfFL9pe6vRowdGt9cPm7M2f9hPpx/1JdfXeeeg0Zem714nVv5pPzDeQf5DkzcGlu9Bdu4Oz++InO0+sffABJf5Zb9JtUBVs3z7rkqrw+BzxrfIjLPuj/g+JzXzLOt9fL5qP+0erDUL/Cte2177Sh8uP+l8Gn5UREufO0txBT01J3zSfWc019wfUrvN/qetcRfmkf9oflPq2NLvDlOaz/U+Li8sO4Dc/lwnHL4pPoGu1L/pGxt5F+bY80d28dwfSyXL5ZnFRHnv1id/ZX/MJ+ljprypf5PiPlPinuT/xu5fNx9bfC1GV/r+J/42tIU2W5D3P/UJgK+pnawvgGR+JLA
+  </data>
+ </layer>
+ <layer id="5" name="Buildings1" width="40" height="40">
+  <properties>
+   <property name="Passable" type="bool" value="false"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJztmMtKw0AUhiehSb2AjyBeUd9CfAkRdyqoRTfiTgW1VIRu1Z0tQrfqSmwLPkQR9R20eHkD/+AMOamTQmcaehbzw0dmTsvJl0kDnZSEEGfCLE9ePG566d/bAbspczXW1aJUQBUso/88eNGwFgqxDjbCZP2VOD3L2pvGsySSa0DnaqyrqSyg52cXDuB1CI7CZP2LuLRl7Rv8dDiqNdDN1VhXU1lCv7yfzgW8LsFVmKwP+XGPQNaGwQgYlZ9ter2zBbblNc7huAom/HRu4XUH7sNkfZL4jcvaFJgGM2AWHHu9cwJOid9+l9/2oFKQTosM3aIUpdcKc7895n5lBn7l/P9akTwfg06NuZ8uzs8uzs8u3P0emPupOD+zFJjf3yyfjzpoEJoGPTL1y8XjsQB7J4MeWfq1cn9eKtz86PpF4ebX6vBrG/TI0u8dfh+EwOAcys/tj8zC/f+B87OL87OL87MLdz+1/7jGsdIHHsl11i17VTNYM/qe6ZzhPakRp5s++v0C6yuCwA==
+  </data>
+ </layer>
+ <layer id="6" name="Buildings2" width="40" height="40">
+  <properties>
+   <property name="Passable" type="bool" value="false"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJztzrlyAVAAheFLGKoQRGtN0lpDa+ehLS8gobbTCrG0ll/pCS4z55/56nOMUc9U22NMB130PLbf3Nfnzw9+McDwAf6N+DDGBFPMMMcCS6wsf1yz/4cNtvjHDnsccLT878T+GZfbD68xDjjxAhfcXrv/Xtn3wY83BBBECO8IW/4XYT+KGOJIIIkPfOLL8r8U+2lkkEUOeXyjgKLlfyX2y6igihrqaKCJluV/SimllFJKKaWUUuqxuwLgESKW
+  </data>
+ </layer>
+ <objectgroup id="7" name="NPC"/>
+</map>
