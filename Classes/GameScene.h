@@ -4,28 +4,42 @@
 #include "GameMap.h"
 #include <set>
 
+/*
+ * ÓÎÏ·³¡¾°Àà
+ * ¹¦ÄÜ£º¹ÜÀíÓÎÏ·Ö÷³¡¾°
+ * 1. µØÍ¼¼ÓÔØºÍÏÔÊ¾
+ * 2. Íæ¼Ò¶ÔÏó¹ÜÀí
+ * 3. ³¡¾°ÇĞ»»
+ * 4. ÊäÈë´¦Àí
+ * 5. Ïà»ú¿ØÖÆ
+ */
 class GameScene : public cocos2d::Scene
 {
 public:
-    static cocos2d::Scene* createScene();
-    virtual bool init();
-
+    static cocos2d::Scene* createScene();  // ´´½¨³¡¾°
+    virtual bool init();                   // ³õÊ¼»¯³¡¾°
     CREATE_FUNC(GameScene);
+    virtual void update(float dt);         // ³¡¾°¸üĞÂº¯Êı
 
-    // æ›´æ–°å‡½æ•°
-    virtual void update(float dt);
+    // ³¡¾°ÇĞ»»Ïà¹Ø
     void switchToMap(const std::string& mapName, const cocos2d::Vec2& targetTilePos);
-    // é”®ç›˜äº‹ä»¶å¤„ç†å‡½æ•°
-    void onKeyPressed(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event);
-    void onKeyReleased(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event);
     void switchToFarmMap();
-    //ç›¸æœº
+
+    // Ïà»ú¿ØÖÆ
     void updateCamera();
 
+    // ÊäÈë´¦Àí
+    void onKeyPressed(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event);
+    void onKeyReleased(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event);
+
 private:
-    Player* player = nullptr;
-    GameMap* _gameMap = nullptr;
-    std::set<char> _pressedKeys;
-    // æ·»åŠ æˆå‘˜å˜é‡æ¥è·Ÿè¸ªç›‘å¬å™¨çŠ¶æ€
-    cocos2d::EventListenerKeyboard* _keyboardListener = nullptr;
+    // ÓÎÏ·¶ÔÏó
+    Player* player = nullptr;                             // Íæ¼Ò¶ÔÏóÖ¸Õë
+    GameMap* _gameMap = nullptr;                         // ĞÂµØÍ¼ÏµÍ³
+    cocos2d::TMXTiledMap* tileMap = nullptr;            // ´«Í³µØÍ¼ÏµÍ³
+    cocos2d::TMXObjectGroup* collisionsGroup = nullptr;  // Åö×²×é
+
+    // ÊäÈë×´Ì¬
+    std::set<char> _pressedKeys;                         // ÒÑ°´ÏÂµÄ°´¼ü¼¯ºÏ
+    cocos2d::EventListenerKeyboard* _keyboardListener = nullptr;  // ¼üÅÌ¼àÌıÆ÷
 };

@@ -1,65 +1,56 @@
 #include "Player.h"
+#include"GameMap.h"
 
 USING_NS_CC;
 
-/*
- * 创建玩家对象
- * 功能：创建并初始化一个新的玩家实例
- * @return 返回初始化成功的玩家对象指针，失败则返回nullptr
- */
 Player* Player::create()
 {
-    // 创建玩家对象
     Player* player = new (std::nothrow) Player();
-
-    // 初始化成功，加入自动释放池并返回
     if (player && player->init())
     {
         player->autorelease();
         return player;
     }
-
-    // 创建或初始化失败，删除并返回空
     CC_SAFE_DELETE(player);
     return nullptr;
 }
 
-/*
- * 初始化玩家对象
- * 功能：
- * 1.加载玩家精灵图片
- * 2.设置精灵显示区域（用于动画帧）
- * 3.设置精灵缩放
- * @return 初始化成功返回true，失败返回false
- */
 bool Player::init()
 {
-    if (!Sprite::initWithFile("player.png"))   // 使用素材图片初始化
+    if (!Sprite::initWithFile("player.png"))
     {
         return false;
     }
 
-    // 计算单个动画帧的尺寸（素材是4*4的16帧，只要第1帧，故需裁剪）
-    float frameWidth = this->getContentSize().width / 4;
-    float frameHeight = this->getContentSize().height / 4;
+    // 设置初始帧
+    this->setTextureRect(cocos2d::Rect(0, 0, 48, 48));
+    this->setScale(2.0f);
+    this->setOpacity(255);              // 确保主精灵初始时完全不透明
 
-    this->setTextureRect(cocos2d::Rect(0, 0, frameWidth, frameHeight)); // 设置显示第1帧
+    // 创建动作精灵
+    actionSprite = Sprite::create("actions.png");
+    if (actionSprite)
+    {
+        actionSprite->setOpacity(0);    // 初始时完全透明
+        actionSprite->setScale(1.0f);
 
+        // 设置锚点和位置
+        this->setAnchorPoint(Vec2(0.5f, 0.5f));
+        actionSprite->setAnchorPoint(Vec2(0.0f, 0.0f));
+        actionSprite->setPosition(Vec2::ZERO);
 
-    this->setScale(2.0f);    // 将人物放大2倍（变成32*32）
-
+        this->addChild(actionSprite);
+    }
+    else
+    {
+        return false;
+    }
 
     return true;
 }
 
-/*
- * 移动玩家
- * 功能：根据给定方向移动玩家精灵
- * @param direction 移动方向向量
- */
 void Player::moveInDirection(Vec2 direction)
 {
-
     // 确保方向向量标准化
     direction.normalize();
 
@@ -74,11 +65,248 @@ void Player::moveInDirection(Vec2 direction)
     this->setPosition(newPos);
 }
 
-/*
- * 获取玩家移动速度（便于类外访问moveSpeed）
- * @return 返回玩家当前的移动速度
- */
 float Player::getMoveSpeed() const
 {
     return moveSpeed;
+}
+
+void Player::initKeyboardListener()
+{
+    auto keyboardListener = EventListenerKeyboard::create();
+
+    keyboardListener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event)
+    {
+        keys[keyCode] = true;
+    };
+
+    keyboardListener->onKeyReleased = [=](EventKeyboard::KeyCode keyCode, Event* event)
+    {
+        keys[keyCode] = false;
+    };
+
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardListener, this);
+}
+
+void Player::initMouseListener()
+{
+    auto mouseListener = EventListenerMouse::create();
+    mouseListener->onMouseDown = [=](Event* event)
+    {
+        EventMouse* e = (EventMouse*)event;
+        performAction(e->getLocation());
+    };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
+}
+
+bool Player::isKeyPressed(EventKeyboard::KeyCode code)
+{
+    if (keys.find(code) != keys.end())
+        return keys[code];
+    return false;
+}
+
+void Player::setCollisionGroup(TMXObjectGroup* group)
+{
+    collisionsGroup = group;
+}
+
+bool Player::isPointInPolygon(const Vec2& point, const std::vector<Vec2>& vertices)
+{
+    bool inside = false;
+    int i, j = vertices.size() - 1;
+
+    for (i = 0; i < vertices.size(); i++)
+    {
+        if (((vertices[i].y > point.y) != (vertices[j].y > point.y)) &&
+            (point.x < (vertices[j].x - vertices[i].x) * (point.y - vertices[i].y) /
+                (vertices[j].y - vertices[i].y) + vertices[i].x))
+        {
+            inside = !inside;
+        }
+        j = i;
+    }
+
+    return inside;
+}
+
+bool Player::checkCollision(const Vec2& nextPosition)
+{
+    if (!collisionsGroup) return false;
+
+    auto objects = collisionsGroup->getObjects();
+    for (auto& obj : objects)
+    {
+        auto& dict = obj.asValueMap();
+        if (dict.find("points") != dict.end())
+        {
+            float baseX = dict["x"].asFloat() * 2;
+            float baseY = dict["y"].asFloat() * 2;
+
+            auto points = dict["points"].asValueVector();
+            std::vector<Vec2> vertices;
+
+            for (const auto& point : points)
+            {
+                auto pointMap = point.asValueMap();
+                float x = pointMap["x"].asFloat() * 2 + baseX;
+                float y = -pointMap["y"].asFloat() * 2 + baseY;
+                vertices.push_back(Vec2(x, y));
+            }
+
+            if (isPointInPolygon(nextPosition, vertices))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void Player::setCurrentTool(ToolType tool)
+{
+    currentTool = tool;
+}
+
+void Player::performAction(const Vec2& clickPos)
+{
+    if (!actionSprite || currentTool == ToolType::NONE)
+    {
+        return;
+    }
+
+    if (!isActioning)
+    {
+        isActioning = true;
+        actionTimer = 0;
+        currentFrame = 0;
+
+        this->setOpacity(0);
+        actionSprite->setOpacity(255);
+        actionSprite->setPosition(Vec2::ZERO);
+
+        int toolOffset = 0;
+        switch (currentTool)
+        {
+            case ToolType::SHOVEL:
+                toolOffset = 0;
+                break;
+            case ToolType::AXE:
+                toolOffset = 4;
+                break;
+            case ToolType::WATERING:
+                toolOffset = 8;
+                break;
+            default:
+                return;
+        }
+
+        float y = (toolOffset + currentDirection) * 48;
+        actionSprite->setTextureRect(Rect(0, y, 48, 48));
+        actionSprite->setLocalZOrder(1);
+    }
+}
+
+void Player::updateAction(float dt)
+{
+    if (!actionSprite || !isActioning)
+    {
+        return;
+    }
+
+    actionTimer += dt;
+    if (actionTimer >= ACTION_DURATION / 2)
+    {
+        actionTimer = 0;
+        currentFrame++;
+
+        if (currentFrame < 2)
+        {
+            int toolOffset = 0;
+            switch (currentTool)
+            {
+                case ToolType::SHOVEL:
+                    toolOffset = 0;
+                    break;
+                case ToolType::AXE:
+                    toolOffset = 4;
+                    break;
+                case ToolType::WATERING:
+                    toolOffset = 8;
+                    break;
+                default:
+                    return;
+            }
+
+            float x = currentFrame * 48;
+            float y = (toolOffset + currentDirection) * 48;
+            actionSprite->setTextureRect(Rect(x, y, 48, 48));
+        }
+        else
+        {
+            isActioning = false;
+            currentFrame = 0;
+            this->setOpacity(255);
+            actionSprite->setOpacity(0);
+        }
+    }
+}
+
+void Player::removeAllListeners()
+{
+    _eventDispatcher->removeEventListenersForTarget(this);
+}
+
+void Player::update(float dt)
+{
+    Vec2 direction;
+
+    if (isKeyPressed(EventKeyboard::KeyCode::KEY_W) || isKeyPressed(EventKeyboard::KeyCode::KEY_UP_ARROW))
+        direction.y += 1;
+    if (isKeyPressed(EventKeyboard::KeyCode::KEY_S) || isKeyPressed(EventKeyboard::KeyCode::KEY_DOWN_ARROW))
+        direction.y -= 1;
+    if (isKeyPressed(EventKeyboard::KeyCode::KEY_A) || isKeyPressed(EventKeyboard::KeyCode::KEY_LEFT_ARROW))
+        direction.x -= 1;
+    if (isKeyPressed(EventKeyboard::KeyCode::KEY_D) || isKeyPressed(EventKeyboard::KeyCode::KEY_RIGHT_ARROW))
+        direction.x += 1;
+
+    if (direction != Vec2::ZERO && !isActioning)
+    {
+        Vec2 movement = direction.getNormalized() * moveSpeed * dt;
+        Vec2 nextPosition = this->getPosition() + movement;
+
+     if (gameMap && gameMap->isWalkable(nextPosition))
+        {
+            this->setPosition(nextPosition);
+
+            if (direction.y > 0)
+                currentDirection = 1;
+            else if (direction.y < 0)
+                currentDirection = 0;
+            else if (direction.x < 0)
+                currentDirection = 2;
+            else if (direction.x > 0)
+                currentDirection = 3;
+
+            animationTimer += dt;
+            if (animationTimer >= FRAME_INTERVAL)
+            {
+                animationTimer = 0;
+                currentFrame = (currentFrame + 1) % 4;
+            }
+
+            this->setTextureRect(Rect(
+                currentFrame * 48,
+                currentDirection * 48,
+                48,
+                48
+            ));
+        }
+    }
+    else if (!isActioning)
+    {
+        currentFrame = 0;
+        this->setTextureRect(Rect(0, currentDirection * 48, 48, 48));
+    }
+
+    updateAction(dt);
 }
