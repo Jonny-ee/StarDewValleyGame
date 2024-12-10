@@ -7,6 +7,47 @@ Scene* GameScene::createScene()
     return GameScene::create();
 }
 
+void GameScene::initToolIcon()
+{
+    toolIcon = Sprite::create("tools.png");
+    if (toolIcon)
+    {
+        toolIcon->setScale(3.0f);
+        this->addChild(toolIcon, 10);
+        updateToolIcon();  // 设置初始工具图标
+    }
+}
+
+void GameScene::updateToolIcon()
+{
+    if (!toolIcon || !player) return;
+
+    // 根据玩家当前工具设置图标
+    int toolIndex = static_cast<int>(player->getCurrentTool());
+
+    // 根据实际的枚举值设置对应的纹理区域
+    switch (toolIndex) {
+        case 0:  // NONE
+            toolIcon->setVisible(false);  // 无工具时隐藏图标
+            break;
+        case 1:  // SHOVEL
+            toolIcon->setVisible(true);
+            toolIcon->setTextureRect(cocos2d::Rect(32, 0, 16, 16));  // 根据实际图片位置调整
+            break;
+        case 2:  // AXE
+            toolIcon->setVisible(true);
+            toolIcon->setTextureRect(cocos2d::Rect(16, 0, 16, 16));  // 根据实际图片位置调整
+            break;
+        case 3:  // WATERING
+            toolIcon->setVisible(true);
+            toolIcon->setTextureRect(cocos2d::Rect(0, 0, 16, 16));   // 根据实际图片位置调整
+            break;
+        case 4:  // ROD
+            toolIcon->setVisible(false);  // 暂时没有鱼竿素材，隐藏图标
+            break;
+    }
+}
+
 bool GameScene::init()
 {
     if (!Scene::init())
@@ -23,7 +64,7 @@ bool GameScene::init()
     _gameMap = GameMap::create("House");
     if (_gameMap == nullptr)
     {
-        CCLOG("初始化失败：无法加载地图");
+        //CCLOG("初始化失败：无法加载地图");
         return false;
     }
     this->addChild(_gameMap);
@@ -34,7 +75,7 @@ bool GameScene::init()
     {
         return false;
     }
- // 设置关联
+    // 设置关联
     player->setGameMap(_gameMap);
 
     // 设置玩家初始位置
@@ -49,6 +90,13 @@ bool GameScene::init()
 
     this->addChild(player, 1);
 
+    // 创建背包UI
+    _inventoryUI = InventoryUI::create();
+    if (_inventoryUI)
+    {
+        this->addChild(_inventoryUI, 10);  // 确保UI在最上层
+    }
+
     // 设置键盘事件监听
     auto keyboardListener = EventListenerKeyboard::create();
     keyboardListener->onKeyPressed = CC_CALLBACK_2(GameScene::onKeyPressed, this);
@@ -61,6 +109,9 @@ bool GameScene::init()
     // 更新相机位置
     updateCamera();
 
+    // 初始化工具图标
+    initToolIcon();
+
     return true;
 }
 
@@ -68,8 +119,16 @@ void GameScene::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
 {
     // 只保留特殊按键的处理（如 B 键传送），其他移动相关的按键交给 Player 处理
     if (keyCode == EventKeyboard::KeyCode::KEY_B) {
-        CCLOG("按键事件：按下B键 - 触发传送");
+        //CCLOG("按键事件：按下B键 - 触发传送");
         switchToFarmMap();
+    }
+
+    else if (keyCode == EventKeyboard::KeyCode::KEY_Q)
+    {
+        if (player)
+        {
+            player->switchTool();  // 切换工具
+        }
     }
 }
 
@@ -79,6 +138,13 @@ void GameScene::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event)
     if (keyCode == EventKeyboard::KeyCode::KEY_B) {
         // 如果需要在释放时处理
     }
+    if (keyCode == EventKeyboard::KeyCode::KEY_ENTER)
+    {
+        if (_inventoryUI)
+        {
+            _inventoryUI->toggleVisibility();  // 切换背包显示状态
+        }
+    }
 }
 
 void GameScene::update(float dt)
@@ -87,7 +153,7 @@ void GameScene::update(float dt)
         return;
     }
 
-   // 直接调用 player 的 update
+    // 只保留一次update调用
     player->update(dt);
 
     // 检查传送点
@@ -96,8 +162,9 @@ void GameScene::update(float dt)
     if (_gameMap->checkForTransition(playerTilePos, transition)) {
         switchToMap(transition.targetMap, transition.targetTilePos);
     }
-    // 更新相机位置
+
     updateCamera();
+    updateToolIcon();  // 每帧更新工具图标
 }
 
 void GameScene::updateCamera()
@@ -122,6 +189,17 @@ void GameScene::updateCamera()
     Vec2 pointB = Vec2(x, y);
     Vec2 offset = pointA - pointB;
     this->setPosition(offset);
+
+    // 确保背包UI也跟随相机
+    if (_inventoryUI)
+    {
+        _inventoryUI->setPosition(-offset);
+    }
+    // 更新工具图标位置，使其保持在视图左下角
+    if (toolIcon)
+    {
+        toolIcon->setPosition(-offset + Vec2(50, 50));  // 左下角偏移50像素
+    }
 }
 
 void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& targetTilePos)
@@ -130,20 +208,20 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         // 创建新场景
         auto newScene = GameScene::create();
         if (!newScene) {
-            throw std::runtime_error("无法创建新场景");
+            //throw std::runtime_error("无法创建新场景");
         }
 
         // 创建新地图
         newScene->_gameMap = GameMap::create(mapName);
         if (!newScene->_gameMap) {
-            throw std::runtime_error("无法创建新地图");
+            //throw std::runtime_error("无法创建新地图");
         }
         newScene->addChild(newScene->_gameMap);
 
         // 创建新玩家
         newScene->player = Player::create();
         if (!newScene->player) {
-            throw std::runtime_error("无法创建新玩家");
+            //throw std::runtime_error("无法创建新玩家");
         }
 
         // 设置玩家位置
@@ -169,12 +247,12 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         newScene->updateCamera();
     }
     catch (const std::exception& e) {
-        CCLOG("切换地图时发生错误: %s", e.what());
+        //CCLOG("切换地图时发生错误: %s", e.what());
     }
 }
 
 void GameScene::switchToFarmMap()
 {
-    CCLOG("传送：开始切换到Farm地图");
+    //CCLOG("传送：开始切换到Farm地图");
     switchToMap("Farm1", Vec2(29, 11));
 }

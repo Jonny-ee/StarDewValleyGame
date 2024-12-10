@@ -70,6 +70,27 @@ float Player::getMoveSpeed() const
     return moveSpeed;
 }
 
+
+void Player::switchTool()
+{
+    // 循环切换工具
+    switch (currentTool)
+    {
+        case ToolType::SHOVEL:
+            currentTool = ToolType::AXE;
+            break;
+        case ToolType::AXE:
+            currentTool = ToolType::WATERING;
+            break;
+        case ToolType::WATERING:
+            currentTool = ToolType::SHOVEL;
+            break;
+        default:
+            currentTool = ToolType::SHOVEL;
+            break;
+    }
+}
+
 void Player::initKeyboardListener()
 {
     auto keyboardListener = EventListenerKeyboard::create();
