@@ -49,9 +49,11 @@ public:
     void performAction(const cocos2d::Vec2& clickPos);      // 执行动作
     void setCurrentTool(ToolType tool);                     // 设置当前工具
 
-    //技能等级系统相关
+    // 技能等级系统相关
     void toggleSkillUI();  // 切换技能界面显示状态
 
+    // 设置玩家是否可执行动作
+    void setCanPerformAction(bool select) { canPerformAction = select; }
 private:
     GameMap* gameMap = nullptr;                             // GameMap 引用                  
 
@@ -74,6 +76,7 @@ private:
     // 动作相关
     cocos2d::Sprite* actionSprite = nullptr;    // 动作精灵
     bool isActioning = false;                   // 是否正在执行动作
+    bool canPerformAction = true;               // 是否允许执行玩家动作，防止与NPC鼠标点击冲突
     float actionTimer = 0;                      // 动作计时器
     const float ACTION_DURATION = 0.4f;         // 动作持续时间
     void updateAction(float dt);                // 动作动画
@@ -84,5 +87,4 @@ private:
     //技能等级系统相关
     bool isSkillUIVisible{ false };  // 技能界面显示状态
     SkillUI* skillUI{ nullptr };     // 技能界面指针
-
 };
