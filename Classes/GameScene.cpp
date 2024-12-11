@@ -144,15 +144,6 @@ void GameScene::update(float dt)
     // 只保留一次update调用
     player->update(dt);
 
-    // 检查玩家与Lewis的距离
-    if (lewis) {
-        float distance = player->getPosition().distance(lewis->getPosition());
-        if (distance < 50.0f) { // 设定一个阈值
-            dialogueBox = DialogueBox::create("Hello,little cat!", "textBox.png");
-            this->addChild(dialogueBox, 10);
-            //lewis->startConversation(); // 弹出对话框
-        }
-    }
     // 检查传送点
     Vec2 playerTilePos = _gameMap->convertToTileCoord(player->getPosition());
     TransitionInfo transition;
@@ -296,15 +287,14 @@ void GameScene::initMouseListener()
             // 检查是否靠近并点击了Lewis
             if (lewis) {
                 float distance = player->getPosition().distance(lewis->getPosition());
+                //&& lewis->getBoundingBox().containsPoint(clickPos)
                 if (distance < 50.0f) {
                     //鼠标后面会换
                     Director::getInstance()->getOpenGLView()->setCursor("LooseSprites/mute_voice_icon.png"); // 使用手型光标
-                    if (lewis->getBoundingBox().containsPoint(clickPos)) {
-                        player->setCanPerformAction(false); // 禁止玩家动作
-                        std::srand(static_cast<unsigned int>(std::time(nullptr))); // 初始化随机数生成器
-                        dialogueBox = DialogueBox::create(lewis->getRandomDialogue(), "textBox.png");
-                        this->addChild(dialogueBox, 10);
-                    }
+                    player->setCanPerformAction(false); // 禁止玩家动作
+                    std::srand(static_cast<unsigned int>(std::time(nullptr))); // 初始化随机数生成器
+                    dialogueBox = DialogueBox::create(lewis->getRandomDialogue(), "textBox.png");
+                    this->addChild(dialogueBox, 10);
                 }
                 else {
                     player->setCanPerformAction(true);  // 允许玩家动作
