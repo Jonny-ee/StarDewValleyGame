@@ -48,15 +48,6 @@ bool Player::init()
         return false;
     }
 
-    // 初始化技能UI
-    skillUI = SkillUI::create();
-    if (skillUI) {
-        this->addChild(skillUI, 10);
-        skillUI->setVisible(false);  // 初始时隐藏
-        SkillSystem::getInstance()->setSkillUI(skillUI);
-    }
-
-
     return true;
 }
 
@@ -123,11 +114,6 @@ void Player::initKeyboardListener()
                     scene->getInventoryUI()->toggleVisibility();
                 }
             }
-            // 对K键的处理（切换技能界面）
-            if (keyCode == EventKeyboard::KeyCode::KEY_K) {
-                toggleSkillUI();
-            }
-
         };
 
     keyboardListener->onKeyReleased = [=](EventKeyboard::KeyCode keyCode, Event* event)
@@ -141,10 +127,15 @@ void Player::initMouseListener()
 {
     auto mouseListener = EventListenerMouse::create();
     mouseListener->onMouseDown = [=](Event* event)
-    {
-        EventMouse* e = (EventMouse*)event;
-        performAction(e->getLocation());
-    };
+        {
+            if (canPerformAction)// 如果允许执行动作
+            {
+                EventMouse* e = (EventMouse*)event;
+                Vec2 clickPos = e->getLocation();
+
+                performAction(clickPos);
+            }
+        };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
 }
 
@@ -324,7 +315,7 @@ void Player::update(float dt)
         Vec2 movement = direction.getNormalized() * moveSpeed * dt;
         Vec2 nextPosition = this->getPosition() + movement;
 
-     if (gameMap && gameMap->isWalkable(nextPosition))
+        if (gameMap && gameMap->isWalkable(nextPosition))
         {
             this->setPosition(nextPosition);
 
