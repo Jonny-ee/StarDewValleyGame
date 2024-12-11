@@ -293,13 +293,22 @@ void GameScene::initMouseListener()
             EventMouse* e = (EventMouse*)event;
             Vec2 clickPos = e->getLocation(); // 获取点击位置
 
-            // 检查是否点击了Lewis，点击暂时未实现
-            if (lewis && lewis->getBoundingBox().containsPoint(clickPos)) {
-                player->setCanPerformAction(false); // 禁止玩家动作
-                lewis->startConversation();         // 触发对话
-            }
-            else {
-                player->setCanPerformAction(true);  // 允许玩家动作
+            // 检查是否靠近并点击了Lewis
+            if (lewis) {
+                float distance = player->getPosition().distance(lewis->getPosition());
+                if (distance < 50.0f) {
+                    //鼠标后面会换
+                    Director::getInstance()->getOpenGLView()->setCursor("LooseSprites/mute_voice_icon.png"); // 使用手型光标
+                    if (lewis->getBoundingBox().containsPoint(clickPos)) {
+                        player->setCanPerformAction(false); // 禁止玩家动作
+                        std::srand(static_cast<unsigned int>(std::time(nullptr))); // 初始化随机数生成器
+                        dialogueBox = DialogueBox::create(lewis->getRandomDialogue(), "textBox.png");
+                        this->addChild(dialogueBox, 10);
+                    }
+                }
+                else {
+                    player->setCanPerformAction(true);  // 允许玩家动作
+                }
             }
         };
 
