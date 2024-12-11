@@ -96,14 +96,20 @@ void Player::initKeyboardListener()
     auto keyboardListener = EventListenerKeyboard::create();
 
     keyboardListener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event)
-    {
-        keys[keyCode] = true;
-    };
+        {
+            keys[keyCode] = true;
+
+            // 对Q键的处理
+            if (keyCode == EventKeyboard::KeyCode::KEY_Q)
+            {
+                switchTool();
+            }
+        };
 
     keyboardListener->onKeyReleased = [=](EventKeyboard::KeyCode keyCode, Event* event)
-    {
-        keys[keyCode] = false;
-    };
+        {
+            keys[keyCode] = false;
+        };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardListener, this);
 }
 
