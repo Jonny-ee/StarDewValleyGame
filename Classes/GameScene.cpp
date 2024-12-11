@@ -180,18 +180,45 @@ void GameScene::updateCamera()
     Size tileSize = _gameMap->getTileMap()->getTileSize();
     float scale = _gameMap->getTileMap()->getScale();
 
+    // 计算地图的实际像素大小
+    float mapWidth = mapSize.width * tileSize.width * scale;
+    float mapHeight = mapSize.height * tileSize.height * scale;
+
     // 获取玩家位置
     Vec2 playerPos = player->getPosition();
 
-    // 计算目标视角位置（使玩家保持在屏幕中心）
-    float x = std::max(playerPos.x, visibleSize.width / 2);
-    float y = std::max(playerPos.y, visibleSize.height / 2);
-    x = std::min(x, (mapSize.width * tileSize.width * scale - visibleSize.width / 2));
-    y = std::min(y, (mapSize.height * tileSize.height * scale - visibleSize.height / 2));
+    float x, y;
+
+    // 如果地图小于屏幕，则居中显示
+    if (mapWidth < visibleSize.width) {
+        x = visibleSize.width / 2;
+    }
+    else {
+        x = std::max(playerPos.x, visibleSize.width / 2);
+        x = std::min(x, mapWidth - visibleSize.width / 2);
+    }
+
+    if (mapHeight < visibleSize.height) {
+        y = visibleSize.height / 2;
+    }
+    else {
+        y = std::max(playerPos.y, visibleSize.height / 2);
+        y = std::min(y, mapHeight - visibleSize.height / 2);
+    }
 
     Vec2 pointA = Vec2(visibleSize.width / 2, visibleSize.height / 2);
     Vec2 pointB = Vec2(x, y);
     Vec2 offset = pointA - pointB;
+
+
+    // 如果地图小于屏幕，调整偏移量使地图居中
+    if (mapWidth < visibleSize.width) {
+        offset.x = (visibleSize.width - mapWidth) / 2;
+    }
+    if (mapHeight < visibleSize.height) {
+        offset.y = (visibleSize.height - mapHeight) / 2;
+    }
+
     this->setPosition(offset);
 
     // 确保背包UI也跟随相机

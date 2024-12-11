@@ -160,7 +160,7 @@ bool GameMap::checkForTransition(const Vec2& tilePos, TransitionInfo& outTransit
         std::string targetMap;
         float targetX, targetY;
 
-        if (iss >> sourceX >> sourceY >> targetMap >> targetX >> targetY) {
+        while (iss >> sourceX >> sourceY >> targetMap >> targetX >> targetY) {
             // 使用更小的容错范围，并确保在地图边界内
             if (std::abs(tilePos.x - sourceX) < 0.3f &&
                 std::abs(tilePos.y - sourceY) < 0.3f) {

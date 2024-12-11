@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="1">
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="9" nextobjectid="1">
  <properties>
-  <property name="Warp" value="28 11 House 9 10"/>
+  <property name="Warp" value="29 9 House 9 10 10 4 Mine 9 18 11 4 Mine 9 18 "/>
  </properties>
  <tileset firstgid="1" source="../AllTSX/spring_outdoorsTileSheet.tsx"/>
  <tileset firstgid="1976" source="../AllTSX/houses.tsx"/>
  <layer id="3" name="Back" width="40" height="40">
   <data encoding="base64" compression="zlib">
-   eJzVmDtOw0AQhjcouQCKxOMMVByAEnoKWsgJEB3cBN8iIDgEz6SniwOYnjqwVnaUYTKzM7t2QBS/VrbXs5/n5bX7Hef6mZo456ZBr46fc+nmwsf0umR/iK6VYZ2UcYKOa75hUGxNyhubB3wax6yzkJVvaGDQmK18G2sLWfiGiK8Q1i7cMp/EWdu/V1Qy5zDfNcNXq3A/WSRe/Eyp/ksZb4JSaw0/E/BfroCvDL589Nr3tg8S9Ft8kI/H3vaJQbthHJA4W+M7zug/KXzAOAj5mco3CpKOp+EZcvnu3MJ/mKtJfCkf579zb/vCoEPft178+Nnhe5QUx6pB/kGN3Cp6QPecov6a67/K6D88lsZ5lC8l/yz2ubzEfJqdVfLR+ijJNUtfoHz4/WbhAnsVEncfnKfnUuNr5eOe37Ke5MtcPkscIL8k/+H1S4UH5oMfzjzfntcRUhHJB2v+a/7T+gGX36Cc/gy+03gsfFL9pe6vRowdGt9cPm7M2f9hPpx/1JdfXeeeg0Zem714nVv5pPzDeQf5DkzcGlu9Bdu4Oz++InO0+sffABJf5Zb9JtUBVs3z7rkqrw+BzxrfIjLPuj/g+JzXzLOt9fL5qP+0erDUL/Cte2177Sh8uP+l8Gn5UREufO0txBT01J3zSfWc019wfUrvN/qetcRfmkf9oflPq2NLvDlOaz/U+Li8sO4Dc/lwnHL4pPoGu1L/pGxt5F+bY80d28dwfSyXL5ZnFRHnv1id/ZX/MJ+ljprypf5PiPlPinuT/xu5fNx9bfC1GV/r+J/42tIU2W5D3P/UJgK+pnawvgGR+JLA
+   eJzVmDtSwzAQhpVMcgGGGR5noOIAlNBT0EJOwNDBTeJbGAYOwTPp6eIAoqcOyBPtZLPZlVayA0Pxj2JbXn3elxVvdozZzNTEGDP1ejP8nKGZCx/T65L9El2r/Dop4wQd13ylV2hNyhuaB3wxjllnWRq+UsEQY14XX4n4CmHtwqzySZy1/YeAtrrLgvOY74bhq1WYZRaJFz9Tqv9Sxluv1FrDzwT8wzXwVd6XT06HzvZRgn6LD/Lx1Nk+U2jfjwMSZ218xxn9J4UPGAc+P1P5Rl7S8dQ/Qy7fvVn4D3M1iS/l4/x36WxfKXTsesKrG786fI+S4mgb5B/UyF1Ej+ie8+7id67/rNJ/eKyU8yhfSv5p7HN5iflidtbJR+ujItc0fYHy4febhgvsWSTuPjhPz6XGV8vHPb9mPcmXuXyaOEB+Sf7D61cRHpgPfrhwfAdOJ0hFIB+0+R/zX6wfcPkNyunP4LsYj4ZPqr/U/dWIsUPjm8vHjTn7P8yH84/68rtnzIvXyGm7H65zLZ+UfzjvIN+BiVtjp79gG/fmx9dkTqz+8X8Aic+aVb9JdYBV83w4Luv0KfBp41sE5mn3BxyfcZo5tm4/n4/6L1YPmvoFvg2nXae9CB/ufyl8sfywhAtfe/cxBT335nxSPef0F1yf0vuNvmc18ZfmUX/E/BerY028OU5tP4zxcXmh3Qfm8uE45fBJ9Q12pf5J2drIvzbHmju0j+H6WC5fKM8sEee/UJ39lf8wn6aOmvKlfk8I+U+Ke5PvG7l83H1t8LUZX+34n/ja0hTZbkPc99QmAr6mdrB+AJweks0=
+  </data>
+ </layer>
+ <layer id="8" name="Back1" width="40" height="40">
+  <data encoding="base64" compression="zlib">
+   eJztzrERwCAQBLELvyBMB4b+O/IXQG4CaWbzTQAgGZU83ay/T87e/lrdvvQPAAAAgLt8Wq4Bog==
   </data>
  </layer>
  <layer id="5" name="Buildings1" width="40" height="40">
@@ -15,7 +20,7 @@
    <property name="Passable" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztmMtKw0AUhiehSb2AjyBeUd9CfAkRdyqoRTfiTgW1VIRu1Z0tQrfqSmwLPkQR9R20eHkD/+AMOamTQmcaehbzw0dmTsvJl0kDnZSEEGfCLE9ePG566d/bAbspczXW1aJUQBUso/88eNGwFgqxDjbCZP2VOD3L2pvGsySSa0DnaqyrqSyg52cXDuB1CI7CZP2LuLRl7Rv8dDiqNdDN1VhXU1lCv7yfzgW8LsFVmKwP+XGPQNaGwQgYlZ9ter2zBbblNc7huAom/HRu4XUH7sNkfZL4jcvaFJgGM2AWHHu9cwJOid9+l9/2oFKQTosM3aIUpdcKc7895n5lBn7l/P9akTwfg06NuZ8uzs8uzs8u3P0emPupOD+zFJjf3yyfjzpoEJoGPTL1y8XjsQB7J4MeWfq1cn9eKtz86PpF4ebX6vBrG/TI0u8dfh+EwOAcys/tj8zC/f+B87OL87OL87MLdz+1/7jGsdIHHsl11i17VTNYM/qe6ZzhPakRp5s++v0C6yuCwA==
+   eJztmFtKw0AUhicxFy/gDhSvqLsQNyHiAtSiL+IC1FIRugZbhL76KNaCa9Ao6ha0LV524B+cYY51UuikoedhfvjIzGk5+TJpoJOKEOJM2OXO0+OWl/29fXCQMVdjUy1NDdTBJvqvgmcD95EQDyABj5GuvxCnJ1l7NXhWxN81oHM1NtVU1tDzow9vcHoHbdCJdP2TuHRl7Qt89ziqNTDN1dhUU9lAv9jPxouF8MEYCGJdH/d1j1DWJsAkmJKf7XiDswv25DWu4LgN5vxsriLtMRPr+jzxm5W1BbAIlsAyOPYG5wScEr+jPr/tUaUkndYZuqUpS68t5n6HzP2qDPyq8f9amTwfo06DuZ8pzi9fnF++cPe7Zu6n4vzsUmJ+f4t8PprgltCy6FGoX6DH0yH2ThY9ivRLgl8vFW5+dP3ScPNLevy6Fj2K9GvDr0MILc6h/Nz+yC7c/x84v3xxfvni/PKFu5/af1zgWBsCN+Q6mzl71QtYM/qe6ZzhPWkQp8sh+v0A67WCNw==
   </data>
  </layer>
  <layer id="6" name="Buildings2" width="40" height="40">
@@ -23,7 +28,7 @@
    <property name="Passable" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztzrlyAVAAheFLGKoQRGtN0lpDa+ehLS8gobbTCrG0ll/pCS4z55/56nOMUc9U22NMB130PLbf3Nfnzw9+McDwAf6N+DDGBFPMMMcCS6wsf1yz/4cNtvjHDnsccLT878T+GZfbD68xDjjxAhfcXrv/Xtn3wY83BBBECO8IW/4XYT+KGOJIIIkPfOLL8r8U+2lkkEUOeXyjgKLlfyX2y6igihrqaKCJluV/SimllFJKKaWUUuqxuwLgESKW
+   eJztzrlygXEUhvF/iKGSiKVFErREQWspuGjLDSShttPaaYVHme8GzmfmfWZ+xanO65x6pDph57rooR+2XvO/b/b84BcDDH2wb8SGMSaYYoY5FlhiZbxxzf8NtthhjwOOOOFsvO/C/z9c7zsizj0hgCCeEYrY7ovy/wWviOENcSSQRMp4X5r/GWTxjg98Ioc8Csb7ivwv4Qtlz5YKd9V4X43/dTTQ9GxpcbeN9ymllFJKKaWUUkopf3cDnmMg9Q==
   </data>
  </layer>
  <objectgroup id="7" name="NPC"/>
