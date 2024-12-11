@@ -1,5 +1,6 @@
 #include "Player.h"
-#include"GameMap.h"
+#include "GameMap.h"
+#include "GameScene.h"
 USING_NS_CC;
 
 
@@ -103,6 +104,14 @@ void Player::initKeyboardListener()
             if (keyCode == EventKeyboard::KeyCode::KEY_Q)
             {
                 switchTool();
+            }
+            // 添加对回车键的处理
+            if (keyCode == EventKeyboard::KeyCode::KEY_ENTER)
+            {
+                auto scene = dynamic_cast<GameScene*>(Director::getInstance()->getRunningScene());
+                if (scene && scene->getInventoryUI()) {
+                    scene->getInventoryUI()->toggleVisibility();
+                }
             }
         };
 

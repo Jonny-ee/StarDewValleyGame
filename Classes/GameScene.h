@@ -19,7 +19,8 @@ public:
     static cocos2d::Scene* createScene();   // 创建场景
     virtual bool init();                    // 初始化场景
     CREATE_FUNC(GameScene);                 // 场景创建宏
-    virtual void update(float dt) override;  // 确保有这行声明
+    virtual void update(float dt) override;  
+    InventoryUI* getInventoryUI() const { return _inventoryUI; }    // 返回背包UI（给Player的按键判断使用）
 
     // 地图切换相关
     void switchToMap(const std::string& mapName, const cocos2d::Vec2& targetTilePos);   // 切换到指定地图

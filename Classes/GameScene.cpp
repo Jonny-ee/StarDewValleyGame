@@ -95,9 +95,9 @@ bool GameScene::init()
     _inventoryUI = InventoryUI::create();
     if (_inventoryUI)
     {
-        this->addChild(_inventoryUI, 10);  // 确保UI在最上层
+        this->addChild(_inventoryUI, 10);
+        _inventoryUI->setVisible(false);
     }
-
 
     // 启动更新
     this->scheduleUpdate();
@@ -168,46 +168,50 @@ void GameScene::updateCamera()
 
 void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& targetTilePos)
 {
-    try {
-        //创建新场景
-        auto newScene = GameScene::create();
-        if (!newScene) {
-            //throw std::runtime_error("无法创建新场景");
-        }
-
-        // 创建新地图
-        newScene->_gameMap = GameMap::create(mapName);
-        if (!newScene->_gameMap) {
-            //throw std::runtime_error("无法创建新地图");
-        }
-        newScene->addChild(newScene->_gameMap);
-
-        newScene->player = Player::create();
-        if (!newScene->player) {
-            return;
-        }
-      
-        // 移除旧的事件监听器
-        newScene->player->removeAllListeners();
-
-        // 设置玩家位置和关联
-        Vec2 worldPos = newScene->_gameMap->convertToWorldCoord(targetTilePos);
-        newScene->player->setPosition(worldPos);
-        player->setScale(3.0f);
-        newScene->player->setGameMap(newScene->_gameMap);
-        // 重新初始化事件监听
-        newScene->player->initKeyboardListener();
-        newScene->player->initMouseListener();
-        // 将玩家添加到新场景
-       newScene->addChild(newScene->player, 1);
-
-        // 切换场景
-        Director::getInstance()->replaceScene(newScene);
-
-        // 更新相机位置
-        newScene->updateCamera();
+    // 保存当前背包UI的引用和状态
+    auto currentInventoryUI = _inventoryUI;
+    bool wasInventoryVisible = false;
+    if (currentInventoryUI) {
+        wasInventoryVisible = currentInventoryUI->isVisible();
+        currentInventoryUI->retain();
+        currentInventoryUI->removeFromParent();
     }
-    catch (const std::exception& e) {
-        //CCLOG("切换地图时发生错误: %s", e.what());
+
+    // 保存当前玩家的引用
+    auto currentPlayer = player;
+    if (currentPlayer) {
+        currentPlayer->retain();
+        currentPlayer->removeFromParent();
     }
+
+    // 移除旧地图
+    if (_gameMap) {
+        _gameMap->removeFromParent();
+        _gameMap = nullptr;
+    }
+
+    // 创建新地图
+    _gameMap = GameMap::create(mapName);
+    if (_gameMap) {
+        this->addChild(_gameMap);
+    }
+
+    // 重用现有玩家，而不是创建新的（修复原来多重玩家的bug）
+    if (currentPlayer) {
+        Vec2 worldPos = _gameMap->convertToWorldCoord(targetTilePos);
+        currentPlayer->setPosition(worldPos);
+        currentPlayer->setGameMap(_gameMap);
+        this->addChild(currentPlayer, 1);
+        currentPlayer->release();
+    }
+
+    // 重新添加背包UI
+    if (currentInventoryUI) {
+        this->addChild(currentInventoryUI, 10);
+        currentInventoryUI->setVisible(wasInventoryVisible);
+        currentInventoryUI->release();
+    }
+
+    // 更新相机位置
+    this->updateCamera();
 }

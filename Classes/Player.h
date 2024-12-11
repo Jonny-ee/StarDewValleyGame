@@ -10,7 +10,8 @@
  * 3. 键盘输入处理
  * 4. 动画状态管理
  */
-class GameMap;  // 前向声明
+class GameMap;      // 前向声明
+class GameScene;    // 前向声明（防止循环包含）
 
 class Player : public cocos2d::Sprite
 {
@@ -76,5 +77,4 @@ private:
 
     // 工具相关
     ToolType currentTool = ToolType::WATERING;      // 当前装备的工具
-   
 };
