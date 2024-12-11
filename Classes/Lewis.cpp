@@ -33,11 +33,17 @@ void Lewis::initializeDefaultBehavior()
 // 添加刘易斯专属对话
 void Lewis::loadLewisDialogues() noexcept
 {
-    // 添加刘易斯专属对话
+    //// 添加刘易斯专属对话
     // addDialogue(0, " 欢迎来到鹈鹕镇！");
     // addDialogue(0, " 作为镇长，我一直在努力让这个小镇变得更好。");
     // addDialogue(5, " 你为鹈鹕镇做出了很大贡献！");
     // addDialogue(10, " 你已经成为了这个小镇不可或缺的一部分。");
+}
+
+std::string Lewis::getRandomDialogue()
+{
+    int index = std::rand() % 4;
+    return dialogueList[index];
 }
 
 void Lewis::moveToDirection(cocos2d::Vec2& destination, float dt)
