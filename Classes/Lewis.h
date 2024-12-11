@@ -15,13 +15,18 @@ public:
     void staticAnimation();//人物静止时的呼吸动画
     void moveAlongPath(float dt);//移动沿路径
 
-    //void startConversation();
+   // void startConversation();
     std::vector<cocos2d::Vec2> path; // 移动路径
-
+    std::string getRandomDialogue();
 private:
     void initializeDefaultBehavior();  // 初始化刘易斯的默认行为
     void loadLewisDialogues() noexcept;         // 加载刘易斯专属对话
-
+    std::vector<std::string> dialogueList = {
+        "Welcome to Pelican Town!",
+        "As a mayor, I have been working hard to make this town a better place.",
+        "You have made great contributions to Peican Town!",
+        "You have become an indispensable part of this small town!"
+    };
     
     int currentPathIndex = 0; // 当前路径索引
 
