@@ -47,7 +47,14 @@ bool Player::init()
     {
         return false;
     }
-
+    
+    // 初始化技能UI
+    skillUI = SkillUI::create();
+    if (skillUI) {
+        this->addChild(skillUI, 10);
+        skillUI->setVisible(false);  // 初始时隐藏
+        SkillSystem::getInstance()->setSkillUI(skillUI);
+    }
     return true;
 }
 
@@ -113,6 +120,10 @@ void Player::initKeyboardListener()
                 if (scene && scene->getInventoryUI()) {
                     scene->getInventoryUI()->toggleVisibility();
                 }
+            }
+            // 对K键的处理（切换技能界面）
+            if (keyCode == EventKeyboard::KeyCode::KEY_K) {
+                toggleSkillUI();
             }
         };
 
