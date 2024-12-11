@@ -2,6 +2,7 @@
 #include "cocos2d.h"
 #include "Player.h"
 #include "GameMap.h"
+#include "Lewis.h"
 #include "InventoryUI.h"
 
 /*
@@ -19,7 +20,7 @@ public:
     static cocos2d::Scene* createScene();   // 创建场景
     virtual bool init();                    // 初始化场景
     CREATE_FUNC(GameScene);                 // 场景创建宏
-    virtual void update(float dt) override;  
+    virtual void update(float dt) override;
     InventoryUI* getInventoryUI() const { return _inventoryUI; }    // 返回背包UI（给Player的按键判断使用）
 
     // 地图切换相关
@@ -33,6 +34,8 @@ private:
     // 场景对象
     Player* player = nullptr;                             // 玩家对象指针
     GameMap* _gameMap = nullptr;                          // 游戏地图指针
+    Lewis* lewis = nullptr;                               // Lewis指针
+    DialogueBox* dialogueBox = nullptr;                   // 对话框指针
     cocos2d::TMXTiledMap* tileMap = nullptr;              // Tiled 地图系统
     cocos2d::TMXObjectGroup* collisionsGroup = nullptr;   // 碰撞组
     InventoryUI* _inventoryUI = nullptr;                  // 背包UI成员变量
@@ -43,4 +46,5 @@ private:
     // 输入状态
     std::set<char> _pressedKeys;                                    // 已按下的按键集合
     cocos2d::EventListenerKeyboard* _keyboardListener = nullptr;    // 键盘监听器
+    void initMouseListener();                                       // 声明鼠标监听器初始化方法(NPC使用)
 };
