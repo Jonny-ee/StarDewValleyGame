@@ -76,14 +76,36 @@ bool GameScene::init()
     }
 
 
-        // 设置玩家初始位置
-        Vec2 tilePos = Vec2(23, 6);
-        Vec2 worldPos = _gameMap->convertToWorldCoord(tilePos);
-        player->setPosition(worldPos);
-        player->setScale(3.0f);
+    // 设置玩家初始位置
+    Vec2 tilePos = Vec2(23, 6);
+    Vec2 worldPos = _gameMap->convertToWorldCoord(tilePos);
+    player->setPosition(worldPos);
+    player->setScale(3.0f);
 
-        this->addChild(player, 1);
-    
+    this->addChild(player, 1);
+    // 创建刘易斯
+    lewis = Lewis::create();
+
+    if (lewis == nullptr)
+    {
+        return false;
+    }
+
+    // 设置刘易斯初始位置
+    Vec2 lewis_tilePos = Vec2(15, 6);
+    Vec2 lewis_worldPos = _gameMap->convertToWorldCoord(lewis_tilePos);
+    lewis->setPosition(lewis_worldPos);
+
+    this->addChild(lewis, 1);
+
+    //设置刘易斯默认移动路径
+    Vec2 movePath1_tilePos = Vec2(13, 6);
+    Vec2 movePath2_tilePos = Vec2(18, 6);
+
+    Vec2 movePath1_worldPos = _gameMap->convertToWorldCoord(movePath1_tilePos);
+    Vec2 movePath2_worldPos = _gameMap->convertToWorldCoord(movePath2_tilePos);
+    lewis->path.push_back(movePath1_worldPos);
+    lewis->path.push_back(movePath2_worldPos);
 
     // 设置关联和事件监听
     player->setGameMap(_gameMap);
@@ -108,6 +130,8 @@ bool GameScene::init()
     // 初始化工具图标
     initToolIcon();
 
+    // 初始化鼠标监听器
+    initMouseListener();
     return true;
 }
 
@@ -120,6 +144,15 @@ void GameScene::update(float dt)
     // 只保留一次update调用
     player->update(dt);
 
+    // 检查玩家与Lewis的距离
+    if (lewis) {
+        float distance = player->getPosition().distance(lewis->getPosition());
+        if (distance < 50.0f) { // 设定一个阈值
+            dialogueBox = DialogueBox::create("Hello,little cat!", "textBox.png");
+            this->addChild(dialogueBox, 10);
+            //lewis->startConversation(); // 弹出对话框
+        }
+    }
     // 检查传送点
     Vec2 playerTilePos = _gameMap->convertToTileCoord(player->getPosition());
     TransitionInfo transition;
@@ -129,6 +162,13 @@ void GameScene::update(float dt)
 
     updateCamera();
     updateToolIcon();  // 每帧更新工具图标
+
+    // 更新Lewis的状态
+    if (lewis) {
+
+        lewis->updateSchedule(dt);
+        lewis->moveAlongPath(dt); // 移动沿路径
+    }
 }
 
 void GameScene::updateCamera()
@@ -146,8 +186,8 @@ void GameScene::updateCamera()
     // 计算目标视角位置（使玩家保持在屏幕中心）
     float x = std::max(playerPos.x, visibleSize.width / 2);
     float y = std::max(playerPos.y, visibleSize.height / 2);
-    x = std::min(x, (mapSize.width * tileSize.width * scale - visibleSize.width/2));
-    y = std::min(y, (mapSize.height * tileSize.height * scale - visibleSize.height/2));
+    x = std::min(x, (mapSize.width * tileSize.width * scale - visibleSize.width / 2));
+    y = std::min(y, (mapSize.height * tileSize.height * scale - visibleSize.height / 2));
 
     Vec2 pointA = Vec2(visibleSize.width / 2, visibleSize.height / 2);
     Vec2 pointB = Vec2(x, y);
@@ -214,4 +254,27 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
 
     // 更新相机位置
     this->updateCamera();
+}
+
+void GameScene::initMouseListener()
+{
+    auto mouseListener = EventListenerMouse::create();
+
+    // 鼠标点击事件
+    mouseListener->onMouseDown = [=](Event* event)
+        {
+            EventMouse* e = (EventMouse*)event;
+            Vec2 clickPos = e->getLocation(); // 获取点击位置
+
+            // 检查是否点击了Lewis，点击暂时未实现
+            if (lewis && lewis->getBoundingBox().containsPoint(clickPos)) {
+                player->setCanPerformAction(false); // 禁止玩家动作
+                lewis->startConversation();         // 触发对话
+            }
+            else {
+                player->setCanPerformAction(true);  // 允许玩家动作
+            }
+        };
+
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
 }
