@@ -1,6 +1,7 @@
-#include "Player.h"
+﻿#include "Player.h"
 #include "GameMap.h"
 #include "GameScene.h"
+#include "SkillUI.h"
 USING_NS_CC;
 
 
@@ -46,6 +47,15 @@ bool Player::init()
     {
         return false;
     }
+
+    // 初始化技能UI
+    skillUI = SkillUI::create();
+    if (skillUI) {
+        this->addChild(skillUI, 10);
+        skillUI->setVisible(false);  // 初始时隐藏
+        SkillSystem::getInstance()->setSkillUI(skillUI);
+    }
+
 
     return true;
 }
@@ -113,6 +123,11 @@ void Player::initKeyboardListener()
                     scene->getInventoryUI()->toggleVisibility();
                 }
             }
+            // 对K键的处理（切换技能界面）
+            if (keyCode == EventKeyboard::KeyCode::KEY_K) {
+                toggleSkillUI();
+            }
+
         };
 
     keyboardListener->onKeyReleased = [=](EventKeyboard::KeyCode keyCode, Event* event)
@@ -344,4 +359,28 @@ void Player::update(float dt)
     }
 
     updateAction(dt);
+}
+
+void Player::toggleSkillUI() {
+    if (skillUI) {
+        isSkillUIVisible = !isSkillUIVisible;
+        skillUI->setVisible(isSkillUIVisible);
+
+        // 可以添加一些显示/隐藏的动画效果
+        if (isSkillUIVisible) {
+            // 显示时的动画
+            skillUI->setScale(0.8f);
+            skillUI->setOpacity(0);
+
+            auto scaleAction = ScaleTo::create(0.2f, 1.0f);
+            auto fadeAction = FadeIn::create(0.2f);
+            skillUI->runAction(Spawn::create(scaleAction, fadeAction, nullptr));
+        }
+        else {
+            // 隐藏时的动画
+            auto scaleAction = ScaleTo::create(0.2f, 0.8f);
+            auto fadeAction = FadeOut::create(0.2f);
+            skillUI->runAction(Spawn::create(scaleAction, fadeAction, nullptr));
+        }
+    }
 }

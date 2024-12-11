@@ -1,6 +1,6 @@
 #pragma once
 #include "cocos2d.h"
-
+#include "SkillSystem.h"
 /*
  * 玩家类
  * 功能：管理玩家角色的所有行为和属性
@@ -49,6 +49,9 @@ public:
     void performAction(const cocos2d::Vec2& clickPos);      // 执行动作
     void setCurrentTool(ToolType tool);                     // 设置当前工具
 
+    //技能等级系统相关
+    void toggleSkillUI();  // 切换技能界面显示状态
+
 private:
     GameMap* gameMap = nullptr;                             // GameMap 引用                  
 
@@ -77,4 +80,9 @@ private:
 
     // 工具相关
     ToolType currentTool = ToolType::WATERING;      // 当前装备的工具
+
+    //技能等级系统相关
+    bool isSkillUIVisible{ false };  // 技能界面显示状态
+    SkillUI* skillUI{ nullptr };     // 技能界面指针
+
 };
