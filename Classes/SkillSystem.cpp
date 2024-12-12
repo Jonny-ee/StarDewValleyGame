@@ -1,9 +1,17 @@
 #include "SkillSystem.h"
 
-// 初始化静态成员变量
+/*
+ * 技能系统
+ * 功能：管理游戏中的技能系统，包括等级、经验值和技能加成
+ */
+
+ // 初始化静态实例指针
 SkillSystem* SkillSystem::_instance = nullptr;
 
-// 获取单例实例
+/*
+ * 获取技能系统单例实例
+ * @return 返回技能系统实例指针
+ */
 SkillSystem* SkillSystem::getInstance() {
     if (_instance == nullptr) {
         _instance = new SkillSystem();
@@ -11,7 +19,10 @@ SkillSystem* SkillSystem::getInstance() {
     return _instance;
 }
 
-// 构造函数，初始化技能等级和经验
+/*
+ * 技能系统构造函数
+ * 功能：初始化所有技能的等级和经验值
+ */
 SkillSystem::SkillSystem() : skillUI(nullptr) {
     // 初始化每个技能的等级和经验
     for (auto type : { SkillType::FARMING, SkillType::MINING,
@@ -21,25 +32,41 @@ SkillSystem::SkillSystem() : skillUI(nullptr) {
     }
 }
 
-// 获取指定技能的等级
+/*
+ * 获取指定技能的等级
+ * @param type 技能类型
+ * @return 返回技能当前等级
+ */
 int SkillSystem::getSkillLevel(SkillType type) {
     return skillLevels[type];
 }
 
-// 获取指定技能的经验值
+/*
+ * 获取指定技能的经验值
+ * @param type 技能类型
+ * @return 返回技能当前经验值
+ */
 int SkillSystem::getSkillExp(SkillType type) {
     return skillExp[type];
 }
 
-// 计算升级所需的经验值
+/*
+ * 计算升级所需经验值
+ * @param level 当前等级
+ * @return 返回升到下一级所需的经验值
+ */
 int SkillSystem::calculateExpNeeded(int level) {
-    // 每级所需经验值
     return BASE_EXP_NEEDED * level;
 }
 
-// 增加指定技能的经验值
+/*
+ * 获得技能经验值
+ * @param type 技能类型
+ * @param amount 获得的经验值数量
+ * 功能：增加技能经验值并处理升级逻辑
+ */
 void SkillSystem::gainExp(SkillType type, int amount) {
-    // 如果已经达到最大等级，则不再增加经验
+    // 已达到最高等级则不再增加经验
     if (skillLevels[type] >= MAX_LEVEL) {
         return;
     }
@@ -52,18 +79,16 @@ void SkillSystem::gainExp(SkillType type, int amount) {
         int currentLevel = skillLevels[type];
         int expNeeded = calculateExpNeeded(currentLevel);
 
-        // 如果经验值足够升级，并且未达到最大等级
+        // 如果经验值足够且未达到最高等级
         if (skillExp[type] >= expNeeded && currentLevel < MAX_LEVEL) {
-            // 提升技能等级
+            // 升级并扣除经验值
             skillLevels[type]++;
             skillExp[type] -= expNeeded;
 
-            // 如果 UI 存在，更新 UI 显示
+            // 更新UI显示
             if (skillUI) {
                 float bonus = getSkillBonus(type);
-                // 显示升级提示
                 skillUI->showLevelUpTip(type, skillLevels[type], bonus);
-                // 更新技能显示，包括等级、经验和所需经验
                 skillUI->updateSkillDisplay(type, skillLevels[type],
                     skillExp[type], calculateExpNeeded(skillLevels[type]));
             }
@@ -73,14 +98,19 @@ void SkillSystem::gainExp(SkillType type, int amount) {
         }
     }
 
-    // 无论是否升级，更新 UI 显示
+    // 更新UI显示
     if (skillUI) {
         skillUI->updateSkillDisplay(type, skillLevels[type],
             skillExp[type], calculateExpNeeded(skillLevels[type]));
     }
 }
 
-// 获取技能加成
+/*
+ * 获取技能加成
+ * @param type 技能类型
+ * @return 返回技能加成系数
+ * 功能：根据技能等级计算不同技能的加成效果
+ */
 float SkillSystem::getSkillBonus(SkillType type) {
     int level = skillLevels[type];
     float bonus = 1.0f;
@@ -99,8 +129,9 @@ float SkillSystem::getSkillBonus(SkillType type) {
         case SkillType::FISHING:
             // 每级减少5%钓鱼时间
             bonus -= (level - 1) * 0.05f;
-            if (bonus < 0.5f) bonus = 0.5f; // 最低减少到50%时间
+            if (bonus < 0.5f) bonus = 0.5f; // 最多减少到50%时间
             break;
+
         case SkillType::COOKING:
             // 每级增加20%烹饪成功率
             bonus += (level - 1) * 0.2f;
