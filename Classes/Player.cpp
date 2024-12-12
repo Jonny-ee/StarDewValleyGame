@@ -55,6 +55,17 @@ bool Player::init()
         skillUI->setVisible(false);  // 初始时隐藏
         SkillSystem::getInstance()->setSkillUI(skillUI);
     }
+
+    // 初始化鱼竿精灵
+    rodSprite = Sprite::create("TileSheets/Tools.png");
+    if (rodSprite) {
+        rodSprite->setTextureRect(cocos2d::Rect(128, 0, 16, 16));  // 第一行第九个图标
+        rodSprite->setScale(1.0f);
+        rodSprite->setPosition(Vec2(48, 0));  // 位于角色右侧
+        rodSprite->setVisible(false);
+        this->addChild(rodSprite);
+    }
+
     return true;
 }
 
@@ -79,7 +90,6 @@ float Player::getMoveSpeed() const
     return moveSpeed;
 }
 
-
 void Player::switchTool()
 {
     // 循环切换工具
@@ -92,11 +102,20 @@ void Player::switchTool()
             currentTool = ToolType::WATERING;
             break;
         case ToolType::WATERING:
+            currentTool = ToolType::ROD;
+            break;
+        case ToolType::ROD:
             currentTool = ToolType::SHOVEL;
             break;
         default:
             currentTool = ToolType::SHOVEL;
             break;
+    }
+
+    // 更新鱼竿显示状态
+    if (rodSprite)
+    {
+        rodSprite->setVisible(currentTool == ToolType::ROD);
     }
 }
 
@@ -221,7 +240,7 @@ void Player::setCurrentTool(ToolType tool)
 
 void Player::performAction(const Vec2& clickPos)
 {
-    if (!actionSprite || currentTool == ToolType::NONE)
+    if (!actionSprite || currentTool == ToolType::NONE || currentTool == ToolType::ROD)  // 添加对ROD的判断
     {
         return;
     }
@@ -257,6 +276,7 @@ void Player::performAction(const Vec2& clickPos)
         actionSprite->setLocalZOrder(1);
     }
 }
+
 
 void Player::updateAction(float dt)
 {
@@ -320,6 +340,32 @@ void Player::update(float dt)
         direction.x -= 1;
     if (isKeyPressed(EventKeyboard::KeyCode::KEY_D) || isKeyPressed(EventKeyboard::KeyCode::KEY_RIGHT_ARROW))
         direction.x += 1;
+
+    // 更新鱼竿朝向
+    if (rodSprite && rodSprite->isVisible()) {
+        switch (currentDirection) {
+            case 0: // 下
+                rodSprite->setPosition(Vec2(37, 25));
+                rodSprite->setFlippedX(false);  // 恢复正常方向
+                rodSprite->setLocalZOrder(1);  // 在角色上层
+                break;
+            case 1: // 上
+                rodSprite->setPosition(Vec2(12, 25));
+                rodSprite->setFlippedX(true);   // 翻转鱼竿
+                rodSprite->setLocalZOrder(-1);  // 在角色下层
+                break;
+            case 2: // 左
+                rodSprite->setPosition(Vec2(15, 25));
+                rodSprite->setFlippedX(true);   // 翻转鱼竿
+                rodSprite->setLocalZOrder(1);  // 在角色上层
+                break;
+            case 3: // 右
+                rodSprite->setPosition(Vec2(30, 25));
+                rodSprite->setFlippedX(false);  // 恢复正常方向
+                rodSprite->setLocalZOrder(-1);  // 在角色下层
+                break;
+        }
+    }
 
     if (direction != Vec2::ZERO && !isActioning)
     {

@@ -83,6 +83,7 @@ private:
 
     // 工具相关
     ToolType currentTool = ToolType::WATERING;      // 当前装备的工具
+    cocos2d::Sprite* rodSprite = nullptr;           // 鱼竿精灵
 
     //技能等级系统相关
     bool isSkillUIVisible{ false };  // 技能界面显示状态

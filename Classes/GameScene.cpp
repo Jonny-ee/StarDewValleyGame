@@ -28,25 +28,31 @@ void GameScene::updateToolIcon()
     // 根据实际的枚举值设置对应的纹理区域
     switch (toolIndex) {
         case 0:  // NONE
-            toolIcon->setVisible(false);  // 无工具时隐藏图标
-            break;
+            toolIcon->setTexture("tools.png");  // 使用原来的工具贴图
+            toolIcon->setVisible(false);        // 没有工具，隐藏贴图
         case 1:  // SHOVEL
+            toolIcon->setTexture("tools.png");  // 使用原来的工具贴图
             toolIcon->setVisible(true);
-            toolIcon->setTextureRect(cocos2d::Rect(32, 0, 16, 16));  // 根据实际图片位置调整
+            toolIcon->setTextureRect(cocos2d::Rect(32, 0, 16, 16));
             break;
         case 2:  // AXE
+            toolIcon->setTexture("tools.png");  // 使用原来的工具贴图
             toolIcon->setVisible(true);
-            toolIcon->setTextureRect(cocos2d::Rect(16, 0, 16, 16));  // 根据实际图片位置调整
+            toolIcon->setTextureRect(cocos2d::Rect(16, 0, 16, 16));
             break;
         case 3:  // WATERING
+            toolIcon->setTexture("tools.png");  // 使用原来的工具贴图
             toolIcon->setVisible(true);
-            toolIcon->setTextureRect(cocos2d::Rect(0, 0, 16, 16));   // 根据实际图片位置调整
+            toolIcon->setTextureRect(cocos2d::Rect(0, 0, 16, 16));
             break;
         case 4:  // ROD
-            toolIcon->setVisible(false);  // 暂时没有鱼竿素材，隐藏图标
+            toolIcon->setTexture("TileSheets/Tools.png");  // 使用新的贴图
+            toolIcon->setVisible(true);
+            toolIcon->setTextureRect(cocos2d::Rect(128, 0, 16, 16));
             break;
     }
 }
+
 
 bool GameScene::init()
 {
