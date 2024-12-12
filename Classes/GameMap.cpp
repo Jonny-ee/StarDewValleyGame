@@ -1,10 +1,23 @@
 #include "GameMap.h"
 
 USING_NS_CC;
+GameMap* GameMap::_instance = nullptr;
+
+GameMap* GameMap::getInstance() {
+    if (_instance == nullptr) {
+        _instance = new GameMap();
+        _instance->autorelease();
+    }
+    return _instance;
+}
+
+GameMap::GameMap() : _tileMap(nullptr) {
+    // 初始化其他必要的成员变量
+}
 
 GameMap* GameMap::create(const std::string& mapName) {
     GameMap* ret = new (std::nothrow) GameMap();
-    if (ret && ret->init(mapName)) {
+    if (ret && ret->loadMap(mapName)) {
         ret->autorelease();
         return ret;
     }
@@ -12,10 +25,10 @@ GameMap* GameMap::create(const std::string& mapName) {
     return nullptr;
 }
 
-bool GameMap::init(const std::string& mapName) {
-    if (!Node::init()) {
-        //CCLOG("GameMap: Node init failed");
-        return false;
+bool GameMap::loadMap(const std::string& mapName) {
+    // 保存当前地图状态（如果有的话）
+    if (_tileMap && !_mapName.empty()) {
+        saveCurrentMapState();
     }
 
     _mapName = mapName;
@@ -37,25 +50,8 @@ bool GameMap::init(const std::string& mapName) {
         return false;
     }
 
-    // 检查图块集
-    ValueMap& properties = _tileMap->getProperties();
-    if (properties.find("tilesets") != properties.end()) {
-        ValueVector tilesets = properties["tilesets"].asValueVector();
-        //CCLOG("Number of tilesets: %d", (int)tilesets.size());
-        for (const auto& tileset : tilesets) {
-            ValueMap tilesetInfo = tileset.asValueMap();
-            //CCLOG("Tileset info:");
-            //CCLOG("- Source: %s", tilesetInfo["source"].asString().c_str());
-            
-            // 检查图块集图片是否存在
-            std::string tsPath = tilesetInfo["source"].asString();
-            std::string fullTsPath = fileUtils->fullPathForFilename(tsPath);
-            //CCLOG("- Full path: %s", fullTsPath.c_str());
-            //CCLOG("- Exists: %s", fileUtils->isFileExist(fullTsPath) ? "yes" : "no");
-        }
-    } else {
-        //CCLOG("No tilesets found in map properties");
-    }
+    // 加载这个地图之前保存的状态（如果有的话）
+    loadMapState();
 
     // 获取地图和屏幕尺寸
     Size mapSize = _tileMap->getMapSize();
@@ -82,14 +78,10 @@ bool GameMap::init(const std::string& mapName) {
             }
         }
     }
-    //CCLOG("Total layers found: %d", layerCount);
 
     //地图缩放比例
     float scale = 2.5f;
     
-    //CCLOG("Map original size: %.0f x %.0f", mapSize.width * tileSize.width, mapSize.height * tileSize.height);
-    //CCLOG("Screen size: %.0f x %.0f", visibleSize.width, visibleSize.height);
-    //CCLOG("Calculated scale: %.2f", scale);
 
     // 设置地图缩放和位置
     _tileMap->setScale(scale);
@@ -97,7 +89,22 @@ bool GameMap::init(const std::string& mapName) {
 
     return true;
 }
-
+void GameMap::saveCurrentMapState() {
+    std::vector<MapObject> currentState;
+    // 收集当前地图上的所有对象状态
+    // 比如农作物、放置的物品等
+    _mapStates[_mapName] = currentState;
+}
+void GameMap::loadMapState() {
+    auto it = _mapStates.find(_mapName);
+    if (it != _mapStates.end()) {
+        // 根据保存的状态重新创建对象
+        for (const auto& obj : it->second) {
+            // 重新创建对象
+            // 展示无需创建
+        }
+    }
+}
 std::string GameMap::getMapName() const {
     return _mapName;
 }

@@ -252,17 +252,13 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         currentPlayer->removeFromParent();
     }
 
-    // 移除旧地图
+    // 移除旧地图的显示
     if (_gameMap) {
-        _gameMap->removeFromParent();
-        _gameMap = nullptr;
+        _gameMap->getTileMap()->removeFromParent();  // 从显示层级中移除旧地图
     }
 
-    // 创建新地图
-    _gameMap = GameMap::create(mapName);
-    if (_gameMap) {
-        this->addChild(_gameMap);
-    }
+    // 加载新地图
+    _gameMap->loadMap(mapName);
 
     // 重用现有玩家，而不是创建新的（修复原来多重玩家的bug）
     if (currentPlayer) {
