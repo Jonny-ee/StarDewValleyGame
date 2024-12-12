@@ -1,4 +1,5 @@
 #include "GameScene.h"
+#include "GameTime.h"
 USING_NS_CC;
 
 Scene* GameScene::createScene()
@@ -140,7 +141,10 @@ void GameScene::update(float dt)
     if (!player || !_gameMap) {
         return;
     }
-
+    // 获取GameTime单例实例
+    GameTime* gameTime = GameTime::getInstance();
+    // 更新游戏时间
+    gameTime->update();
     // 只保留一次update调用
     player->update(dt);
 
