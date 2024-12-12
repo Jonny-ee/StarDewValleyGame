@@ -140,6 +140,10 @@ bool GameScene::init()
 
     // 初始化鼠标监听器
     initMouseListener();
+
+    // 初始化宝箱
+    initChests();
+
     return true;
 }
 
@@ -332,4 +336,45 @@ void GameScene::initMouseListener()
         };
 
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
+}
+
+
+/*
+ * 初始化宝箱
+ * 功能：在地图上创建宝箱
+ */
+void GameScene::initChests()
+{
+    if (!_gameMap) return;
+
+    // 从地图中获取宝箱对象层
+    auto objectGroup = _gameMap->getTileMap()->getObjectGroup("Chests");
+    if (!objectGroup) return;
+
+    // 获取所有宝箱对象
+    auto& objects = objectGroup->getObjects();
+
+    for (auto& obj : objects)
+    {
+        auto& dict = obj.asValueMap();
+        float x = dict["x"].asFloat();
+        float y = dict["y"].asFloat();
+
+        // 创建宝箱
+        auto chest = Chest::create();
+        if (chest)
+        {
+            // 转换坐标（从Tiled坐标到世界坐标）
+            Vec2 tileCoord = _gameMap->convertToTileCoord(Vec2(x, y));
+            Vec2 position = _gameMap->convertToWorldCoord(tileCoord);
+
+            chest->setPosition(position);
+            chest->setScale(2.0f);  // 设置适当的缩放
+            chest->initTouchEvents();
+
+            // 添加到场景和管理列表
+            this->addChild(chest, 1);  // 设置合适的Z序
+            _chests.push_back(chest);
+        }
+    }
 }

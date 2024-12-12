@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="14" nextobjectid="26">
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="9" nextobjectid="1">
  <properties>
   <property name="Warp" value="29 9 House 9 10 10 4 Mine 9 18 11 4 Mine 9 18 "/>
  </properties>
  <tileset firstgid="1" source="../AllTSX/spring_outdoorsTileSheet.tsx"/>
  <tileset firstgid="1976" source="../AllTSX/houses.tsx"/>
- <tileset firstgid="2435" source="../AllTSX/Town.tsx"/>
  <layer id="3" name="Back" width="40" height="40">
   <data encoding="base64" compression="zlib">
-   eJzVmEtOwzAQht2qvQBC4nEGVhyAJexZsIWeALEDiYM0twgILsGr3bNrCpg964KjetTpdMYeOymIxS83iTP+Mq+42ewYs5mpiTFm6vVm+DlDMxc+ptcl+yW6Vvl1UsYJOq75Sq/QmpQ3NA/4YhyzzrI0fKWCIca8Lr4S8RXC2oVZ5ZM4a/sPAW11lwXnMd8tw1erMMssEi9+plT/pYx3Xqm1hp8J+Idr4Ku8L5+cDp3towT9Fh/k46mzfabQvh8HJM7a+I4z+k8KHzAOfH6m8o28pOOpf4ZcvmvkP8zVJL6Uj/PfpbN9pdCx6wmvbvzq8D1KiqNtkH9QI/cRPaJ7zruL37n+s0r/4bFSzqN8Kfmnsc/lJeaL2VknH62PilzT9AXKh99vGi6wZ5G4++A8PZcaXy0f9/ya9SRf5vJp4gD5JfkPr19FeGA++OHC8R04nSAVgXzQ5n/Mf7F+wOU3KKc/g+9iPBo+qf5S91cjxg6Nby4fN+bs/zAfzj/qy++eMS9eI6ftfrjOtXxS/uG8g3wHJm6Nnf6CbdybH9+QObH6x/8BJD5rVv0m1QFWzfPhuKzTp8CnjW8RmKfdH3B8xmnm2Lr9fD7qv1g9aOoX+Dacdp32Iny4/6XwxfLDEi587d3HFPTcm/NJ9ZzTX3B9Su83+p7VxF+aR/0R81+sjjXx5ji1/TDGx+WFdh+Yy4fjlMMn1TfYlfonZWsj/9oca+7QPobrY7l8oTyzRJz/QnX2V/7DfJo6asqX+j0h5D8p7k2+b+Tycfe1wddmfLXjf+JrS1Nkuw1x31ObCPia2sH6AQKCkoE=
+   eJzVmDtSwzAQhpVMcgGGGR5noOIAlNBT0EJOwNDBTeJbGAYOwTPp6eIAoqcOyBPtZLPZlVayA0Pxj2JbXn3elxVvdozZzNTEGDP1ejP8nKGZCx/T65L9El2r/Dop4wQd13ylV2hNyhuaB3wxjllnWRq+UsEQY14XX4n4CmHtwqzySZy1/YeAtrrLgvOY74bhq1WYZRaJFz9Tqv9Sxluv1FrDzwT8wzXwVd6XT06HzvZRgn6LD/Lx1Nk+U2jfjwMSZ218xxn9J4UPGAc+P1P5Rl7S8dQ/Qy7fvVn4D3M1iS/l4/x36WxfKXTsesKrG786fI+S4mgb5B/UyF1Ej+ie8+7id67/rNJ/eKyU8yhfSv5p7HN5iflidtbJR+ujItc0fYHy4febhgvsWSTuPjhPz6XGV8vHPb9mPcmXuXyaOEB+Sf7D61cRHpgPfrhwfAdOJ0hFIB+0+R/zX6wfcPkNyunP4LsYj4ZPqr/U/dWIsUPjm8vHjTn7P8yH84/68rtnzIvXyGm7H65zLZ+UfzjvIN+BiVtjp79gG/fmx9dkTqz+8X8Aic+aVb9JdYBV83w4Luv0KfBp41sE5mn3BxyfcZo5tm4/n4/6L1YPmvoFvg2nXae9CB/ufyl8sfywhAtfe/cxBT335nxSPef0F1yf0vuNvmc18ZfmUX/E/BerY028OU5tP4zxcXmh3Qfm8uE45fBJ9Q12pf5J2drIvzbHmju0j+H6WC5fKM8sEee/UJ39lf8wn6aOmvKlfk8I+U+Ke5PvG7l83H1t8LUZX+34n/ja0hTZbkPc99QmAr6mdrB+AJweks0=
   </data>
  </layer>
  <layer id="8" name="Back1" width="40" height="40">
@@ -32,24 +31,5 @@
    eJztzrlygXEUhvF/iKGSiKVFErREQWspuGjLDSShttPaaYVHme8GzmfmfWZ+xanO65x6pDph57rooR+2XvO/b/b84BcDDH2wb8SGMSaYYoY5FlhiZbxxzf8NtthhjwOOOOFsvO/C/z9c7zsizj0hgCCeEYrY7ovy/wWviOENcSSQRMp4X5r/GWTxjg98Ioc8Csb7ivwv4Qtlz5YKd9V4X43/dTTQ9GxpcbeN9ymllFJKKaWUUkopf3cDnmMg9Q==
   </data>
  </layer>
- <layer id="11" name="Buildings3" width="40" height="40">
-  <data encoding="base64" compression="zlib">
-   eJzt06ENACAQBMFv4JuBTqAP+pfQAAkJAsSMPrHmIgDgnZIRNV9X7LXV1j/ugx+Ng8+cbAAAAODGBI5yAjU=
-  </data>
- </layer>
- <layer id="12" name="Front" width="40" height="40">
-  <data encoding="base64" compression="zlib">
-   eJzt0rkNhEAQRNEOAJCWJQ5CITeORBZIhCMRFgKgPAycdkaM0H/S91qaMsYMQEh1YtaoVnXJ02vuftrUq0GNEe6btGlWi1oj3Ldp01/t6ohw3yc1y9VXFenTa4BL5viPnptQSsfbnptQKsfbnhsAAAAAAN7sBAbSDsk=
-  </data>
- </layer>
- <layer id="10" name="Front-LightLamp" width="40" height="40">
-  <data encoding="base64" compression="zlib">
-   eJztyjENAAAIA7AZIPh3iwI+wtXeTQAAfnXdHAAAAIDNALEjADk=
-  </data>
- </layer>
  <objectgroup id="7" name="NPC"/>
- <objectgroup id="13" name="Lights">
-  <object id="24" x="391.333" y="216"/>
-  <object id="25" x="536.667" y="216"/>
- </objectgroup>
 </map>

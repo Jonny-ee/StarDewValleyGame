@@ -4,6 +4,7 @@
 #include "GameMap.h"
 #include "Lewis.h"
 #include "InventoryUI.h"
+#include "Chest.h"
 
 /*
  * 游戏场景类
@@ -42,6 +43,8 @@ private:
     cocos2d::Sprite* toolIcon = nullptr;  // 工具图标
     void initToolIcon();                  // 初始化工具图标
     void updateToolIcon();                // 更新工具图标
+    std::vector<Chest*> _chests;     // 存储所有宝箱
+    void initChests();               // 初始化宝箱
 
     // 输入状态
     std::set<char> _pressedKeys;                                    // 已按下的按键集合
