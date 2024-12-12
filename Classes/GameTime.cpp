@@ -51,9 +51,19 @@ void GameTime::update()
     std::clock_t currentTime = std::clock();
     float elapsedSystemTime = static_cast<float>(currentTime - startTime) / CLOCKS_PER_SEC;
     // 计算本次时间增量，以每10分钟为单位
-    int timeIncrementInTenMinutes = static_cast<int>((elapsedSystemTime / 9) * 10);
-    absoluteTimeInTenMinutes += timeIncrementInTenMinutes;
-    _Minute += timeIncrementInTenMinutes;
+    int newTimeInTenMinutes = static_cast<int>(elapsedSystemTime * (1.0f / 7.0f));
+
+    // 如果时间有增加
+    if (newTimeInTenMinutes > absoluteTimeInTenMinutes) {
+        // 计算增加了多少个10分钟单位
+        int increment = newTimeInTenMinutes - absoluteTimeInTenMinutes;
+        absoluteTimeInTenMinutes = newTimeInTenMinutes;
+
+        // 更新分钟（每个单位是10分钟）
+        _Minute += increment * 10;
+    }
+   // CCLOG("现在绝对时间为%d分", absoluteTimeInTenMinutes);
+   // CCLOG("现在%d点%d分",_Hour, _Minute);
     updateHours();
     updateDays();
     updateMonths();

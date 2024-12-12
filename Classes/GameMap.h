@@ -48,7 +48,9 @@ private:
 
     GameMap(); // 私有构造函数
     static GameMap* _instance;
-
+    cocos2d::LayerColor* _nightFilter;  // 夜晚滤镜
+    std::vector<cocos2d::Sprite*> _lightSources;  // 存储光源精灵
+    cocos2d::TMXLayer* _lampLightsLayer = nullptr;  // 发光路灯层
     // 存储所有地图的状态
     std::map<std::string, std::vector<MapObject>> _mapStates;
     void saveCurrentMapState();

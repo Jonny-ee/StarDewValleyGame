@@ -1,5 +1,6 @@
 #include "GameScene.h"
 #include "GameTime.h"
+#include"LightManager.h"
 USING_NS_CC;
 
 Scene* GameScene::createScene()
@@ -151,6 +152,8 @@ void GameScene::update(float dt)
     GameTime* gameTime = GameTime::getInstance();
     // 更新游戏时间
     gameTime->update();
+    // 更新光照效果
+    LightManager::getInstance()->update();
     // 只保留一次update调用
     player->update(dt);
 

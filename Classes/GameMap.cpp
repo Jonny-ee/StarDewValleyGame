@@ -1,5 +1,6 @@
 #include "GameMap.h"
-
+#include"GameTime.h"
+#include"LightManager.h"
 USING_NS_CC;
 GameMap* GameMap::_instance = nullptr;
 
@@ -36,13 +37,6 @@ bool GameMap::loadMap(const std::string& mapName) {
    
     std::string mapPath = "maps/" + mapName + ".tmx";
 
-    // 输出完整路径用于调试
-    auto fileUtils = FileUtils::getInstance();
-    std::string fullMapPath = fileUtils->fullPathForFilename(mapPath);
-    //CCLOG("Attempting to load map from: %s", fullMapPath.c_str());
-    //CCLOG("File exists: %s", fileUtils->isFileExist(fullMapPath) ? "yes" : "no");
-
-
 
     _tileMap = TMXTiledMap::create(mapPath);
     if (!_tileMap) {
@@ -58,27 +52,6 @@ bool GameMap::loadMap(const std::string& mapName) {
     Size tileSize = _tileMap->getTileSize();
     Size visibleSize = Director::getInstance()->getVisibleSize();
     
-    // 输出所有图层信息
-    //CCLOG("Checking all layers in TMX:");
-    auto allLayers = _tileMap->getChildren();
-    int layerCount = 0;
-    for (const auto& child : allLayers) {
-        auto layer = dynamic_cast<TMXLayer*>(child);
-        if (layer) {
-            layerCount++;
-            //CCLOG("Found layer: %s", layer->getLayerName().c_str());
-            // 确保图层可见
-            layer->setVisible(true);
-            
-            // 输出图层属性
-            auto layerProperties = layer->getProperties();
-            //CCLOG("Layer properties:");
-            for (const auto& prop : layerProperties) {
-                //CCLOG("- %s: %s", prop.first.c_str(), prop.second.asString().c_str());
-            }
-        }
-    }
-
     //地图缩放比例
     float scale = 2.5f;
     
@@ -87,8 +60,13 @@ bool GameMap::loadMap(const std::string& mapName) {
     _tileMap->setScale(scale);
     this->addChild(_tileMap);
 
+    // 初始化光照系统
+    LightManager::getInstance()->initWithMap(this);
+
     return true;
 }
+
+
 void GameMap::saveCurrentMapState() {
     std::vector<MapObject> currentState;
     // 收集当前地图上的所有对象状态
@@ -212,27 +190,21 @@ bool GameMap::isWalkable(const Vec2& worldPos) const {
 
     Vec2 tilePos = convertToTileCoord(worldPos);
 
-    // 获取 Buildings 层
-    TMXLayer* buildings1Layer = _tileMap->getLayer("Buildings1");
-    if (buildings1Layer) {
-        // 检查该位置是否有图块
-        int tileGID = buildings1Layer->getTileGIDAt(tilePos);
-        if (tileGID > 0) {  // 如果GID大于0，说明有图块
-            //CCLOG("碰撞检测：位置 (%.0f, %.0f) 在Buildings层上有图块，不可通行", tilePos.x, tilePos.y);
-            return false;  // 有图块就不能通过
+    // 检查所有Buildings层
+    const auto& allLayers = _tileMap->getChildren();
+    for (const auto& child : allLayers) {
+        auto layer = dynamic_cast<TMXLayer*>(child);
+        if (layer) {
+            std::string layerName = layer->getLayerName();
+            if (layerName.substr(0, 9) == "Buildings") {
+                // 检查该位置是否有图块
+                int tileGID = layer->getTileGIDAt(tilePos);
+                if (tileGID > 0) {
+                    return false;  // 任何Buildings层有图块都不可通行
+                }
+            }
         }
     }
-    // 获取 Buildings 层
-    TMXLayer* buildings2Layer = _tileMap->getLayer("Buildings2");
-    if (buildings2Layer) {
-        // 检查该位置是否有图块
-        int tileGID = buildings2Layer->getTileGIDAt(tilePos);
-        if (tileGID > 0) {  // 如果GID大于0，说明有图块
-            //CCLOG("碰撞检测：位置 (%.0f, %.0f) 在Buildings层上有图块，不可通行", tilePos.x, tilePos.y);
-            return false;  // 有图块就不能通过
-        }
-    }
-  
     // 检查坐标是否在地图范围内
     Size mapSize = _tileMap->getMapSize();
     if (tilePos.x < 0 || tilePos.x >= mapSize.width ||
