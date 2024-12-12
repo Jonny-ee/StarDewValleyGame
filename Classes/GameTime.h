@@ -16,14 +16,19 @@ public:
 
 	//系统功能接口
 	void update();
-	int getTimeInTenMinutes();
+	int getAbsoluteTime();
+	int getMinute();
 	int getYear();
 	int getHour();
+	int getMonth();
 private:
 	std::clock_t startTime;
 	GameTime();
 	static GameTime* _instance;
-	int gameTimeInTenMinutes;
+	// 用于记录绝对游戏时间，单位为每10分钟
+	int absoluteTimeInTenMinutes;
+	
+	int _Minute;
 	int _Year;
 	int _Month;
 	int _Day;
