@@ -284,7 +284,28 @@ void GameScene::initMouseListener()
 {
     auto mouseListener = EventListenerMouse::create();
 
-    // 鼠标点击事件
+    // 设置默认光标
+    Director::getInstance()->getOpenGLView()->setCursor("cursor_default.png");
+
+    mouseListener->onMouseMove = [=](Event* event)
+        {
+            EventMouse* e = (EventMouse*)event;
+            Vec2 mousePos = e->getLocation();
+
+            if (lewis) {
+                float distance = player->getPosition().distance(lewis->getPosition());
+
+                if (distance < 50.0f) {
+                    // 鼠标靠近Lewis，变成交互光标
+                    Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
+                }
+                else {
+                    // 鼠标远离Lewis，恢复默认光标
+                    Director::getInstance()->getOpenGLView()->setCursor("cursor_default.png");
+                }
+            }
+        };
+
     mouseListener->onMouseDown = [=](Event* event)
         {
             EventMouse* e = (EventMouse*)event;
@@ -293,12 +314,11 @@ void GameScene::initMouseListener()
             // 检查是否靠近并点击了Lewis
             if (lewis) {
                 float distance = player->getPosition().distance(lewis->getPosition());
-                //&& lewis->getBoundingBox().containsPoint(clickPos)
+
                 if (distance < 50.0f) {
-                    //鼠标后面会换
-                    Director::getInstance()->getOpenGLView()->setCursor("LooseSprites/mute_voice_icon.png"); // 使用手型光标
                     player->setCanPerformAction(false); // 禁止玩家动作
-                    std::srand(static_cast<unsigned int>(std::time(nullptr))); // 初始化随机数生成器
+                    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+
                     dialogueBox = DialogueBox::create(lewis->getRandomDialogue(), "textBox.png");
                     this->addChild(dialogueBox, 10);
                 }
