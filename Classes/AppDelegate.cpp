@@ -1,6 +1,7 @@
 #include "AppDelegate.h"
 #include "GameScene.h"
 #include"cocos2d.h"
+#include "InputManager.h"
 
 // #define USE_AUDIO_ENGINE 1
 // #define USE_SIMPLE_AUDIO_ENGINE 1
@@ -51,7 +52,8 @@ static int register_all_packages()
     return 0; //flag for packages manager
 }
 
-bool AppDelegate::applicationDidFinishLaunching() {
+bool AppDelegate::applicationDidFinishLaunching() 
+{
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
     AllocConsole();
     freopen("CONOUT$", "w", stdout);
@@ -80,6 +82,9 @@ bool AppDelegate::applicationDidFinishLaunching() {
     glview->setDesignResolutionSize(1280, 720, ResolutionPolicy::SHOW_ALL);
 
     register_all_packages();
+
+    // 禁用输入法
+    InputManager::disableIME();
 
     // 创建并运行场景
     auto scene = GameScene::createScene();
