@@ -32,8 +32,8 @@ private:
 
     // 精灵表相关常量
     const std::string CHEST_SPRITE_FILE = "Chest.png";
-    const int FRAME_WIDTH = 24;        // 每帧宽度
-    const int FRAME_HEIGHT = 24;       // 每帧高度
+    const int FRAME_WIDTH = 32;        // 每帧宽度
+    const int FRAME_HEIGHT = 32;       // 每帧高度
     const int TOTAL_FRAMES = 10;       // 总帧数
     const float ANIMATION_SPEED = 0.08f; // 动画速度（每帧间隔）
 

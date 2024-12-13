@@ -283,6 +283,12 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         currentInventoryUI->release();
     }
 
+    // 如果是矿洞地图，初始化宝箱
+    if (mapName == "Mine") {
+        CCLOG("Switching to Mine map, initializing chests...");
+        initChests();
+    }
+
     // 更新相机位置
     this->updateCamera();
 }
@@ -345,14 +351,20 @@ void GameScene::initMouseListener()
  */
 void GameScene::initChests()
 {
-    if (!_gameMap) return;
+    if (!_gameMap) {
+        CCLOG("GameMap is null");
+        return;
+    }
 
-    // 从地图中获取宝箱对象层
-    auto objectGroup = _gameMap->getTileMap()->getObjectGroup("Chests");
-    if (!objectGroup) return;
+    auto objectGroup = _gameMap->getTileMap()->getObjectGroup("Chest");
+    if (!objectGroup) {
+        CCLOG("Failed to get Chest object group in map: %s", _gameMap->getMapName().c_str());
+        return;
+    }
 
     // 获取所有宝箱对象
     auto& objects = objectGroup->getObjects();
+    CCLOG("Found %d chest objects in map: %s", (int)objects.size(), _gameMap->getMapName().c_str());
 
     for (auto& obj : objects)
     {
@@ -364,17 +376,29 @@ void GameScene::initChests()
         auto chest = Chest::create();
         if (chest)
         {
-            // 转换坐标（从Tiled坐标到世界坐标）
-            Vec2 tileCoord = _gameMap->convertToTileCoord(Vec2(x, y));
-            Vec2 position = _gameMap->convertToWorldCoord(tileCoord);
+            // 获取地图的瓦片大小和缩放比例
+            Size tileSize = _gameMap->getTileMap()->getTileSize();
+            float scale = _gameMap->getTileMap()->getScale();
 
-            chest->setPosition(position);
-            chest->setScale(2.0f);  // 设置适当的缩放
+            // 将 Tiled 对象坐标转换为瓦片坐标
+            float tileX = x / tileSize.width;
+            float tileY = y / tileSize.height;
+
+            CCLOG("Converting chest position: Tiled(%.1f, %.1f) -> Tile(%.1f, %.1f)",
+                x, y, tileX, tileY);
+
+            // 使用 GameMap 的转换方法获取世界坐标
+            Vec2 worldPos = _gameMap->convertToWorldCoord(Vec2(tileX, tileY));
+
+            chest->setPosition(worldPos);
+            chest->setScale(2.0f);
             chest->initTouchEvents();
 
-            // 添加到场景和管理列表
-            this->addChild(chest, 1);  // 设置合适的Z序
+            // 添加到场景
+            this->addChild(chest, 1);
             _chests.push_back(chest);
+
+            CCLOG("Placed chest at world position (%.1f, %.1f)", worldPos.x, worldPos.y);
         }
     }
 }
