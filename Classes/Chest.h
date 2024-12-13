@@ -37,10 +37,10 @@ private:
 
     // 精灵表相关常量
     const std::string CHEST_SPRITE_FILE = "Chest.png";
-    const int FRAME_WIDTH = 32;        // 每帧宽度
-    const int FRAME_HEIGHT = 32;       // 每帧高度
+    const int FRAME_WIDTH = 48;        // 每帧宽度
+    const int FRAME_HEIGHT = 48;       // 每帧高度
     const int TOTAL_FRAMES = 5;       // 总帧数
-    const float ANIMATION_SPEED = 0.8f;  // 每帧动画的时间间隔
+    const float ANIMATION_SPEED = 0.2f;  // 每帧动画的时间间隔
     const float INTERACTION_RANGE = 100.0f;  // 玩家可以开启宝箱的距离
 
     // 宝箱内物品相关配置
