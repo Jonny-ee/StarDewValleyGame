@@ -69,20 +69,30 @@ void GameTime::update()
     updateMonths();
     updateYears();
 }
-int GameTime::getMinute()
-{
-    return _Minute;
-}
+
 int GameTime::getYear() {
     return _Year;
 }
-int GameTime::getHour() {
-    return  _Hour;
-}
+
 int GameTime::getMonth()
 {
     return _Month;
 }
+
+int GameTime::getDay()
+{
+    return _Day;
+}
+
+int GameTime::getHour() {
+    return  _Hour;
+}
+
+int GameTime::getMinute()
+{
+    return _Minute;
+}
+
 int  GameTime::getAbsoluteTime() {
     return absoluteTimeInTenMinutes;
 }

@@ -56,6 +56,11 @@ bool Chest::init()
     // 初始化触摸事件 
     initTouchEvents();
 
+    // 初始化开启时间为0
+    lastOpenDay = 0;
+    lastOpenMonth = 0;
+    lastOpenYear = 0;
+
     // 启用更新调度
     this->scheduleUpdate();
 
@@ -173,11 +178,36 @@ bool Chest::isPlayerInRange(const Vec2& playerPos) const
  */
 void Chest::openChest()
 {
-    if (opened) return;
+    if (opened) {
+        // 检查是否可以重新开启
+        if (canReopen()) {
+            resetChest();
+        }
+        else {
+            return;
+        }
+    }
 
     opened = true;
+    recordOpenTime();
     playOpenAnimation();
 }
+
+bool Chest::canReopen() const
+{
+    auto gameTime = GameTime::getInstance();
+    int currentDay = gameTime->getDay();
+    int currentMonth = gameTime->getMonth();
+    int currentYear = gameTime->getYear();
+
+    // 检查是否已经过了至少一天
+    if (currentYear > lastOpenYear) return true;
+    if (currentYear == lastOpenYear && currentMonth > lastOpenMonth) return true;
+    if (currentYear == lastOpenYear && currentMonth == lastOpenMonth && currentDay > lastOpenDay) return true;
+
+    return false;
+}
+
 
 /*
  * 播放开启动画
@@ -309,4 +339,30 @@ void Chest::createItemObtainEffect(const std::string& itemId, int index)
         RemoveSelf::create(),
         nullptr
     ));
+}
+
+
+void Chest::resetChest()
+{
+    opened = false;
+
+    // 重置宝箱外观
+    SpriteFrame* frame = SpriteFrame::create(CHEST_SPRITE_FILE,
+        Rect(0, 0, FRAME_WIDTH, FRAME_HEIGHT));
+    if (frame) {
+        this->setSpriteFrame(frame);
+    }
+
+    CCLOG("Chest has been reset and can be opened again");
+}
+
+void Chest::recordOpenTime()
+{
+    auto gameTime = GameTime::getInstance();
+    lastOpenDay = gameTime->getDay();
+    lastOpenMonth = gameTime->getMonth();
+    lastOpenYear = gameTime->getYear();
+
+    CCLOG("Chest opened on Year %d, Month %d, Day %d",
+        lastOpenYear, lastOpenMonth, lastOpenDay);
 }

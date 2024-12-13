@@ -17,10 +17,11 @@ public:
 	//系统功能接口
 	void update();
 	int getAbsoluteTime();
-	int getMinute();
 	int getYear();
-	int getHour();
 	int getMonth();
+	int getDay();
+	int getHour();
+	int getMinute();
 private:
 	std::clock_t startTime;
 	GameTime();

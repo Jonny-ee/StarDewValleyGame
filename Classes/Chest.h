@@ -2,7 +2,7 @@
 #include "cocos2d.h"
 #include "ItemSystem.h"
 #include "GameScene.h"
-#include "Chest.h"
+#include "GameTime.h"
 
 /*
  * 宝箱类
@@ -52,7 +52,19 @@ private:
     const int MIN_ITEMS = 1;    // 宝箱最少物品数量
     const int MAX_ITEMS = 3;    // 宝箱最多物品数量
 
-    // 私有方法
+
+    // 记录上次开启的时间
+    int lastOpenDay = 0;    // 上次开启的日期
+    int lastOpenMonth = 0;  // 上次开启的月份
+    int lastOpenYear = 0;   // 上次开启的年份
+
+    // 检查是否可以重新开启
+    bool canReopen() const;
+    // 重置宝箱状态
+    void resetChest();
+    // 记录开启时间
+    void recordOpenTime();
+
     void openChest();                          // 开启宝箱
     void playOpenAnimation();                  // 播放开启动画
     void onOpenAnimationFinished();            // 动画完成回调
