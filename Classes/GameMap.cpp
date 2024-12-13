@@ -190,6 +190,11 @@ bool GameMap::isWalkable(const Vec2& worldPos) const {
 
     Vec2 tilePos = convertToTileCoord(worldPos);
 
+    // 检查宝箱碰撞
+    if (isChestCollision(worldPos)) {
+        return false;
+    }
+
     // 检查所有Buildings层
     const auto& allLayers = _tileMap->getChildren();
     for (const auto& child : allLayers) {
@@ -217,3 +222,27 @@ bool GameMap::isWalkable(const Vec2& worldPos) const {
     return true;  // 没有图块或没有Buildings层，则可以通行
 }
 
+bool GameMap::isChestCollision(const Vec2& worldPos) const
+{
+    if (!_tileMap) {
+        CCLOG("No tilemap loaded");
+        return false;
+    }
+
+    // 转换为瓦片坐标
+    Vec2 tilePos = convertToTileCoord(worldPos);
+
+    // 获取宝箱碰撞层
+    auto chestLayer = _tileMap->getLayer("CollisionChest");
+    if (chestLayer) {
+        // 检查该位置是否有碰撞图块
+        int tileGID = chestLayer->getTileGIDAt(tilePos);
+        if (tileGID > 0) {
+            CCLOG("Chest collision detected at tile position (%.1f, %.1f)",
+                tilePos.x, tilePos.y);
+            return true;
+        }
+    }
+    
+    return false;  // 无碰撞
+}

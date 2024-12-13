@@ -44,6 +44,9 @@ public:
     // 检查指定位置是否可通行
     bool isWalkable(const cocos2d::Vec2& worldPos) const;
 
+    // 检查宝箱碰撞的方法
+    bool isChestCollision(const cocos2d::Vec2& worldPos) const;
+
 private:
 
     GameMap(); // 私有构造函数
