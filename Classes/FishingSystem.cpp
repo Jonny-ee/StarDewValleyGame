@@ -105,9 +105,9 @@ void FishingSystem::finishFishing()
             {
                 CCLOG("Fishing success! Time used: %ds", (int)elapsedTime);
                 int randomNum = rand() % 100;
-                if(randomNum < 10)
+                if (randomNum < 80)
                     ItemSystem::getInstance()->addItem("fish", 1);
-                else
+                else    // ×ÛºÏ¸ÅÂÊ14%×óÓÒ
                     ItemSystem::getInstance()->addItem("mermaid's KISS(*)", 1);
             }
             else
