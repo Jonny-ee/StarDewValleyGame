@@ -2,7 +2,6 @@
 #include "GameTime.h"
 #include"LightManager.h"
 #include "Chest.h" 
-
 USING_NS_CC;
 
 Scene* GameScene::createScene()
@@ -52,6 +51,11 @@ void GameScene::updateToolIcon()
             toolIcon->setTexture("TileSheets/Tools.png");  // 使用新的贴图
             toolIcon->setVisible(true);
             toolIcon->setTextureRect(cocos2d::Rect(128, 0, 16, 16));
+            break;
+        case 5:  // GIFT
+            toolIcon->setTexture("TileSheets/Objects_2.png");  // 使用新的贴图
+            toolIcon->setVisible(true);
+            toolIcon->setTextureRect(cocos2d::Rect(96, 32, 16, 16));
             break;
     }
 }
@@ -107,7 +111,6 @@ bool GameScene::init()
     lewis->setPosition(lewis_worldPos);
 
     this->addChild(lewis, 1);
-
     //设置刘易斯默认移动路径
     Vec2 movePath1_tilePos = Vec2(13, 6);
     Vec2 movePath2_tilePos = Vec2(18, 6);
@@ -176,7 +179,7 @@ void GameScene::update(float dt)
     // 更新Lewis的状态
     if (lewis) {
 
-        lewis->updateSchedule(dt);
+        //lewis->updateSchedule(dt);
         lewis->moveAlongPath(dt); // 移动沿路径
     }
 }
@@ -285,12 +288,6 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         currentInventoryUI->release();
     }
 
-    // 如果是矿洞地图，初始化宝箱
-    if (mapName == "Mine") {
-        CCLOG("Switching to Mine map, initializing chests...");
-        initChests();
-    }
-
     // 更新相机位置
     this->updateCamera();
 }
@@ -311,8 +308,14 @@ void GameScene::initMouseListener()
                 float distance = player->getPosition().distance(lewis->getPosition());
 
                 if (distance < 50.0f) {
+                    // 鼠标靠近Lewis，手上有礼物，变成礼物光标
+                    if (player->getCurrentTool() == Player::ToolType::GIFT) {
+                        Director::getInstance()->getOpenGLView()->setCursor("cursor_gift.png");
+                    }
                     // 鼠标靠近Lewis，变成交互光标
-                    Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
+                    else {
+                        Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
+                    }
                 }
                 else {
                     // 鼠标远离Lewis，恢复默认光标
@@ -325,7 +328,7 @@ void GameScene::initMouseListener()
         {
             EventMouse* e = (EventMouse*)event;
             Vec2 clickPos = e->getLocation(); // 获取点击位置
-
+            
             // 检查是否靠近并点击了Lewis
             if (lewis) {
                 float distance = player->getPosition().distance(lewis->getPosition());
@@ -336,6 +339,21 @@ void GameScene::initMouseListener()
 
                     dialogueBox = DialogueBox::create(lewis->getRandomDialogue(), "textBox.png");
                     this->addChild(dialogueBox, 10);
+
+                    
+
+                    if (player->getCurrentTool() == Player::ToolType::GIFT) {
+                        // 如果玩家手持礼物，触发感谢动画
+                        lewis->showThanks();
+                        dialogueBox = DialogueBox::create("I love this! Thank you! Mmmmmmm......", "textBox.png");
+                        this->addChild(dialogueBox, 10);
+
+                        //lewis->receiveGift("gift_item"); // 传递礼物项
+                       //player->setCurrentTool(Player::ToolType::SHOVEL); // 切换工具
+                    }
+                    else {
+                        lewis->staticAnimation(); // 静止状态
+                    }
                 }
                 else {
                     player->setCanPerformAction(true);  // 允许玩家动作
@@ -345,7 +363,6 @@ void GameScene::initMouseListener()
 
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
 }
-
 
 /*
  * 初始化宝箱
