@@ -1,4 +1,4 @@
-﻿#include "Player.h"
+#include "Player.h"
 #include "GameMap.h"
 #include "GameScene.h"
 #include "SkillUI.h"
@@ -66,6 +66,15 @@ bool Player::init()
         this->addChild(rodSprite);
     }
 
+    // 初始化礼物精灵
+    gift = Sprite::create("TileSheets/Objects_2.png");
+    if (gift) {
+        gift->setTextureRect(cocos2d::Rect(96, 32, 16, 16));  
+        gift->setScale(1.0f);
+        gift->setPosition(Vec2(48, 0));  // 位于角色右侧
+        gift->setVisible(false);
+        this->addChild(gift);
+    }
     return true;
 }
 
@@ -105,6 +114,9 @@ void Player::switchTool()
             currentTool = ToolType::ROD;
             break;
         case ToolType::ROD:
+            currentTool = ToolType::GIFT;
+            break;
+        case ToolType::GIFT:
             currentTool = ToolType::SHOVEL;
             break;
         default:
@@ -117,6 +129,17 @@ void Player::switchTool()
     {
         rodSprite->setVisible(currentTool == ToolType::ROD);
     }
+
+    // 更新礼物显示状态
+    if (gift)
+    {
+        gift->setVisible(currentTool == ToolType::GIFT);
+    }
+}
+
+void Player::setCurrentTool(ToolType tool)
+{
+    currentTool = tool;
 }
 
 void Player::initKeyboardListener()
@@ -233,14 +256,9 @@ bool Player::checkCollision(const Vec2& nextPosition)
     return false;
 }
 
-void Player::setCurrentTool(ToolType tool)
-{
-    currentTool = tool;
-}
-
 void Player::performAction(const Vec2& clickPos)
 {
-    if (!actionSprite || currentTool == ToolType::NONE || currentTool == ToolType::ROD)  // 添加对ROD的判断
+    if (!actionSprite || currentTool == ToolType::NONE || currentTool == ToolType::ROD || currentTool == ToolType::GIFT)  // 添加对ROD和GIFT的判断
     {
         return;
     }
@@ -363,6 +381,32 @@ void Player::update(float dt)
                 rodSprite->setPosition(Vec2(30, 25));
                 rodSprite->setFlippedX(false);  // 恢复正常方向
                 rodSprite->setLocalZOrder(-1);  // 在角色下层
+                break;
+        }
+    }
+
+    // 更新礼物朝向
+    if (gift && gift->isVisible()) {
+        switch (currentDirection) {
+            case 0: // 下
+                gift->setPosition(Vec2(37, 25));
+                gift->setFlippedX(false);  // 恢复正常方向
+                gift->setLocalZOrder(1);  // 在角色上层
+                break;
+            case 1: // 上
+                gift->setPosition(Vec2(12, 25));
+                gift->setFlippedX(true);   // 翻转鱼竿
+                gift->setLocalZOrder(-1);  // 在角色下层
+                break;
+            case 2: // 左
+                gift->setPosition(Vec2(15, 25));
+                gift->setFlippedX(true);   // 翻转鱼竿
+                gift->setLocalZOrder(1);  // 在角色上层
+                break;
+            case 3: // 右
+                gift->setPosition(Vec2(30, 25));
+                gift->setFlippedX(false);  // 恢复正常方向
+                gift->setLocalZOrder(-1);  // 在角色下层
                 break;
         }
     }
