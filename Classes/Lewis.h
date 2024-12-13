@@ -5,6 +5,11 @@
 #include "DialogueBox.h"
 #include <vector>
 
+enum class ActionState
+{
+    IDLE,
+    MOVING,
+};
 //刘易斯类
 class Lewis : public NPC
 {
@@ -18,6 +23,9 @@ public:
    // void startConversation();
     std::vector<cocos2d::Vec2> path; // 移动路径
     std::string getRandomDialogue();
+
+    void showThanks();//感谢动画
+    void setActionState(ActionState state) { currentActionState = state; }
 private:
     void initializeDefaultBehavior();  // 初始化刘易斯的默认行为
     void loadLewisDialogues() noexcept;         // 加载刘易斯专属对话
@@ -30,14 +38,9 @@ private:
     
     int currentPathIndex = 0; // 当前路径索引
 
-    enum class ActionState
-    {
-        IDLE,
-        MOVING,
-        WAITING
-    };
+    
 
-    ActionState currentActionState = ActionState::IDLE; // 当前动作状态
+    ActionState currentActionState = ActionState::MOVING; // 当前动作状态
     float waitTime = 2.0f; // 等待时间
     float elapsedTime = 0.0f; // 已经过的时间
 
