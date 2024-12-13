@@ -1,6 +1,8 @@
 #include "GameScene.h"
 #include "GameTime.h"
 #include"LightManager.h"
+#include "Chest.h" 
+
 USING_NS_CC;
 
 Scene* GameScene::createScene()

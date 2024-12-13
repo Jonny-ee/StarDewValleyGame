@@ -34,20 +34,34 @@ bool Chest::init()
     // 初始化宝箱开启状态
     opened = false;
 
-    // 加载第一帧作为初始显示的精灵帧
+    //加载第一帧作为初始显示的静态帧
     SpriteFrame* frame = SpriteFrame::create(CHEST_SPRITE_FILE,
         Rect(0, 0, FRAME_WIDTH, FRAME_HEIGHT));
+    if (!frame) {
+        CCLOG("Failed to load chest sprite frame");
+        return false;
+    }
     this->setSpriteFrame(frame);
 
-    // 创建动画并添加到缓存中
+    // 创建并缓存开启动画
     auto animation = createChestAnimation();
-    AnimationCache::getInstance()->addAnimation(animation, "chest_open");
+    if (animation) {
+        AnimationCache::getInstance()->addAnimation(animation, "chest_open");
+        CCLOG("Chest animation cached successfully");
+    }
 
-    // 设置精灵缩放比例
+    // 设置宝箱的缩放比例
     this->setScale(2.0f);
+
+    // 初始化触摸事件 
+    initTouchEvents();
+
+    // 启用更新调度
+    this->scheduleUpdate();
 
     return true;
 }
+
 
 /*
  * 设置宝箱位置
@@ -68,43 +82,89 @@ void Chest::initTouchEvents()
     auto listener = EventListenerTouchOneByOne::create();
     listener->setSwallowTouches(true);
 
-    // 设置触摸开始事件的回调函数
+    // 添加调试日志
+    CCLOG("Initializing chest touch events");
+
     listener->onTouchBegan = [this](Touch* touch, Event* event) {
         Vec2 touchPos = touch->getLocation();
-        Rect bounds = this->getBoundingBox();
+        Vec2 locationInNode = this->convertToNodeSpace(touchPos);
+        Size s = this->getContentSize();
+        Rect rect = Rect(0, 0, s.width, s.height);
 
-        // 检查触摸点是否在宝箱范围内且宝箱未开启
-        if (bounds.containsPoint(touchPos) && !opened) {
-            this->openChest();
-            return true;
+        // 添加调试日志
+        CCLOG("Touch at position: (%.1f, %.1f)", touchPos.x, touchPos.y);
+        CCLOG("Chest bounds: (%.1f, %.1f, %.1f, %.1f)",
+            rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+
+        // 获取当前场景
+        auto scene = dynamic_cast<GameScene*>(Director::getInstance()->getRunningScene());
+        if (!scene) {
+            CCLOG("Failed to get GameScene");
+            return false;
+        }
+
+        // 获取玩家
+        auto player = scene->getPlayer();
+        if (!player) {
+            CCLOG("Failed to get Player");
+            return false;
+        }
+
+        // 检查触摸是否在宝箱范围内且宝箱未开启
+        if (rect.containsPoint(locationInNode) && !opened) {
+            CCLOG("Touch is within chest bounds");
+
+            // 检查玩家是否在交互范围内
+            if (isPlayerInRange(player->getPosition())) {
+                CCLOG("Player is in range, opening chest");
+                this->openChest();
+                return true;
+            }
+            else {
+                CCLOG("Player is too far from chest");
+                // 这里可以添加UI提示
+            }
         }
         return false;
         };
 
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+    CCLOG("Chest touch events initialized");
 }
+
 
 /*
  * 创建宝箱动画
  * 功能：从精灵表创建开启动画序列
  * @return 返回创建好的动画对象
  */
+
 Animation* Chest::createChestAnimation()
 {
     Vector<SpriteFrame*> frames;
 
-    // 从精灵表中加载所有动画帧
-    for (int i = 0; i < TOTAL_FRAMES; i++)
+    // 只使用上半部分的5帧作为开启动画
+    for (int i = 0; i < 5; i++)  // 修改为只使用5帧
     {
-        int row = i / 5;  // 每行5帧
-        int col = i % 5;
-
         auto frame = SpriteFrame::create(CHEST_SPRITE_FILE,
-            Rect(col * FRAME_WIDTH, row * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT));
-        frames.pushBack(frame);
+            Rect(i * FRAME_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT));
+        if (frame) {
+            frames.pushBack(frame);
+            CCLOG("Added frame %d for chest animation", i);
+        }
+        else {
+            CCLOG("Failed to create frame %d", i);
+        }
     }
 
     return Animation::createWithSpriteFrames(frames, ANIMATION_SPEED);
+}
+
+bool Chest::isPlayerInRange(const Vec2& playerPos) const
+{
+    Vec2 chestPos = this->getPosition();
+    float distance = chestPos.distance(playerPos);
+    return distance <= INTERACTION_RANGE;
 }
 
 /*
@@ -126,14 +186,25 @@ void Chest::openChest()
 void Chest::playOpenAnimation()
 {
     auto animation = AnimationCache::getInstance()->getAnimation("chest_open");
+    if (!animation) {
+        CCLOG("Failed to get chest_open animation from cache");
+        return;
+    }
+
     auto animate = Animate::create(animation);
 
-    // 创建动作序列：播放动画，然后执行回调
+    // 创建一个回调函数，在动画完成后设置最后一帧
+    auto setFinalFrame = CallFunc::create([this]() {
+        // 设置为开启状态的最后一帧
+        this->setSpriteFrame(SpriteFrame::create(CHEST_SPRITE_FILE,
+        Rect(4 * FRAME_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT)));
+    this->onOpenAnimationFinished();
+        });
+
+    // 运行动画序列：播放动画，然后设置最后一帧
     this->runAction(Sequence::create(
         animate,
-        CallFunc::create([this]() {
-            this->onOpenAnimationFinished();
-            }),
+        setFinalFrame,
         nullptr
     ));
 }

@@ -1,6 +1,8 @@
 #pragma once
 #include "cocos2d.h"
 #include "ItemSystem.h"
+#include "GameScene.h"
+#include "Chest.h"
 
 /*
  * 宝箱类
@@ -27,6 +29,9 @@ public:
     // 初始化触摸事件
     void initTouchEvents();
 
+    // 检查玩家是否在可交互范围内
+    bool isPlayerInRange(const cocos2d::Vec2& playerPos) const;
+
 private:
     bool opened;     // 宝箱开启状态
 
@@ -34,8 +39,9 @@ private:
     const std::string CHEST_SPRITE_FILE = "Chest.png";
     const int FRAME_WIDTH = 32;        // 每帧宽度
     const int FRAME_HEIGHT = 32;       // 每帧高度
-    const int TOTAL_FRAMES = 10;       // 总帧数
-    const float ANIMATION_SPEED = 0.08f; // 动画速度（每帧间隔）
+    const int TOTAL_FRAMES = 5;       // 总帧数
+    const float ANIMATION_SPEED = 0.8f;  // 每帧动画的时间间隔
+    const float INTERACTION_RANGE = 100.0f;  // 玩家可以开启宝箱的距离
 
     // 宝箱内物品相关配置
     const std::vector<std::string> possibleItems = {

@@ -4,7 +4,12 @@
 #include "GameMap.h"
 #include "Lewis.h"
 #include "InventoryUI.h"
-#include "Chest.h"
+
+
+// 添加前向声明
+class Player;
+class GameMap;
+class Chest;  // 添加这行
 
 /*
  * 游戏场景类
@@ -23,6 +28,7 @@ public:
     CREATE_FUNC(GameScene);                 // 场景创建宏
     virtual void update(float dt) override;
     InventoryUI* getInventoryUI() const { return _inventoryUI; }    // 返回背包UI（给Player的按键判断使用）
+    Player* getPlayer() const { return player; }
 
     // 地图切换相关
     void switchToMap(const std::string& mapName, const cocos2d::Vec2& targetTilePos);   // 切换到指定地图
