@@ -47,6 +47,13 @@ bool ItemSystem::addItem(const std::string& itemId, int count)
 
     inventory[itemId] += count;
     CCLOG("Added %d %s, current count: %d", count, itemId.c_str(), inventory[itemId]);
+
+    // 调用更新回调
+    if (_updateCallback)
+    {
+        _updateCallback();
+    }
+
     return true;
 }
 
@@ -69,8 +76,15 @@ bool ItemSystem::removeItem(const std::string& itemId, int count)
     {
         inventory[itemId] -= count;
         CCLOG("Removed %d %s, current count: %d", count, itemId.c_str(), inventory[itemId]);
+
+        // 调用更新回调
+        if (_updateCallback)
+        {
+            _updateCallback();
+        }
         return true;
     }
+
     CCLOG("Not enough %s. Required: %d, Current: %d", itemId.c_str(), count, inventory[itemId]);
     return false;
 }

@@ -1,10 +1,14 @@
 #pragma once
 #include "cocos2d.h"
+#include <functional>
+
+// 添加回调函数类型定义
+using UpdateCallback = std::function<void()>;
 
 /*
  * 物品系统类
  * 功能：管理游戏中所有物品的数据和操作
- * 1. 物品的增删改查
+ * 1. 物品增删改查
  * 2. 物品数量的管理
  * 3. 物品有效性验证
  */
@@ -12,12 +16,12 @@ class ItemSystem
 {
 private:
     static ItemSystem* instance;                                // 单例实例指针
-    std::map<std::string, int> inventory;                       // 物品存储映射表（物品ID，数量）
+    std::map<std::string, int> inventory;                       // 物品存储映射（物品ID和数量）
 
     // 有效物品ID列表
     const std::set<std::string> validItems =
     {
-        "wood",  "apple", "corn", "bread", "tomato", "fish", "stone"
+        "wood",  "apple", "corn", "bread", "tomato", "fish", "mermaid's KISS(*)", "stone"
     };
 
     // 单例模式相关
@@ -29,6 +33,9 @@ private:
     // 物品验证
     bool isValidItem(const std::string& itemId) const;          // 检查物品是否有效
 
+    // UI更新回调
+    UpdateCallback _updateCallback = nullptr;
+
 public:
     static ItemSystem* getInstance();                           // 获取单例实例
 
@@ -38,4 +45,7 @@ public:
     int getItemCount(const std::string& itemId);                // 获取物品数量
     bool useItem(const std::string& itemId);                    // 使用物品
     bool hasEnoughItems(const std::string& itemId, int count);  // 检查物品数量是否足够
+
+    // 设置UI更新回调
+    void setUpdateCallback(UpdateCallback callback) { _updateCallback = callback; }
 };

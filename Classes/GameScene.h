@@ -4,7 +4,7 @@
 #include "GameMap.h"
 #include "Lewis.h"
 #include "InventoryUI.h"
-
+#include "FishingSystem.h"
 
 // 添加前向声明
 class Player;

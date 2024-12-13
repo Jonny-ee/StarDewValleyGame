@@ -120,6 +120,31 @@ bool GameScene::init()
     lewis->path.push_back(movePath1_worldPos);
     lewis->path.push_back(movePath2_worldPos);
 
+    // 初始化钓鱼区域
+    FishingSystem::getInstance()->initFishingAreas(_gameMap);
+
+    // 初始化鼠标监听器
+    auto mouseListener = EventListenerMouse::create();
+    mouseListener->onMouseDown = [this](Event* event)
+        {
+            auto fishingSystem = FishingSystem::getInstance();
+
+            // 如果已经在钓鱼中,则尝试完成钓鱼
+            if (fishingSystem->isCurrentlyFishing())
+            {
+                fishingSystem->finishFishing();
+                return;
+            }
+
+            // 如果还没开始钓鱼,检查是否可以开始钓鱼
+            if (fishingSystem->canFish(player->getPosition(), player))
+            {
+                fishingSystem->startFishing();
+            }
+        };
+
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
+
     // 设置关联和事件监听
     player->setGameMap(_gameMap);
     player->removeAllListeners(); // 移除可能存在的旧监听器
@@ -132,6 +157,14 @@ bool GameScene::init()
     {
         this->addChild(_inventoryUI, 10);
         _inventoryUI->setVisible(false);
+
+        // 设置物品系统的更新回调
+        ItemSystem::getInstance()->setUpdateCallback([this]() {
+            if (_inventoryUI)
+            {
+                _inventoryUI->updateDisplay();
+            }
+            });
     }
 
     // 启动更新
@@ -293,6 +326,9 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         CCLOG("Switching to Mine map, initializing chests...");
         initChests();
     }
+
+    // 重新初始化钓鱼系统
+    FishingSystem::getInstance()->initFishingAreas(_gameMap);
 
     // 更新相机位置
     this->updateCamera();
