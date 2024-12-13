@@ -23,10 +23,12 @@ public:
         SHOVEL,     // 铲子
         AXE,        // 斧头
         WATERING,   // 水壶
-        ROD         // 鱼竿（暂时没素材，没实现）
+        ROD,        // 鱼竿
+        GIFT        // 礼物(送给NPC)
     };
     ToolType getCurrentTool() const { return currentTool; }
     void switchTool();                                  // 切换工具的方法
+
 
 
     // 基础功能
@@ -54,6 +56,7 @@ public:
 
     // 设置玩家是否可执行动作
     void setCanPerformAction(bool select) { canPerformAction = select; }
+
 private:
     GameMap* gameMap = nullptr;                             // GameMap 引用                  
 
@@ -84,6 +87,7 @@ private:
     // 工具相关
     ToolType currentTool = ToolType::WATERING;      // 当前装备的工具
     cocos2d::Sprite* rodSprite = nullptr;           // 鱼竿精灵
+    cocos2d::Sprite* gift = nullptr;                // 礼物精灵
 
     //技能等级系统相关
     bool isSkillUIVisible{ false };  // 技能界面显示状态
