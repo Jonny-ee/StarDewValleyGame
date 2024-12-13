@@ -288,6 +288,12 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         currentInventoryUI->release();
     }
 
+    // 如果是矿洞地图，初始化宝箱
+    if (mapName == "Mine") {
+        CCLOG("Switching to Mine map, initializing chests...");
+        initChests();
+    }
+
     // 更新相机位置
     this->updateCamera();
 }
