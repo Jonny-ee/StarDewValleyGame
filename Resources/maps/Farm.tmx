@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="16" nextobjectid="155">
  <properties>
-  <property name="Warp" value="29 9 House 9 10 10 4 Mine 9 18 11 4 Mine 9 18 39 17 Town 19 38 16 0 Forest 58 15 17 0 Forest 58 15"/>
+  <property name="Warp" value="29 9 House 9 10 10 4 Mine 9 18 11 4 Mine 9 18 39 17 Town 1 11 16 0 Forest 58 15 17 0 Forest 58 15 19 39 Mountain 1 26 20 39 Mountain 1 27"/>
  </properties>
  <tileset firstgid="1" source="../AllTSX/spring_outdoorsTileSheet.tsx"/>
  <tileset firstgid="1976" source="../AllTSX/houses.tsx"/>
