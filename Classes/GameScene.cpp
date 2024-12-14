@@ -72,6 +72,10 @@ bool GameScene::init()
     player = nullptr;
     _gameMap = nullptr;
     _pressedKeys.clear();
+    isLewisCreated = false; // 初始化标志
+    isMarlonCreated = false; // 初始化标志
+    isMaruCreated = false; // 初始化标志
+    isAlexCreated = false; // 初始化标志
 
     // 创建并加载地图
     _gameMap = GameMap::create("House");
@@ -97,28 +101,6 @@ bool GameScene::init()
     player->setScale(3.0f);
 
     this->addChild(player, 1);
-    // 创建刘易斯
-    lewis = Lewis::create();
-
-    if (lewis == nullptr)
-    {
-        return false;
-    }
-
-    // 设置刘易斯初始位置
-    Vec2 lewis_tilePos = Vec2(15, 6);
-    Vec2 lewis_worldPos = _gameMap->convertToWorldCoord(lewis_tilePos);
-    lewis->setPosition(lewis_worldPos);
-
-    this->addChild(lewis, 1);
-    //设置刘易斯默认移动路径
-    Vec2 movePath1_tilePos = Vec2(13, 6);
-    Vec2 movePath2_tilePos = Vec2(18, 6);
-
-    Vec2 movePath1_worldPos = _gameMap->convertToWorldCoord(movePath1_tilePos);
-    Vec2 movePath2_worldPos = _gameMap->convertToWorldCoord(movePath2_tilePos);
-    lewis->path.push_back(movePath1_worldPos);
-    lewis->path.push_back(movePath2_worldPos);
 
     // 初始化钓鱼区域
     FishingSystem::getInstance()->initFishingAreas(_gameMap);
@@ -290,6 +272,11 @@ void GameScene::updateCamera()
     {
         toolIcon->setPosition(-offset + Vec2(50, 50));  // 左下角偏移50像素
     }
+    // 更新对话框位置
+    if (dialogueBox)
+    {
+        dialogueBox->setPosition(-offset + Vec2(visibleSize.width / 2, 90));
+    }
 }
 
 void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& targetTilePos)
@@ -334,10 +321,31 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         currentInventoryUI->release();
     }
 
-    // 如果是矿洞地图，初始化宝箱
+    // 如果是农场地图，初始化刘易斯
+    if (mapName == "Farm" && !isLewisCreated) {
+        CCLOG("Switching to Farm map, initializing lewis...");
+        initLewis();
+    }
+
+    // 如果是矿洞地图，初始化宝箱，和NPC马龙
     if (mapName == "Mine") {
-        CCLOG("Switching to Mine map, initializing chests...");
+        CCLOG("Switching to Mine map, initializing chests and marlon...");
         initChests();
+        if (!isMarlonCreated) {
+            initMarlon();
+        }
+    }
+
+    // 如果是医院地图，初始化玛鲁
+    if (mapName == "Hospital" && !isMaruCreated) {
+        CCLOG("Switching to Hospital map, initializing maru...");
+        initMaru();
+    }
+
+    // 如果是小镇地图，初始化艾利克斯
+    if (mapName == "Town" && !isAlexCreated) {
+        CCLOG("Switching to Town map, initializing alex...");
+        initAlex();
     }
 
     // 重新初始化钓鱼系统
@@ -377,14 +385,44 @@ void GameScene::initMouseListener()
                     Director::getInstance()->getOpenGLView()->setCursor("cursor_default.png");
                 }
             }
+            if (marlon) {
+                float distance = player->getPosition().distance(marlon->getPosition());
+
+                if (distance < 50.0f) {
+                    Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
+                }
+                else {
+                    Director::getInstance()->getOpenGLView()->setCursor("cursor_default.png");
+                }
+            }
+            if (maru) {
+                float distance = player->getPosition().distance(maru->getPosition());
+
+                if (distance < 150.0f) {
+                    Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
+                }
+                else {
+                    Director::getInstance()->getOpenGLView()->setCursor("cursor_default.png");
+                }
+            }
+            if (alex) {
+                float distance = player->getPosition().distance(alex->getPosition());
+
+                if (distance < 50.0f) {
+                    Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
+                }
+                else {
+                    Director::getInstance()->getOpenGLView()->setCursor("cursor_default.png");
+                }
+            }
         };
 
     mouseListener->onMouseDown = [=](Event* event)
         {
             EventMouse* e = (EventMouse*)event;
             Vec2 clickPos = e->getLocation(); // 获取点击位置
-            
-            // 检查是否靠近并点击了Lewis
+
+            // 检查是否靠近并点击了刘易斯
             if (lewis) {
                 float distance = player->getPosition().distance(lewis->getPosition());
 
@@ -392,15 +430,13 @@ void GameScene::initMouseListener()
                     player->setCanPerformAction(false); // 禁止玩家动作
                     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
-                    dialogueBox = DialogueBox::create(lewis->getRandomDialogue(), "textBox.png");
+                    dialogueBox = DialogueBox::create(lewis->getRandomDialogue(), "Portraits/Lewis.png", "Lewis");
                     this->addChild(dialogueBox, 10);
-
-                    
 
                     if (player->getCurrentTool() == Player::ToolType::GIFT) {
                         // 如果玩家手持礼物，触发感谢动画
                         lewis->showThanks();
-                        dialogueBox = DialogueBox::create("I love this! Thank you! Mmmmmmm......", "textBox.png");
+                        dialogueBox = DialogueBox::create("I love this! Thank you! Mmmmmmm......", "Portraits/Lewis.png", "Lewis");
                         this->addChild(dialogueBox, 10);
 
                         //lewis->receiveGift("gift_item"); // 传递礼物项
@@ -414,9 +450,139 @@ void GameScene::initMouseListener()
                     player->setCanPerformAction(true);  // 允许玩家动作
                 }
             }
+            // 检查是否靠近并点击了马龙
+            if (marlon) {
+                float distance = player->getPosition().distance(marlon->getPosition());
+
+                if (distance < 50.0f) {
+                    player->setCanPerformAction(false); // 禁止玩家动作
+                    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+
+                    dialogueBox = DialogueBox::create(marlon->getRandomDialogue(), "Portraits/Marlon.png", "Marlon");
+                    this->addChild(dialogueBox, 10);
+                }
+                else {
+                    player->setCanPerformAction(true);  // 允许玩家动作
+                }
+            }
+            // 检查是否靠近并点击了码鲁
+            if (maru) {
+                float distance = player->getPosition().distance(maru->getPosition());
+
+                if (distance < 150.0f) {
+                    player->setCanPerformAction(false); // 禁止玩家动作
+                    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+
+                    dialogueBox = DialogueBox::create(maru->getRandomDialogue(), "Portraits/Maru_Hospital.png", "Maru");
+                    this->addChild(dialogueBox, 10);
+                }
+                else {
+                    player->setCanPerformAction(true);  // 允许玩家动作
+                }
+            }
+            // 检查是否靠近并点击了艾利克斯
+            if (alex) {
+                float distance = player->getPosition().distance(alex->getPosition());
+
+                if (distance < 50.0f) {
+                    player->setCanPerformAction(false); // 禁止玩家动作
+                    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+
+                    dialogueBox = DialogueBox::create(alex->getRandomDialogue(), "Portraits/Alex.png", "Alex");
+                    this->addChild(dialogueBox, 10);
+                }
+                else {
+                    player->setCanPerformAction(true);  // 允许玩家动作
+                }
+            }
         };
 
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
+}
+
+void GameScene::initLewis()
+{
+    // 创建刘易斯
+    lewis = Lewis::create();
+
+    if (lewis == nullptr)
+    {
+        return;
+    }
+
+    // 设置刘易斯初始位置
+    Vec2 lewis_tilePos = Vec2(15, 16);
+    Vec2 lewis_worldPos = _gameMap->convertToWorldCoord(lewis_tilePos);
+    lewis->setPosition(lewis_worldPos);
+
+    this->addChild(lewis, 1);
+    //设置刘易斯默认移动路径
+    Vec2 movePath1_tilePos = Vec2(13, 16);
+    Vec2 movePath2_tilePos = Vec2(18, 16);
+
+    Vec2 movePath1_worldPos = _gameMap->convertToWorldCoord(movePath1_tilePos);
+    Vec2 movePath2_worldPos = _gameMap->convertToWorldCoord(movePath2_tilePos);
+    lewis->path.push_back(movePath1_worldPos);
+    lewis->path.push_back(movePath2_worldPos);
+    isLewisCreated = true; // 设置标志为已创建
+}
+
+void GameScene::initMarlon()
+{
+    // 创建马龙
+    marlon = Marlon::create();
+
+    if (marlon == nullptr)
+    {
+        return;
+    }
+
+    // 设置马龙初始位置
+    Vec2 marlon_tilePos = Vec2(12, 10);
+    Vec2 marlon_worldPos = _gameMap->convertToWorldCoord(marlon_tilePos);
+    marlon->setPosition(marlon_worldPos);
+
+    this->addChild(marlon, 1);
+    isMarlonCreated = true; // 设置标志为已创建
+}
+
+void GameScene::initMaru()
+{
+    // 创建玛鲁
+    maru = Maru::create();
+
+    if (maru == nullptr)
+    {
+        return;
+    }
+
+    // 设置玛鲁初始位置
+    Vec2 maru_tilePos = Vec2(7, 14);
+    Vec2 maru_worldPos = _gameMap->convertToWorldCoord(maru_tilePos);
+    maru->setPosition(maru_worldPos);
+
+    this->addChild(maru, 1);
+    isMaruCreated = true; // 设置标志为已创建
+}
+
+void GameScene::initAlex()
+{
+    // 创建艾利克斯
+    alex = Alex::create();
+
+    if (alex == nullptr)
+    {
+        return;
+    }
+
+    // 设置艾利克斯初始位置
+    Vec2 alex_tilePos = Vec2(21, 20);
+    Vec2 alex_worldPos = _gameMap->convertToWorldCoord(alex_tilePos);
+    alex->setPosition(alex_worldPos);
+
+    this->addChild(alex, 1);
+    alex->initializeAnimations();
+    isAlexCreated = true; // 设置标志为已创建
 }
 
 /*
