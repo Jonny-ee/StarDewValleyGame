@@ -5,123 +5,249 @@ USING_NS_CC;
 
 FishingSystem* FishingSystem::_instance = nullptr;
 
-FishingSystem* FishingSystem::getInstance() {
-    if (!_instance) {
+/*
+ * 获取钓鱼系统单例实例
+ * @return 钓鱼系统实例指针
+ */
+FishingSystem* FishingSystem::getInstance()
+{
+    if (!_instance)     // 如果实例不存在，创建新实例
+    {
         _instance = new FishingSystem();
     }
     return _instance;
 }
 
-void FishingSystem::initFishingAreas(GameMap* gameMap) {
-    fishingAreas.clear();
-
-    // 打印当前地图名称以便调试
-    CCLOG("Current map name: %s", gameMap->getMapName().c_str());
+/*
+ * 初始化钓鱼区域
+ * @param gameMap 当前游戏地图指针
+ */
+void FishingSystem::initFishingAreas(GameMap* gameMap)
+{
+    fishingAreas.clear(); // 清空现有的钓鱼区域
 
     // 检查当前地图是否是 Farm
-    if (gameMap->getMapName() == "Farm") {  // 移除 .tmx 后缀
-        // 只在农场地图中添加钓鱼区域
+    if (gameMap->getMapName() == "Farm")
+    {
+        // 在农场地图添加钓鱼区域，参数为：x坐标，y坐标，宽度，高度
         fishingAreas.push_back(cocos2d::Rect(820, 510, 240, 280));
-        CCLOG("Added fishing area in Farm map: x=820, y=510");
-    }
-    else {
-        CCLOG("Current map is not Farm, no fishing areas added");
     }
 }
 
-bool FishingSystem::isInFishingArea(const Vec2& position) {
-    // 如果没有钓鱼区域（不是农场地图），直接返回 false
-    if (fishingAreas.empty()) {
+/*
+ * 检查位置是否在钓鱼区域内
+ * @param position 要检查的位置
+ * @return 是否在钓鱼区域内
+ */
+bool FishingSystem::isInFishingArea(const Vec2& position)
+{
+    if (fishingAreas.empty())   // 如果没有钓鱼区域，直接返回false
+    {
         return false;
     }
 
     for (const auto& area : fishingAreas)
     {
-        CCLOG("Checking position (%.1f, %.1f) against fishing area", position.x, position.y);
-        if (area.containsPoint(position))
+        if (area.containsPoint(position))   // 检查位置是否在任一钓鱼区域内
         {
-            CCLOG("Player is in fishing area!");
             return true;
         }
     }
     return false;
 }
 
+/*
+ * 检查玩家是否装备了鱼竿
+ * @param player 玩家对象指针
+ * @return 是否装备鱼竿
+ */
 bool FishingSystem::hasEquippedFishingRod(Player* player)
 {
-    return player->getCurrentTool() == Player::ToolType::ROD;
+    return player->getCurrentTool() == Player::ToolType::ROD;   // 检查当前工具是否为鱼竿
 }
 
+/*
+ * 检查玩家是否可以进行钓鱼
+ * @param playerPos 玩家位置
+ * @param player 玩家对象指针
+ * @return 是否可以钓鱼
+ */
 bool FishingSystem::canFish(const Vec2& playerPos, Player* player)
 {
-    // 检查是否已经在钓鱼
-    if (isFishing) {
-        CCLOG("Already fishing...");
-        return false;
-    }
-
-    // 检查是否装备鱼竿
-    if (!hasEquippedFishingRod(player))
+    if (!isInFishingArea(playerPos))    // 检查是否在钓鱼区域内
     {
-        CCLOG("Need to equip fishing rod first");
+        if (isFishing)  // 如果正在钓鱼但离开了区域，重置状态
+        {
+            resetFishingState();
+        }
+
+        hideTip();
         return false;
     }
 
-    // 检查是否在钓鱼区域
-    if (!isInFishingArea(playerPos))
+    if (showingResult)  // 如果正在显示结果，不显示其他提示
     {
-        CCLOG("Need to be near water to fish");
         return false;
     }
 
-    CCLOG("Ready to start fishing!");
+    if (isFishing)  // 如果已经在钓鱼中
+    {
+        return false;
+    }
+
+    if (!hasEquippedFishingRod(player)) // 检查是否装备鱼竿
+    {
+        showTip("Need fishing rod");
+        return false;
+    }
+
+    showTip("Click to start fishing");  // 显示开始钓鱼提示
     return true;
 }
 
+/*
+ * 开始钓鱼
+ * 初始化钓鱼状态并显示相应提示
+ */
 void FishingSystem::startFishing()
 {
     if (!isFishing)
     {
-        isFishing = true;
-        fishingStartTime = std::chrono::steady_clock::now();
-        CCLOG("Start fishing...");
+        isFishing = true;   // 设置钓鱼状态
+        fishingStartTime = std::chrono::steady_clock::now();    // 记录开始时间
+        showTip("Fishing...Do not leave!");
+
+        if (tipLabel)   // 停止之前的所有提示动作
+        {
+            tipLabel->stopAllActions();
+        }
+
+        // 创建延时序列，6秒后显示鱼上钩提示
+        auto sequence = Sequence::create(
+            DelayTime::create(FISHING_DURATION),
+            CallFunc::create([this]() {
+                if (isFishing)
+                {
+                    showTip("Fish on the hook! Click to catch!");
+                }
+                }),
+            nullptr
+        );
+        if (tipLabel)
+        {
+            tipLabel->runAction(sequence);
+        }
     }
 }
 
+/*
+ * 完成钓鱼
+ * 处理钓鱼结果，包括物品获取和提示显示
+ */
 void FishingSystem::finishFishing()
 {
     if (isFishing)
     {
-        auto currentTime = std::chrono::steady_clock::now();
-        auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - fishingStartTime).count();
+        auto currentTime = std::chrono::steady_clock::now();    // 获取当前时间
+        auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - fishingStartTime).count();    // 计算经过时间
 
         if (elapsedTime >= FISHING_DURATION)
         {
-            // 生成0-100的随机数
-            int randomNum = rand() % 100;
-
-            // 70%的概率成功
-            if (randomNum < 70)
+            showingResult = true;   // 设置正在显示结果状态
+            int randomNum = rand() % 100;   // 生成随机数决定是否钓到鱼
+            if (randomNum < 70)     // 70%概率钓到东西
             {
-                CCLOG("Fishing success! Time used: %ds", (int)elapsedTime);
-                int randomNum = rand() % 100;
-                if (randomNum < 80)
+                randomNum = rand() % 100;
+                if (randomNum < 80)     // 80%概率钓到普通鱼
+                {
                     ItemSystem::getInstance()->addItem("fish", 1);
-                else    // 综合概率14%左右
-                    ItemSystem::getInstance()->addItem("mermaid's KISS(*)", 1);
-            }
-            else
-            {
-                CCLOG("Fish escaped! Better luck next time!");
-            }
+                    showTip("You caught a fish!", 2.0f);
 
-            isFishing = false;
+                    // 创建延时序列，2秒后重置结果显示状态
+                    auto delay = DelayTime::create(2.0f);
+                    auto func = CallFunc::create([this]() {
+                        showingResult = false;
+                        });
+                    if (tipLabel)
+                    {
+                        tipLabel->runAction(Sequence::create(delay, func, nullptr));
+                    }
+                }
+                else    // 钓到鱼的前提下，20%概率得到美人鱼之吻
+                {
+                    ItemSystem::getInstance()->addItem("mermaid's KISS(*)", 1);
+                    showTip("You found a mermaid!\nShe left you a kiss and disappeared...", 3.0f);
+
+                    // 创建延时序列，3秒后重置结果显示状态
+                    auto delay = DelayTime::create(3.0f);
+                    auto func = CallFunc::create([this]() {
+                        showingResult = false;
+                        });
+                    if (tipLabel)
+                    {
+                        tipLabel->runAction(Sequence::create(delay, func, nullptr));
+                    }
+                }
+            }
+            else    // 30%概率鱼跑掉
+            {
+                showTip("The fish got away!", 2.0f);
+
+                // 创建延时序列，2秒后重置结果显示状态
+                auto delay = DelayTime::create(2.0f);
+                auto func = CallFunc::create([this]() {
+                    showingResult = false;
+                    });
+                if (tipLabel)
+                {
+                    tipLabel->runAction(Sequence::create(delay, func, nullptr));
+                }
+            }
         }
-        else
+        isFishing = false;  // 重置钓鱼状态
+    }
+}
+
+/*
+ * 显示提示文本
+ * @param text 要显示的文本
+ * @param duration 显示持续时间（0表示持续显示）
+ */
+void FishingSystem::showTip(const std::string& text, float duration)
+{
+    if (!tipLabel)  // 如果提示标签不存在，创建新的
+    {
+        tipLabel = Label::createWithSystemFont(text, "Arial", 24);
+        if (tipLabel)
         {
-            CCLOG("Not enough time, need to wait %ds more", FISHING_DURATION - (int)elapsedTime);
-            // 时间不够时也结束当前钓鱼，让玩家重新开始
-            isFishing = false;
+            tipLabel->setPosition(Vec2(0, 0));  // 初始位置设为原点，后续在update中更新
+            Director::getInstance()->getRunningScene()->addChild(tipLabel, 10);
         }
+    }
+
+    tipLabel->setString(text);  // 设置提示文本
+    tipLabel->setVisible(true); // 显示提示
+
+    if (duration > 0)   // 如果设置了持续时间，创建自动隐藏序列
+    {
+        auto sequence = Sequence::create(
+            DelayTime::create(duration),
+            CallFunc::create([this]() {
+                hideTip();
+                }),
+            nullptr
+        );
+        tipLabel->runAction(sequence);
+    }
+}
+
+/*
+ * 隐藏提示文本
+ */
+void FishingSystem::hideTip()
+{
+    if (tipLabel)   // 如果提示标签存在，设置为不可见
+    {
+        tipLabel->setVisible(false);
     }
 }

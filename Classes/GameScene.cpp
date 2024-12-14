@@ -215,6 +215,19 @@ void GameScene::update(float dt)
         //lewis->updateSchedule(dt);
         lewis->moveAlongPath(dt); // 移动沿路径
     }
+
+    // 持续检查钓鱼条件
+    auto fishingSystem = FishingSystem::getInstance();
+    fishingSystem->canFish(player->getPosition(), player);
+
+    // 更新提示标签位置
+    if (auto tipLabel = fishingSystem->getTipLabel()) {
+        if (tipLabel->isVisible()) {
+            Vec2 playerPos = player->getPosition();
+            // 设置在玩家头顶上方50像素
+            tipLabel->setPosition(playerPos + Vec2(0, 50));
+        }
+    }
 }
 
 void GameScene::updateCamera()
