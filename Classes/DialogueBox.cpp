@@ -2,10 +2,10 @@
 
 USING_NS_CC;
 
-DialogueBox* DialogueBox::create(const std::string& dialogue, const std::string& characterImagePath)
+DialogueBox* DialogueBox::create(const std::string& dialogue, const std::string& characterImagePath, const std::string& characterName)
 {
     DialogueBox* dialogueBox = new (std::nothrow) DialogueBox();
-    if (dialogueBox && dialogueBox->init(dialogue, characterImagePath))
+    if (dialogueBox && dialogueBox->init(dialogue, characterImagePath, characterName))
     {
         dialogueBox->autorelease();
         return dialogueBox;
@@ -38,7 +38,7 @@ void DialogueBox::startTypingEffect(Label* label, const std::string& dialogue)
     this->schedule(typingCallback, 0.08f, "typing"); // 0.08秒显示一个字符
 }
 
-bool DialogueBox::init(const std::string& dialogue, const std::string& characterImagePath)
+bool DialogueBox::init(const std::string& dialogue, const std::string& characterImagePath, const std::string& characterName)
 {
     if (!Node::init())
     {
@@ -47,25 +47,24 @@ bool DialogueBox::init(const std::string& dialogue, const std::string& character
     this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f)); // 设置锚点
     this->setScale(1.0);
 
-
     // 获取屏幕的可见尺寸
     Size visibleSize = Director::getInstance()->getVisibleSize();
 
     // 创建背景
     auto background = Sprite::create("LooseSprites/textBox.png");
-    this->setPosition(Vec2(visibleSize.width/2, -50)); // 根据需要调整位置
+    this->setPosition(Vec2(visibleSize.width / 2, 50)); // 设置在屏幕底部中心
     this->setScale(4.0);
     this->addChild(background);
 
     // 创建角色头像
-    auto characterImage = Sprite::create("Portraits/Lewis.png");
+    auto characterImage = Sprite::create(characterImagePath);
     characterImage->setPosition(Vec2(70, 6)); // 根据需要调整位置
     characterImage->setTextureRect(cocos2d::Rect(0, 0, 64, 64));
     characterImage->setScale(0.4f);
     this->addChild(characterImage);
 
     // 创建姓名文本
-    auto nameLabel = Label::createWithSystemFont("Lewis", "Times New Roman", 10);//后面新NPC要改
+    auto nameLabel = Label::createWithSystemFont(characterName, "Times New Roman", 10);
     nameLabel->setTextColor(cocos2d::Color4B(0, 0, 0, 255)); // 黑色，RGBA格式
     nameLabel->setPosition(Vec2(70, -11)); // 根据需要调整位置
     this->addChild(nameLabel);
@@ -80,22 +79,22 @@ bool DialogueBox::init(const std::string& dialogue, const std::string& character
     label->setPosition(Vec2(-20, 0)); // 根据需要调整位置
     startTypingEffect(label, dialogue);
 
-    // 添加关闭按钮
-    auto closeButton = MenuItemImage::create("LooseSprites/shadow.png", "LooseSprites/shadow.png", [this](Ref* sender) {
-        this->close(); // 点击关闭按钮时关闭对话框
-        });
-    closeButton->setPosition(Vec2(90, 17)); // 根据需要调整位置
-
-    auto menu = Menu::create(closeButton, nullptr);
-    menu->setPosition(Vec2::ZERO); // 设置菜单位置为(0, 0)
-    this->addChild(menu);
-
-    // 添加鼠标监听器
+    // 创建鼠标监听器
     auto mouseListener = EventListenerMouse::create();
     mouseListener->onMouseDown = [this](Event* event) {
         this->close(); // 点击时关闭对话框
-        };
+    };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
+
+    //// 添加关闭按钮
+    //auto closeButton = MenuItemImage::create("LooseSprites/shadow.png", "LooseSprites/shadow.png", [this](Ref* sender) {
+    //    this->close(); // 点击关闭按钮时关闭对话框
+    //});
+    //closeButton->setPosition(Vec2(90, 17)); // 根据需要调整位置
+
+    //auto menu = Menu::create(closeButton, nullptr);
+    //menu->setPosition(Vec2::ZERO); // 设置菜单位置为(0, 0)
+    //this->addChild(menu);
 
     // 添加出现动画
     this->setScale(3.7f); // 初始缩放为3.7
@@ -109,11 +108,14 @@ bool DialogueBox::init(const std::string& dialogue, const std::string& character
 
 void DialogueBox::close()
 {
+    CCLOG("Closing dialogue box...");
     // 添加关闭动画
     this->runAction(Sequence::create(
         ScaleTo::create(0.3f, 0.1f), // 0.3秒内缩放到0.1
         CallFunc::create([this]() {
+            CCLOG("Dialogue box removed from parent.");
             this->removeFromParent(); // 动画结束后移除对话框
+
             }),
         nullptr));
 }
