@@ -514,6 +514,11 @@ void GameScene::initMouseListener()
             {
                 CropManager::getInstance()->onMouseDown(clickPos, player);
             }
+            // 鼠标点击时触发浇水
+            if (player && player->getCurrentTool() == Player::ToolType::WATERING)
+            {
+                CropManager::getInstance()->onMouseDown(clickPos, player);
+            }
 
             // 检查是否靠近并点击了刘易斯
             if (lewis) {
