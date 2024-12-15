@@ -2,6 +2,7 @@
 #include "cocos2d.h"
 #include "Player.h"
 #include "GameMap.h"
+#include "SkillSystem.h"
 
 /*
  * 钓鱼系统类
@@ -21,7 +22,12 @@ public:
     void initFishingAreas(GameMap* gameMap);                        // 初始化钓鱼区域
     bool isCurrentlyFishing() const { return isFishing; }           // 获取当前是否在钓鱼
     cocos2d::Label* getTipLabel() const { return tipLabel; }        // 获取提示标签
-
+    // 获取实际钓鱼所需时间（考虑技能加成）
+    int getActualFishingDuration() const
+    {
+        float timeBonus = SkillSystem::getInstance()->getSkillBonus(SkillType::FISHING);
+        return static_cast<int>(FISHING_DURATION * timeBonus);
+    }
 private:
     FishingSystem() = default;
     static FishingSystem* _instance;

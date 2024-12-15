@@ -113,18 +113,20 @@ void FishingSystem::startFishing()
 {
     if (!isFishing)
     {
-        isFishing = true;   // 设置钓鱼状态
-        fishingStartTime = std::chrono::steady_clock::now();    // 记录开始时间
+        isFishing = true;
+        fishingStartTime = std::chrono::steady_clock::now();
         showTip("Fishing...Do not leave!");
 
-        if (tipLabel)   // 停止之前的所有提示动作
+        if (tipLabel)
         {
             tipLabel->stopAllActions();
         }
 
-        // 创建延时序列，6秒后显示鱼上钩提示
+        // 使用实际钓鱼时间（考虑技能加成）
+        int actualDuration = getActualFishingDuration();
+
         auto sequence = Sequence::create(
-            DelayTime::create(FISHING_DURATION),
+            DelayTime::create(actualDuration),
             CallFunc::create([this]() {
                 if (isFishing)
                 {
@@ -148,22 +150,37 @@ void FishingSystem::finishFishing()
 {
     if (isFishing)
     {
-        auto currentTime = std::chrono::steady_clock::now();    // 获取当前时间
-        auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - fishingStartTime).count();    // 计算经过时间
+        auto currentTime = std::chrono::steady_clock::now();
+        auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - fishingStartTime).count();
 
-        if (elapsedTime >= FISHING_DURATION)
+        if (elapsedTime >= getActualFishingDuration())
         {
-            showingResult = true;   // 设置正在显示结果状态
-            int randomNum = rand() % 100;   // 生成随机数决定是否钓到鱼
+            showingResult = true;
+            int randomNum = rand() % 100;
             if (randomNum < 70)     // 70%概率钓到东西
             {
                 randomNum = rand() % 100;
-                if (randomNum < 80)     // 80%概率钓到普通鱼
+                if (randomNum < 50)     // 80%概率钓到普通鱼
                 {
                     ItemSystem::getInstance()->addItem("fish", 1);
-                    showTip("You caught a fish!", 2.0f);
 
-                    // 创建延时序列，2秒后重置结果显示状态
+                    // 获得1点经验并显示提示
+                    int prevLevel = SkillSystem::getInstance()->getSkillLevel(SkillType::FISHING);
+                    SkillSystem::getInstance()->gainExp(SkillType::FISHING, 1);
+                    int currentLevel = SkillSystem::getInstance()->getSkillLevel(SkillType::FISHING);
+
+                    std::string message = "You caught a fish!\nFishing EXP +1";
+
+                    // 如果升级了，添加升级提示
+                    if (currentLevel > prevLevel)
+                    {
+                        float timeReduction = (1.0f - SkillSystem::getInstance()->getSkillBonus(SkillType::FISHING)) * 100;
+                        message += "\nFishing Level Up! (" + std::to_string(prevLevel) + "->" + std::to_string(currentLevel) + ")\n";
+                        message += "Fishing time reduced by " + std::to_string((int)timeReduction) + "%";
+                    }
+
+                    showTip(message, 2.0f);
+
                     auto delay = DelayTime::create(2.0f);
                     auto func = CallFunc::create([this]() {
                         showingResult = false;
@@ -173,12 +190,27 @@ void FishingSystem::finishFishing()
                         tipLabel->runAction(Sequence::create(delay, func, nullptr));
                     }
                 }
-                else    // 钓到鱼的前提下，20%概率得到美人鱼之吻
+                else    // 钓到美人鱼之吻
                 {
                     ItemSystem::getInstance()->addItem("mermaid's KISS(*)", 1);
-                    showTip("You found a mermaid!\nShe left you a kiss and disappeared...", 3.0f);
 
-                    // 创建延时序列，3秒后重置结果显示状态
+                    // 获得5点经验并显示提示
+                    int prevLevel = SkillSystem::getInstance()->getSkillLevel(SkillType::FISHING);
+                    SkillSystem::getInstance()->gainExp(SkillType::FISHING, 5);
+                    int currentLevel = SkillSystem::getInstance()->getSkillLevel(SkillType::FISHING);
+
+                    std::string message = "You found a mermaid!\nShe left you a kiss and disappeared...\nFishing EXP +5";
+
+                    // 如果升级了，提示
+                    if (currentLevel > prevLevel)
+                    {
+                        float timeReduction = (1.0f - SkillSystem::getInstance()->getSkillBonus(SkillType::FISHING)) * 100;
+                        message += "\nFishing Level Up! (" + std::to_string(prevLevel) + "->" + std::to_string(currentLevel) + ")\n";
+                        message += "Fishing time reduced by " + std::to_string((int)timeReduction) + "%";
+                    }
+
+                    showTip(message, 3.0f);
+
                     auto delay = DelayTime::create(3.0f);
                     auto func = CallFunc::create([this]() {
                         showingResult = false;
@@ -189,11 +221,10 @@ void FishingSystem::finishFishing()
                     }
                 }
             }
-            else    // 30%概率鱼跑掉
+            else    // 鱼30%概率跑掉
             {
                 showTip("The fish got away!", 2.0f);
 
-                // 创建延时序列，2秒后重置结果显示状态
                 auto delay = DelayTime::create(2.0f);
                 auto func = CallFunc::create([this]() {
                     showingResult = false;
@@ -204,7 +235,7 @@ void FishingSystem::finishFishing()
                 }
             }
         }
-        isFishing = false;  // 重置钓鱼状态
+        isFishing = false;
     }
 }
 
