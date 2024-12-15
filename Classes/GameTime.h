@@ -22,6 +22,8 @@ public:
 	int getDay();
 	int getHour();
 	int getMinute();
+	//更改游戏时间
+	void modifyGameTime(int targetHour = 6);
 private:
 	std::clock_t startTime;
 	GameTime();

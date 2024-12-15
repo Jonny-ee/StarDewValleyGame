@@ -96,3 +96,11 @@ int GameTime::getMinute()
 int  GameTime::getAbsoluteTime() {
     return absoluteTimeInTenMinutes;
 }
+
+void  GameTime::modifyGameTime(int targetHour) {
+    _Day++;//天数加1
+    updateMonths();//更新月，年
+    updateYears();
+    _Hour = targetHour;//将第二天设定成6点0分
+    _Minute = 0;
+}

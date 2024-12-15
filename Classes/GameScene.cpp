@@ -169,6 +169,7 @@ bool GameScene::init()
     // 初始化宝箱
     initChests();
 
+   
     return true;
 }
 
@@ -215,6 +216,10 @@ void GameScene::update(float dt)
             tipLabel->setPosition(playerPos + Vec2(0, 50));
         }
     }
+
+    // 检查并执行睡觉事件
+    checkAndExecuteSleepEvent();
+
 }
 
 void GameScene::updateCamera()
@@ -711,4 +716,52 @@ void GameScene::clearChests()
     }
     _chests.clear();
     CCLOG("所有宝箱已清理");
+}
+// GameScene.cpp 中添加
+void GameScene::checkAndExecuteSleepEvent() {
+    // 如果已经在执行睡觉事件，则返回
+    if ( !player || !_gameMap) return;
+
+    // 获取玩家当前瓦片位置
+    Vec2 playerTilePos = _gameMap->convertToTileCoord(player->getPosition());
+
+    // 检查是否在触发位置 (26,6)
+    if (_gameMap->getMapName() == "House" &&
+        std::abs(playerTilePos.x - 26) < 0.5f &&
+        std::abs(playerTilePos.y - 6) < 0.5f) {
+
+        // 禁用玩家输入
+        player->setCanPerformAction(false);
+
+        // 创建睡觉序列
+        auto sequence = Sequence::create(
+            // 1. 移动到睡觉位置 (25,6)
+            CallFunc::create([this]() {
+                Vec2 sleepPos = _gameMap->convertToWorldCoord(Vec2(25, 6));
+                player->setPosition(sleepPos);
+                }),
+
+            // 2. 等待2秒
+            DelayTime::create(2.0f),
+
+            // 3. 修改游戏时间并移动到醒来位置
+            CallFunc::create([this]() {
+                // 修改游戏时间到第二天早上6点
+                GameTime::getInstance()->modifyGameTime(6);
+
+                // 移动到醒来位置 (23,6)
+                Vec2 wakeupPos = _gameMap->convertToWorldCoord(Vec2(23, 6));
+                player->setPosition(wakeupPos);
+
+                // 重新启用玩家输入
+                player->setCanPerformAction(true);
+
+                }),
+
+            nullptr
+        );
+
+        // 执行动作序列
+        player->runAction(sequence);
+    }
 }
