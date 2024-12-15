@@ -16,13 +16,13 @@ Marlon* Marlon::create()
 
 bool Marlon::init()
 {
-    const std::string imagePath = "Characters/Marlon.png"; // ÂíÁú NPC µÄÍ¼Æ¬Â·¾¶
+    const std::string imagePath = "Characters/Marlon.png"; // ï¿½ï¿½ï¿½ï¿½ NPC ï¿½ï¿½Í¼Æ¬Â·ï¿½ï¿½
     if (!NPC::init(imagePath))
     {
         return false;
     }
-    this->setTextureRect(cocos2d::Rect(0, 0, 16, 32)); // ÉèÖÃ³ß´ç
-    this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f)); // ÉèÖÃÃªµã
+    this->setTextureRect(cocos2d::Rect(0, 0, 16, 32)); // ï¿½ï¿½ï¿½Ã³ß´ï¿½
+    this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f)); // ï¿½ï¿½ï¿½ï¿½Ãªï¿½ï¿½
     this->setScale(2.5);
     initializeDefaultBehavior();
     return true;
@@ -30,35 +30,35 @@ bool Marlon::init()
 
 void Marlon::initializeDefaultBehavior()
 {
-    setName("ÂíÁú");
-    setOccupation("¿ó¹¤");
-    setBirthday(Season::SUMMER, 10); // ¼ÙÉèÉúÈÕÔÚÏÄ¼¾µÄµÚ10Ìì
+    setName("ï¿½ï¿½ï¿½ï¿½");
+    setOccupation("ï¿½ï¿½");
+    setBirthday(Season::SUMMER, 10); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Äµï¿½10ï¿½ï¿½
 
-    // ³õÊ¼»¯ÈÎÎñÁÐ±í
-    taskList.push_back("²É¼¯5¸ö¿óÊ¯");
-    taskList.push_back("ÕÒµ½Ï¡ÓÐ¿óÊ¯");
-    taskList.push_back("°ïÖúÎÒÐÞÀí¿ó³µ");
+    // ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð±ï¿½
+    taskList.push_back("ï¿½É¼ï¿½5ï¿½ï¿½ï¿½ï¿½Ê¯");
+    taskList.push_back("ï¿½Òµï¿½Ï¡ï¿½Ð¿ï¿½Ê¯");
+    taskList.push_back("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½");
 }
 
 void Marlon::assignTask(Player* player)
 {
-    // ÎªÍæ¼Ò·ÖÅäËæ»úÈÎÎñ
+    // Îªï¿½ï¿½Ò·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     if (!taskList.empty()) {
         int randomIndex = rand() % taskList.size();
         std::string task = taskList[randomIndex];
-        CCLOG("ÈÎÎñ·ÖÅä¸øÍæ¼Ò: %s", task.c_str());
+        CCLOG("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: %s", task.c_str());
 
-        // ÕâÀï¿ÉÒÔÌí¼Ó¸ü¶àµÄÈÎÎñÂß¼­£¬ÀýÈç¸üÐÂÍæ¼ÒµÄÈÎÎñ×´Ì¬
-        // player->addTask(task); // ¼ÙÉè Player ÀàÓÐ addTask ·½·¨
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬
+        // player->addTask(task); // ï¿½ï¿½ï¿½ï¿½ Player ï¿½ï¿½ï¿½ï¿½ addTask ï¿½ï¿½ï¿½ï¿½
     }
 }
 
 void Marlon::startConversation()
 {
-    // ÏÔÊ¾¶Ô»°¿ò
+    // ï¿½ï¿½Ê¾ï¿½Ô»ï¿½ï¿½ï¿½
     std::string dialogue = getRandomDialogue();
-    // DialogueManager::getInstance()->showDialogue(dialogue); // ¼ÙÉèÓÐ¶Ô»°¹ÜÀíÆ÷
-    CCLOG("¶Ô»°: %s", dialogue.c_str());
+    // DialogueManager::getInstance()->showDialogue(dialogue); // ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ô»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    CCLOG("ï¿½Ô»ï¿½: %s", dialogue.c_str());
 }
 
 std::string Marlon::getRandomDialogue()

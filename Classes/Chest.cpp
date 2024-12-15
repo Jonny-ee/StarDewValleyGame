@@ -3,9 +3,9 @@
 USING_NS_CC;
 
 /*
- * ´´½¨±¦ÏäÊµÀýµÄ¾²Ì¬·½·¨
- * ¹¦ÄÜ£º´´½¨²¢³õÊ¼»¯Ò»¸ö±¦Ïä¶ÔÏó
- * @return ·µ»Ø±¦Ïä¶ÔÏóÖ¸Õë£¬³õÊ¼»¯Ê§°Ü·µ»Ønullptr
+ * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½Ä¾ï¿½Ì¬ï¿½ï¿½ï¿½ï¿½
+ * ï¿½ï¿½ï¿½Ü£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @return ï¿½ï¿½ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ë£¬ï¿½ï¿½Ê¼ï¿½ï¿½Ê§ï¿½Ü·ï¿½ï¿½ï¿½nullptr
  */
 Chest* Chest::create()
 {
@@ -20,9 +20,9 @@ Chest* Chest::create()
 }
 
 /*
- * ³õÊ¼»¯±¦Ïä¶ÔÏó
- * ¹¦ÄÜ£º³õÊ¼»¯±¦ÏäµÄ»ù±¾ÊôÐÔºÍ¶¯»­
- * @return ³õÊ¼»¯³É¹¦·µ»Øtrue£¬Ê§°Ü·µ»Øfalse
+ * ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * ï¿½ï¿½ï¿½Ü£ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÔºÍ¶ï¿½ï¿½ï¿½
+ * @return ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½É¹ï¿½ï¿½ï¿½ï¿½ï¿½trueï¿½ï¿½Ê§ï¿½Ü·ï¿½ï¿½ï¿½false
  */
 bool Chest::init()
 {
@@ -31,10 +31,10 @@ bool Chest::init()
         return false;
     }
 
-    // ³õÊ¼»¯±¦Ïä¿ªÆô×´Ì¬
+    // ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ä¿ªï¿½ï¿½×´Ì¬
     opened = false;
 
-    //¼ÓÔØµÚÒ»Ö¡×÷Îª³õÊ¼ÏÔÊ¾µÄ¾²Ì¬Ö¡
+    //ï¿½ï¿½ï¿½Øµï¿½Ò»Ö¡ï¿½ï¿½Îªï¿½ï¿½Ê¼ï¿½ï¿½Ê¾ï¿½Ä¾ï¿½Ì¬Ö¡
     SpriteFrame* frame = SpriteFrame::create(CHEST_SPRITE_FILE,
         Rect(0, 0, FRAME_WIDTH, FRAME_HEIGHT));
     if (!frame) {
@@ -43,25 +43,25 @@ bool Chest::init()
     }
     this->setSpriteFrame(frame);
 
-    // ´´½¨²¢»º´æ¿ªÆô¶¯»­
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ¿ªï¿½ï¿½ï¿½ï¿½ï¿½
     auto animation = createChestAnimation();
     if (animation) {
         AnimationCache::getInstance()->addAnimation(animation, "chest_open");
         CCLOG("Chest animation cached successfully");
     }
 
-    // ÉèÖÃ±¦ÏäµÄËõ·Å±ÈÀý
+    // ï¿½ï¿½ï¿½Ã±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å±ï¿½ï¿½ï¿½
     this->setScale(2.0f);
 
-    // ³õÊ¼»¯´¥ÃþÊÂ¼þ 
+    // ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ 
     initTouchEvents();
 
-    // ³õÊ¼»¯¿ªÆôÊ±¼äÎª0
+    // ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Îª0
     lastOpenDay = 0;
     lastOpenMonth = 0;
     lastOpenYear = 0;
 
-    // ÆôÓÃ¸üÐÂµ÷¶È
+    // ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½Âµï¿½ï¿½ï¿½
     this->scheduleUpdate();
 
     return true;
@@ -69,9 +69,9 @@ bool Chest::init()
 
 
 /*
- * ÉèÖÃ±¦ÏäÎ»ÖÃ
- * ¹¦ÄÜ£ºÉèÖÃ±¦ÏäÔÚµØÍ¼ÉÏµÄÏÔÊ¾Î»ÖÃ
- * @param position Ä¿±êÎ»ÖÃµÄ×ø±ê
+ * ï¿½ï¿½ï¿½Ã±ï¿½ï¿½ï¿½Î»ï¿½ï¿½
+ * ï¿½ï¿½ï¿½Ü£ï¿½ï¿½ï¿½ï¿½Ã±ï¿½ï¿½ï¿½ï¿½Úµï¿½Í¼ï¿½Ïµï¿½ï¿½ï¿½Ê¾Î»ï¿½ï¿½
+ * @param position Ä¿ï¿½ï¿½Î»ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½
  */
 void Chest::setChestPosition(const Vec2& position)
 {
@@ -79,15 +79,15 @@ void Chest::setChestPosition(const Vec2& position)
 }
 
 /*
- * ³õÊ¼»¯´¥ÃþÊÂ¼þ
- * ¹¦ÄÜ£ºÎª±¦ÏäÌí¼Ó´¥Ãþ¼àÌýÆ÷£¬ÊµÏÖµã»÷¿ªÆô¹¦ÄÜ
+ * ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½
+ * ï¿½ï¿½ï¿½Ü£ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  */
 void Chest::initTouchEvents()
 {
     auto listener = EventListenerTouchOneByOne::create();
     listener->setSwallowTouches(true);
 
-    // Ìí¼Óµ÷ÊÔÈÕÖ¾
+    // ï¿½ï¿½Óµï¿½ï¿½ï¿½ï¿½ï¿½Ö¾
     CCLOG("Initializing chest touch events");
 
     listener->onTouchBegan = [this](Touch* touch, Event* event) {
@@ -96,30 +96,30 @@ void Chest::initTouchEvents()
         Size s = this->getContentSize();
         Rect rect = Rect(0, 0, s.width, s.height);
 
-        // Ìí¼Óµ÷ÊÔÈÕÖ¾
+        // ï¿½ï¿½Óµï¿½ï¿½ï¿½ï¿½ï¿½Ö¾
         CCLOG("Touch at position: (%.1f, %.1f)", touchPos.x, touchPos.y);
         CCLOG("Chest bounds: (%.1f, %.1f, %.1f, %.1f)",
             rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 
-        // »ñÈ¡µ±Ç°³¡¾°
+        // ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½
         auto scene = dynamic_cast<GameScene*>(Director::getInstance()->getRunningScene());
         if (!scene) {
             CCLOG("Failed to get GameScene");
             return false;
         }
 
-        // »ñÈ¡Íæ¼Ò
+        // ï¿½ï¿½È¡ï¿½ï¿½ï¿½
         auto player = scene->getPlayer();
         if (!player) {
             CCLOG("Failed to get Player");
             return false;
         }
 
-        // ¼ì²é´¥ÃþÊÇ·ñÔÚ±¦Ïä·¶Î§ÄÚÇÒ±¦ÏäÎ´¿ªÆô
+        // ï¿½ï¿½é´¥ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ú±ï¿½ï¿½ä·¶Î§ï¿½ï¿½ï¿½Ò±ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½
         if (rect.containsPoint(locationInNode) && !opened) {
             CCLOG("Touch is within chest bounds");
 
-            // ¼ì²éÍæ¼ÒÊÇ·ñÔÚ½»»¥·¶Î§ÄÚ
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ú½ï¿½ï¿½ï¿½ï¿½ï¿½Î§ï¿½ï¿½
             if (isPlayerInRange(player->getPosition())) {
                 CCLOG("Player is in range, opening chest");
                 this->openChest();
@@ -127,7 +127,7 @@ void Chest::initTouchEvents()
             }
             else {
                 CCLOG("Player is too far from chest");
-                // ÕâÀï¿ÉÒÔÌí¼ÓUIÌáÊ¾
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½UIï¿½ï¿½Ê¾
             }
         }
         return false;
@@ -139,17 +139,17 @@ void Chest::initTouchEvents()
 
 
 /*
- * ´´½¨±¦Ïä¶¯»­
- * ¹¦ÄÜ£º´Ó¾«Áé±í´´½¨¿ªÆô¶¯»­ÐòÁÐ
- * @return ·µ»Ø´´½¨ºÃµÄ¶¯»­¶ÔÏó
+ * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ä¶¯ï¿½ï¿½
+ * ï¿½ï¿½ï¿½Ü£ï¿½ï¿½Ó¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @return ï¿½ï¿½ï¿½Ø´ï¿½ï¿½ï¿½ï¿½ÃµÄ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  */
 
 Animation* Chest::createChestAnimation()
 {
     Vector<SpriteFrame*> frames;
 
-    // Ö»Ê¹ÓÃÉÏ°ë²¿·ÖµÄ5Ö¡×÷Îª¿ªÆô¶¯»­
-    for (int i = 0; i < 5; i++)  // ÐÞ¸ÄÎªÖ»Ê¹ÓÃ5Ö¡
+    // Ö»Ê¹ï¿½ï¿½ï¿½Ï°ë²¿ï¿½Öµï¿½5Ö¡ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    for (int i = 0; i < 5; i++)  // ï¿½Þ¸ï¿½ÎªÖ»Ê¹ï¿½ï¿½5Ö¡
     {
         auto frame = SpriteFrame::create(CHEST_SPRITE_FILE,
             Rect(i * FRAME_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT));
@@ -173,13 +173,13 @@ bool Chest::isPlayerInRange(const Vec2& playerPos) const
 }
 
 /*
- * ¿ªÆô±¦Ïä
- * ¹¦ÄÜ£º´¦Àí±¦Ïä¿ªÆôµÄÖ÷ÒªÂß¼­
+ * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * ï¿½ï¿½ï¿½Ü£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ä¿ªï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ß¼ï¿½
  */
 void Chest::openChest()
 {
     if (opened) {
-        // ¼ì²éÊÇ·ñ¿ÉÒÔÖØÐÂ¿ªÆô
+        // ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¿ï¿½ï¿½ï¿½
         if (canReopen()) {
             resetChest();
         }
@@ -200,7 +200,7 @@ bool Chest::canReopen() const
     int currentMonth = gameTime->getMonth();
     int currentYear = gameTime->getYear();
 
-    // ¼ì²éÊÇ·ñÒÑ¾­¹ýÁËÖÁÉÙÒ»Ìì
+    // ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½
     if (currentYear > lastOpenYear) return true;
     if (currentYear == lastOpenYear && currentMonth > lastOpenMonth) return true;
     if (currentYear == lastOpenYear && currentMonth == lastOpenMonth && currentDay > lastOpenDay) return true;
@@ -210,8 +210,8 @@ bool Chest::canReopen() const
 
 
 /*
- * ²¥·Å¿ªÆô¶¯»­
- * ¹¦ÄÜ£º²¥·Å±¦Ïä¿ªÆôµÄ¶¯»­Ð§¹û
+ * ï¿½ï¿½ï¿½Å¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * ï¿½ï¿½ï¿½Ü£ï¿½ï¿½ï¿½ï¿½Å±ï¿½ï¿½ä¿ªï¿½ï¿½Ä¶ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
  */
 void Chest::playOpenAnimation()
 {
@@ -223,15 +223,15 @@ void Chest::playOpenAnimation()
 
     auto animate = Animate::create(animation);
 
-    // ´´½¨Ò»¸ö»Øµ÷º¯Êý£¬ÔÚ¶¯»­Íê³ÉºóÉèÖÃ×îºóÒ»Ö¡
+    // ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½ï¿½ï¿½ï¿½Éºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»Ö¡
     auto setFinalFrame = CallFunc::create([this]() {
-        // ÉèÖÃÎª¿ªÆô×´Ì¬µÄ×îºóÒ»Ö¡
+        // ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½Ò»Ö¡
         this->setSpriteFrame(SpriteFrame::create(CHEST_SPRITE_FILE,
         Rect(4 * FRAME_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT)));
     this->onOpenAnimationFinished();
         });
 
-    // ÔËÐÐ¶¯»­ÐòÁÐ£º²¥·Å¶¯»­£¬È»ºóÉèÖÃ×îºóÒ»Ö¡
+    // ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½ï¿½ï¿½Å¶ï¿½ï¿½ï¿½ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»Ö¡
     this->runAction(Sequence::create(
         animate,
         setFinalFrame,
@@ -240,27 +240,27 @@ void Chest::playOpenAnimation()
 }
 
 /*
- * ¶¯»­Íê³É»Øµ÷
- * ¹¦ÄÜ£º´¦Àí±¦Ïä¿ªÆô¶¯»­Íê³ÉºóµÄÂß¼­
- * 1. Éú³ÉËæ»úÎïÆ·
- * 2. ½«ÎïÆ·Ìí¼Óµ½ÎïÆ·ÏµÍ³ÖÐ
- * 3. ÏÔÊ¾»ñµÃÎïÆ·µÄÆ®×ÖÐ§¹û
+ * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É»Øµï¿½
+ * ï¿½ï¿½ï¿½Ü£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ä¿ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éºï¿½ï¿½ï¿½ß¼ï¿½
+ * 1. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ·
+ * 2. ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½Óµï¿½ï¿½ï¿½Æ·ÏµÍ³ï¿½ï¿½
+ * 3. ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½Æ®ï¿½ï¿½Ð§ï¿½ï¿½
  */
 void Chest::onOpenAnimationFinished()
 {
-    // »ñÈ¡ÎïÆ·ÏµÍ³ÊµÀý
+    // ï¿½ï¿½È¡ï¿½ï¿½Æ·ÏµÍ³Êµï¿½ï¿½
     auto itemSystem = ItemSystem::getInstance();
 
-    // Ëæ»úÉú³ÉÎïÆ·ÊýÁ¿
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½
     int itemCount = random(MIN_ITEMS, MAX_ITEMS);
 
-    // Éú³ÉËæ»úÎïÆ·²¢Ìí¼Óµ½ÎïÆ·ÏµÍ³
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½Óµï¿½ï¿½ï¿½Æ·ÏµÍ³
     for (int i = 0; i < itemCount; i++) {
         std::string randomItem = generateRandomItem();
 
-        // Ìí¼ÓÎïÆ·µ½ÏµÍ³
+        // ï¿½ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ÏµÍ³
         if (itemSystem->addItem(randomItem, 1)) {
-            // ´´½¨ÎïÆ·»ñµÃÌáÊ¾
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾
             createItemObtainEffect(randomItem, i);
         }
 
@@ -269,9 +269,9 @@ void Chest::onOpenAnimationFinished()
 }
 
 /*
- * Éú³ÉËæ»úÎïÆ·
- * ¹¦ÄÜ£º´Ó¿ÉÄÜµÄÎïÆ·ÁÐ±íÖÐËæ»úÑ¡ÔñÒ»¸öÎïÆ·
- * @return ·µ»ØËæ»úÎïÆ·µÄID×Ö·û´®
+ * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ·
+ * ï¿½ï¿½ï¿½Ü£ï¿½ï¿½Ó¿ï¿½ï¿½Üµï¿½ï¿½ï¿½Æ·ï¿½Ð±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Æ·
+ * @return ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½IDï¿½Ö·ï¿½ï¿½ï¿½
  */
 std::string Chest::generateRandomItem() const
 {
@@ -280,45 +280,45 @@ std::string Chest::generateRandomItem() const
 }
 
 /*
- * ´´½¨ÎïÆ·»ñµÃÐ§¹û
- * ¹¦ÄÜ£ºÏÔÊ¾»ñµÃÎïÆ·µÄÆ®×ÖºÍÍ¼±êÐ§¹û
- * @param itemId ÎïÆ·ID
- * @param index ÎïÆ·ÐòºÅ£¬ÓÃÓÚ´í¿ª¶à¸öÎïÆ·µÄÏÔÊ¾Ê±¼ä
+ * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
+ * ï¿½ï¿½ï¿½Ü£ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½Æ®ï¿½Öºï¿½Í¼ï¿½ï¿½Ð§ï¿½ï¿½
+ * @param itemId ï¿½ï¿½Æ·ID
+ * @param index ï¿½ï¿½Æ·ï¿½ï¿½Å£ï¿½ï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½Ê¾Ê±ï¿½ï¿½
  */
 void Chest::createItemObtainEffect(const std::string& itemId, int index)
 {
-    // ´´½¨ÎïÆ·Í¼±ê
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ·Í¼ï¿½ï¿½
     auto itemIcon = Sprite::create("items/" + itemId + ".png");
     if (!itemIcon) return;
 
-    // ÉèÖÃ³õÊ¼Î»ÖÃ£¨´Ó±¦ÏäÎ»ÖÃ¿ªÊ¼£©
+    // ï¿½ï¿½ï¿½Ã³ï¿½Ê¼Î»ï¿½Ã£ï¿½ï¿½Ó±ï¿½ï¿½ï¿½Î»ï¿½Ã¿ï¿½Ê¼ï¿½ï¿½
     itemIcon->setPosition(Vec2(this->getContentSize().width / 2,
         this->getContentSize().height));
     this->addChild(itemIcon);
 
-    // ´´½¨ÎïÆ·Ãû³Æ±êÇ©
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½Æ±ï¿½Ç©
     auto itemLabel = Label::createWithTTF("+" + itemId, "fonts/arial.ttf", 20);
     itemLabel->setPosition(itemIcon->getPosition() + Vec2(50, 0));
     this->addChild(itemLabel);
 
-    // ÉèÖÃ³õÊ¼×´Ì¬
-    float startDelay = 0.2f * index; // ´í¿ªÃ¿¸öÎïÆ·µÄÏÔÊ¾Ê±¼ä
+    // ï¿½ï¿½ï¿½Ã³ï¿½Ê¼×´Ì¬
+    float startDelay = 0.2f * index; // ï¿½ï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½Ê¾Ê±ï¿½ï¿½
     itemIcon->setScale(0.0f);
     itemIcon->setOpacity(0);
     itemLabel->setOpacity(0);
 
-    // ´´½¨Í¼±ê¶¯»­
+    // ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ê¶¯ï¿½ï¿½
     auto iconAppear = Spawn::create(
         ScaleTo::create(0.2f, 1.0f),
         FadeIn::create(0.2f),
         nullptr
     );
 
-    // ´´½¨ÏòÉÏÆ®¶¯ºÍµ­³ö¶¯»­
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     auto moveUp = MoveBy::create(1.0f, Vec2(0, 100));
     auto fadeOut = FadeOut::create(0.3f);
 
-    // ÔËÐÐÍ¼±ê¶¯»­ÐòÁÐ
+    // ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ê¶¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     itemIcon->runAction(Sequence::create(
         DelayTime::create(startDelay),
         iconAppear,
@@ -327,7 +327,7 @@ void Chest::createItemObtainEffect(const std::string& itemId, int index)
         nullptr
     ));
 
-    // ÔËÐÐ±êÇ©¶¯»­ÐòÁÐ
+    // ï¿½ï¿½ï¿½Ð±ï¿½Ç©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     itemLabel->runAction(Sequence::create(
         DelayTime::create(startDelay),
         FadeIn::create(0.2f),
@@ -346,7 +346,7 @@ void Chest::resetChest()
 {
     opened = false;
 
-    // ÖØÖÃ±¦ÏäÍâ¹Û
+    // ï¿½ï¿½ï¿½Ã±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     SpriteFrame* frame = SpriteFrame::create(CHEST_SPRITE_FILE,
         Rect(0, 0, FRAME_WIDTH, FRAME_HEIGHT));
     if (frame) {
