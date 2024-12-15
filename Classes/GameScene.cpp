@@ -77,6 +77,11 @@ bool GameScene::init()
     isMaruCreated = false; // 初始化标志
     isAlexCreated = false; // 初始化标志
 
+    // 初始化矿洞进入时间记录
+    lastMineEnterDay = 0;
+    lastMineEnterMonth = 0;
+    lastMineEnterYear = 0;
+
     // 创建并加载地图
     _gameMap = GameMap::create("House");
     if (_gameMap == nullptr)
@@ -281,6 +286,9 @@ void GameScene::updateCamera()
 
 void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& targetTilePos)
 {
+    // 清理宝箱
+    clearChests();
+
     // 移除当前 NPC
     if (lewis) {
         lewis->removeFromParent(); // 移除刘易斯
@@ -345,13 +353,6 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         initLewis();
     }
 
-    // 如果是矿洞地图，初始化宝箱，和NPC马龙
-    if (mapName == "Mine") {
-        CCLOG("Switching to Mine map, initializing chests and marlon...");
-        initChests();
-        initMarlon();
-    }
-
     // 如果是医院地图，初始化玛鲁
     if (mapName == "Hospital") {
         CCLOG("Switching to Hospital map, initializing maru...");
@@ -362,6 +363,47 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
     if (mapName == "Town") {
         CCLOG("Switching to Town map, initializing alex...");
         initAlex();
+    }
+
+
+    // 如果是矿洞地图，检查是否需要刷新宝箱
+    if (mapName == "Mine") {
+        CCLOG("切换到矿洞地图...");
+
+        auto gameTime = GameTime::getInstance();
+        int currentDay = gameTime->getDay();
+        int currentMonth = gameTime->getMonth();
+        int currentYear = gameTime->getYear();
+
+        // 检查是否需要刷新宝箱
+        bool shouldRefreshChests = false;
+
+        // 如果是第一次进入矿洞
+        if (lastMineEnterDay == 0) {
+            shouldRefreshChests = true;
+        }
+        // 或者已经过了至少一天
+        else if (currentYear > lastMineEnterYear ||
+            (currentYear == lastMineEnterYear && currentMonth > lastMineEnterMonth) ||
+            (currentYear == lastMineEnterYear && currentMonth == lastMineEnterMonth && currentDay > lastMineEnterDay)) {
+            shouldRefreshChests = true;
+        }
+
+        // 如果需要刷新宝箱
+        if (shouldRefreshChests) {
+            CCLOG("刷新矿洞宝箱...");
+            initChests();
+            // 更新进入时间
+            lastMineEnterDay = currentDay;
+            lastMineEnterMonth = currentMonth;
+            lastMineEnterYear = currentYear;
+        }
+        else {
+            CCLOG("今天已经刷新过宝箱，不再刷新");
+        }
+
+        // 初始化马龙NPC
+        initMarlon();
     }
 
     // 重新初始化钓鱼系统
@@ -658,4 +700,15 @@ void GameScene::initChests()
             CCLOG("Placed chest at world position (%.1f, %.1f)", worldPos.x, worldPos.y);
         }
     }
+}
+
+void GameScene::clearChests()
+{
+    for (auto chest : _chests) {
+        if (chest) {
+            chest->removeFromParent();
+        }
+    }
+    _chests.clear();
+    CCLOG("所有宝箱已清理");
 }

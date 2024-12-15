@@ -65,9 +65,14 @@ private:
     void initAlex();            // 初始化艾利克斯
     std::vector<Chest*> _chests;     // 存储所有宝箱
     void initChests();               // 初始化宝箱
+    void clearChests();              // 清理宝箱
+    int lastMineEnterDay = 0;    // 记录上次进入矿洞的日期
+    int lastMineEnterMonth = 0;  // 记录上次进入矿洞的月份
+    int lastMineEnterYear = 0;   // 记录上次进入矿洞的年份
 
     // 输入状态
     std::set<char> _pressedKeys;                                    // 已按下的按键集合
     cocos2d::EventListenerKeyboard* _keyboardListener = nullptr;    // 键盘监听器
     void initMouseListener();                                       // 声明鼠标监听器初始化方法(NPC使用)
+
 };
