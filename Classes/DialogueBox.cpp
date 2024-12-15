@@ -86,16 +86,6 @@ bool DialogueBox::init(const std::string& dialogue, const std::string& character
     };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
 
-    //// 添加关闭按钮
-    //auto closeButton = MenuItemImage::create("LooseSprites/shadow.png", "LooseSprites/shadow.png", [this](Ref* sender) {
-    //    this->close(); // 点击关闭按钮时关闭对话框
-    //});
-    //closeButton->setPosition(Vec2(90, 17)); // 根据需要调整位置
-
-    //auto menu = Menu::create(closeButton, nullptr);
-    //menu->setPosition(Vec2::ZERO); // 设置菜单位置为(0, 0)
-    //this->addChild(menu);
-
     // 添加出现动画
     this->setScale(3.7f); // 初始缩放为3.7
     auto appearAction = ScaleTo::create(0.3f, 4.0f); // 0.3秒内缩放到4.0
@@ -114,7 +104,7 @@ void DialogueBox::close()
         ScaleTo::create(0.3f, 0.1f), // 0.3秒内缩放到0.1
         CallFunc::create([this]() {
             CCLOG("Dialogue box removed from parent.");
-            this->removeFromParent(); // 动画结束后移除对话框
+            this->setVisible(false); // 动画结束后移除对话框
 
             }),
         nullptr));
