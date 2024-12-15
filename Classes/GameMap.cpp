@@ -55,6 +55,23 @@ bool GameMap::loadMap(const std::string& mapName) {
     // 初始化光照系统
     LightManager::getInstance()->initWithMap(this);
 
+
+    // 如果桥已经修复，处理所有断桥图层
+    if (_bridgeRepaired) {
+        for (const auto& layerName : BROKEN_BRIDGE_LAYERS) {
+            auto layer = _tileMap->getLayer(layerName);
+            if (layer) {
+                if (layerName == "Buildings-Broken") {
+                    _tileMap->removeChild(layer, true);
+                }
+                else {
+                    layer->setVisible(false);
+                }
+            }
+        }
+    }
+
+
     return true;
 }
 
@@ -237,4 +254,26 @@ bool GameMap::isChestCollision(const Vec2& worldPos) const
     }
     
     return false;  // 无碰撞
+}
+
+void GameMap::repairBridge() {
+    if (!_tileMap || _bridgeRepaired) return;
+
+    // 遍历并处理所有断桥相关图层
+    for (const auto& layerName : BROKEN_BRIDGE_LAYERS) {
+        auto layer = _tileMap->getLayer(layerName);
+        if (layer) {
+            if (layerName == "Buildings-Broken") {
+                // 移除碰撞层
+                _tileMap->removeChild(layer, true);
+            }
+            else {
+                // 隐藏视觉层
+                layer->setVisible(false);
+            }
+        }
+    }
+
+    // 标记桥已修复
+    _bridgeRepaired = true;
 }

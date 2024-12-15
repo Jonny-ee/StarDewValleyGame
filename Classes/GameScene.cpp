@@ -236,6 +236,7 @@ void GameScene::update(float dt)
     // 检查并执行睡觉事件
     checkAndExecuteSleepEvent();
 
+    checkAutoBridgeRepair();
 }
 
 void GameScene::updateCamera()
@@ -514,6 +515,7 @@ void GameScene::initMouseListener()
             {
                 CropManager::getInstance()->onMouseDown(clickPos, player);
             }
+
             // 鼠标点击时触发浇水
             if (player && player->getCurrentTool() == Player::ToolType::WATERING)
             {
@@ -827,5 +829,61 @@ void GameScene::checkAndExecuteSleepEvent() {
 
         // 执行动作序列
         player->runAction(sequence);
+    }
+}
+
+void GameScene::checkAutoBridgeRepair() {
+    if (!player || !_gameMap || _gameMap->isBridgeRepaired()) return;
+
+    // 获取玩家当前瓦片位置
+    Vec2 playerTilePos = _gameMap->convertToTileCoord(player->getPosition());
+
+    // 检查是否在触发位置（Mountain地图的5,26）
+    if (_gameMap->getMapName() == "Mountain" &&
+        std::abs(playerTilePos.x - 5) < 0.5f &&
+        (std::abs(playerTilePos.y - 26) < 0.5f ||
+            std::abs(playerTilePos.y - 27) < 0.5f)
+        ) {
+
+        // 禁用玩家输入
+        player->setCanPerformAction(false);
+
+        // 创建修桥序列
+        auto sequence = Sequence::create(
+            // 可以添加修桥前的效果
+            DelayTime::create(0.5f),
+
+            // 修复桥
+            CallFunc::create([this]() {
+                _gameMap->repairBridge();
+
+                // 可以添加修复完成的提示
+                auto visibleSize = Director::getInstance()->getVisibleSize();
+                auto label = Label::createWithSystemFont(
+                    "The bridge has been repaired！", "Arial", 24);
+                label->setPosition(visibleSize / 2);
+                this->addChild(label, 100);
+
+                // 2秒后淡出提示
+                label->runAction(Sequence::create(
+                    DelayTime::create(2.0f),
+                    FadeOut::create(1.0f),
+                    RemoveSelf::create(),
+                    nullptr
+                ));
+                }),
+
+            // 等待提示显示
+            DelayTime::create(1.0f),
+
+            // 重新启用玩家输入
+            CallFunc::create([this]() {
+                player->setCanPerformAction(true);
+                }),
+
+            nullptr
+        );
+
+        this->runAction(sequence);
     }
 }
