@@ -6,6 +6,7 @@ USING_NS_CC;
 
 Scene* GameScene::createScene()
 {
+
     return GameScene::create();
 }
 
@@ -172,6 +173,19 @@ bool GameScene::init()
     // 设置CropManager的地图引用
     CropManager::getInstance()->setGameMap(_gameMap);
 
+    // 创建状态UI
+    _statusUI = StatusUI::create();
+    if (_statusUI) {
+        // 设置位置到右上角
+        Size visibleSize = Director::getInstance()->getVisibleSize();
+        Vec2 origin = Director::getInstance()->getVisibleOrigin();
+        _statusUI->setPosition(origin.x + visibleSize.width,
+            origin.y + visibleSize.height);
+
+        // 添加到最上层，确保不会被其他内容遮挡
+        this->addChild(_statusUI, 10);
+    }
+
     return true;
 }
 
@@ -288,6 +302,11 @@ void GameScene::updateCamera()
     if (dialogueBox)
     {
         dialogueBox->setPosition(-offset + Vec2(visibleSize.width / 2, 90));
+    }
+
+    // 更新UI位置，确保状态UI始终固定在右上角
+    if (_statusUI) {
+        _statusUI->setPosition(-offset + Vec2(visibleSize.width, visibleSize.height));
     }
 }
 
@@ -728,7 +747,6 @@ void GameScene::clearChests()
     _chests.clear();
     CCLOG("所有宝箱已清理");
 }
-// GameScene.cpp 中添加
 void GameScene::checkAndExecuteSleepEvent() {
     // 如果已经在执行睡觉事件，则返回
     if ( !player || !_gameMap) return;
@@ -744,6 +762,20 @@ void GameScene::checkAndExecuteSleepEvent() {
         // 禁用玩家输入
         player->setCanPerformAction(false);
 
+        // 计算地图实际大小
+        Size mapSize = _gameMap->getTileMap()->getMapSize();
+        Size tileSize = _gameMap->getTileMap()->getTileSize();
+        float scale = _gameMap->getTileMap()->getScale();
+        Size actualMapSize = Size(mapSize.width * tileSize.width * scale,
+            mapSize.height * tileSize.height * scale);
+
+        // 创建覆盖整个地图的黑色滤镜
+        auto blackFilter = LayerColor::create(Color4B(0, 0, 0, 0));
+        blackFilter->setContentSize(actualMapSize);
+        // 设置位置与地图对齐
+        blackFilter->setPosition(_gameMap->getTileMap()->getPosition());
+        _gameMap->addChild(blackFilter, 9999);  // 添加到地图上，确保在最上层
+
         // 创建睡觉序列
         auto sequence = Sequence::create(
             // 1. 移动到睡觉位置 (25,6)
@@ -752,10 +784,15 @@ void GameScene::checkAndExecuteSleepEvent() {
                 player->setPosition(sleepPos);
                 }),
 
-            // 2. 等待2秒
-            DelayTime::create(2.0f),
+            // 2. 淡入黑色滤镜
+            CallFunc::create([blackFilter]() {
+                blackFilter->runAction(FadeTo::create(1.0f, 255));
+                }),
 
-            // 3. 修改游戏时间并移动到醒来位置
+            // 3. 等待1秒
+            DelayTime::create(1.0f),
+
+            // 4. 修改游戏时间并移动到醒来位置
             CallFunc::create([this]() {
                 // 修改游戏时间到第二天早上6点
                 GameTime::getInstance()->modifyGameTime(6);
@@ -763,14 +800,25 @@ void GameScene::checkAndExecuteSleepEvent() {
                 // 移动到醒来位置 (23,6)
                 Vec2 wakeupPos = _gameMap->convertToWorldCoord(Vec2(23, 6));
                 player->setPosition(wakeupPos);
-
-                // 重新启用玩家输入
-                player->setCanPerformAction(true);
-
                 }),
+                // 5. 淡出黑色滤镜
+                CallFunc::create([blackFilter]() {
+                    blackFilter->runAction(Sequence::create(
+                        FadeTo::create(1.0f, 0),
+                        CallFunc::create([blackFilter]() {
+                            blackFilter->removeFromParent();
+                            }),
+                        nullptr
+                    ));
+                    }),
 
-            nullptr
-        );
+                    // 6. 重新启用玩家输入
+                    CallFunc::create([this]() {
+                    player->setCanPerformAction(true);
+                        }),
+
+                    nullptr
+                    );
 
         // 执行动作序列
         player->runAction(sequence);

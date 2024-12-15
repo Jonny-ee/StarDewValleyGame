@@ -9,6 +9,7 @@
 #include "InventoryUI.h"
 #include "FishingSystem.h"
 #include "CropManager.h"
+#include "StatusUI.h"
 
 // 添加前向声明
 class Player;
@@ -57,6 +58,7 @@ private:
     cocos2d::TMXTiledMap* tileMap = nullptr;              // Tiled 地图系统
     cocos2d::TMXObjectGroup* collisionsGroup = nullptr;   // 碰撞组
     InventoryUI* _inventoryUI = nullptr;                  // 背包UI成员变量
+    StatusUI* _statusUI;
     cocos2d::Sprite* toolIcon = nullptr;  // 工具图标
     void initToolIcon();                  // 初始化工具图标
     void updateToolIcon();                // 更新工具图标
