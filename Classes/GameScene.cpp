@@ -169,7 +169,9 @@ bool GameScene::init()
     // 初始化宝箱
     initChests();
 
-   
+    // 设置CropManager的地图引用
+    CropManager::getInstance()->setGameMap(_gameMap);
+
     return true;
 }
 
@@ -414,6 +416,9 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
     // 重新初始化钓鱼系统
     FishingSystem::getInstance()->initFishingAreas(_gameMap);
 
+    // 更新CropManager的地图引用
+    CropManager::getInstance()->setGameMap(_gameMap);
+
     // 更新相机位置
     this->updateCamera();
 }
@@ -484,6 +489,12 @@ void GameScene::initMouseListener()
         {
             EventMouse* e = (EventMouse*)event;
             Vec2 clickPos = e->getLocation(); // 获取点击位置
+
+            // 鼠标点击时触发开垦
+            if (player && player->getCurrentTool() == Player::ToolType::SHOVEL)
+            {
+                CropManager::getInstance()->onMouseDown(clickPos, player);
+            }
 
             // 检查是否靠近并点击了刘易斯
             if (lewis) {

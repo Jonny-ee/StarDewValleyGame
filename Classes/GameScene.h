@@ -8,7 +8,7 @@
 #include "Alex.h"
 #include "InventoryUI.h"
 #include "FishingSystem.h"
-#include "SleepEvent.h"
+#include "CropManager.h"
 
 // 添加前向声明
 class Player;
