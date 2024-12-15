@@ -1,6 +1,5 @@
 #include "AppDelegate.h"
 #include "GameScene.h"
-#include "StartScene.h"
 #include"cocos2d.h"
 #include "InputManager.h"
 
@@ -88,7 +87,7 @@ bool AppDelegate::applicationDidFinishLaunching()
     InputManager::disableIME();
 
     // 创建并运行场景
-    auto scene = StartScene::createScene();
+    auto scene = GameScene::createScene();
     director->runWithScene(scene);
 
     return true;

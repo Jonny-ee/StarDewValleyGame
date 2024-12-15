@@ -250,23 +250,28 @@ void Chest::onOpenAnimationFinished()
 {
     // 获取物品系统实例
     auto itemSystem = ItemSystem::getInstance();
+    _obtainedItems.clear(); // 清空之前的物品列表
 
-    // 随机生成物品数量
+    // 生成随机物品数量
     int itemCount = random(MIN_ITEMS, MAX_ITEMS);
 
     // 生成随机物品并添加到物品系统
     for (int i = 0; i < itemCount; i++) {
         std::string randomItem = generateRandomItem();
+        int quantity = 1;
 
         // 添加物品到系统
-        if (itemSystem->addItem(randomItem, 1)) {
-            // 创建物品获得提示
-            createItemObtainEffect(randomItem, i);
+        if (itemSystem->addItem(randomItem, quantity)) {
+            // 记录获得的物品
+            _obtainedItems.push_back({ randomItem, quantity });
         }
-
-        CCLOG("Chest generated item: %s", randomItem.c_str());
+        CCLOG("宝箱生成物品: %s", randomItem.c_str());
     }
+
+    // 显示物品汇总弹窗
+    showItemsSummaryPopup();
 }
+
 
 /*
  * 生成随机物品
@@ -279,67 +284,7 @@ std::string Chest::generateRandomItem() const
     return possibleItems[index];
 }
 
-/*
- * 创建物品获得效果
- * 功能：显示获得物品的飘字和图标效果
- * @param itemId 物品ID
- * @param index 物品序号，用于错开多个物品的显示时间
- */
-void Chest::createItemObtainEffect(const std::string& itemId, int index)
-{
-    // 创建物品图标
-    auto itemIcon = Sprite::create("items/" + itemId + ".png");
-    if (!itemIcon) return;
 
-    // 设置初始位置（从宝箱位置开始）
-    itemIcon->setPosition(Vec2(this->getContentSize().width / 2,
-        this->getContentSize().height));
-    this->addChild(itemIcon);
-
-    // 创建物品名称标签
-    auto itemLabel = Label::createWithTTF("+" + itemId, "fonts/arial.ttf", 20);
-    itemLabel->setPosition(itemIcon->getPosition() + Vec2(50, 0));
-    this->addChild(itemLabel);
-
-    // 设置初始状态
-    float startDelay = 0.2f * index; // 错开每个物品的显示时间
-    itemIcon->setScale(0.0f);
-    itemIcon->setOpacity(0);
-    itemLabel->setOpacity(0);
-
-    // 创建图标动画
-    auto iconAppear = Spawn::create(
-        ScaleTo::create(0.2f, 1.0f),
-        FadeIn::create(0.2f),
-        nullptr
-    );
-
-    // 创建向上飘动和淡出动画
-    auto moveUp = MoveBy::create(1.0f, Vec2(0, 100));
-    auto fadeOut = FadeOut::create(0.3f);
-
-    // 运行图标动画序列
-    itemIcon->runAction(Sequence::create(
-        DelayTime::create(startDelay),
-        iconAppear,
-        Spawn::create(moveUp, fadeOut, nullptr),
-        RemoveSelf::create(),
-        nullptr
-    ));
-
-    // 运行标签动画序列
-    itemLabel->runAction(Sequence::create(
-        DelayTime::create(startDelay),
-        FadeIn::create(0.2f),
-        Spawn::create(
-            MoveBy::create(1.0f, Vec2(0, 100)),
-            FadeOut::create(0.3f),
-            nullptr
-        ),
-        RemoveSelf::create(),
-        nullptr
-    ));
-}
 
 
 void Chest::resetChest()
@@ -365,4 +310,54 @@ void Chest::recordOpenTime()
 
     CCLOG("Chest opened on Year %d, Month %d, Day %d",
         lastOpenYear, lastOpenMonth, lastOpenDay);
+}
+
+
+void Chest::showItemsSummaryPopup()
+{
+    if (_obtainedItems.empty()) {
+        return;
+    }
+
+    // 创建半透明黑色背景
+    // 根据物品数量调整背景高度
+    float bgHeight = 60 + (_obtainedItems.size() * 30); // 基础高度 + 每个物品的高度
+    auto popupBg = LayerColor::create(Color4B(0, 0, 0, 150), 200, bgHeight);
+
+    // 创建标题
+    auto titleLabel = Label::createWithSystemFont("Congratulations!", "Arial", 24);
+    titleLabel->setPosition(Vec2(100, bgHeight - 30));
+    titleLabel->setColor(Color3B::WHITE);
+    popupBg->addChild(titleLabel);
+
+    // 为每个物品创建一行文本
+    for (size_t i = 0; i < _obtainedItems.size(); i++) {
+        const auto& item = _obtainedItems[i];
+        auto itemLabel = Label::createWithSystemFont(
+            item.itemId + " x" + std::to_string(item.quantity),
+            "Arial", 20);
+        itemLabel->setPosition(Vec2(100, bgHeight - 60 - (i * 30)));
+        itemLabel->setColor(Color3B::WHITE);
+        popupBg->addChild(itemLabel);
+    }
+
+    // 设置弹窗位置在屏幕中央
+    Size visibleSize = Director::getInstance()->getVisibleSize();
+    popupBg->setPosition(Vec2(
+        (visibleSize.width - popupBg->getContentSize().width) / 2,
+        (visibleSize.height - popupBg->getContentSize().height) / 2
+    ));
+
+    // 添加到场景
+    this->getParent()->addChild(popupBg, 100);
+
+    // 创建弹窗动画
+    popupBg->setScale(0);
+    popupBg->runAction(Sequence::create(
+        ScaleTo::create(0.2f, 1.0f),
+        DelayTime::create(2.0f), // 显示时间延长到2秒
+        FadeOut::create(0.5f),
+        RemoveSelf::create(),
+        nullptr
+    ));
 }

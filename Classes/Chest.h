@@ -70,5 +70,13 @@ private:
     void onOpenAnimationFinished();            // 动画完成回调
     std::string generateRandomItem() const;     // 生成随机物品
     cocos2d::Animation* createChestAnimation(); // 创建宝箱动画
-    void createItemObtainEffect(const std::string& itemId, int index);
+
+    // 物品获得信息结构体
+    struct ItemInfo {
+        std::string itemId;
+        int quantity;
+    };
+
+    std::vector<ItemInfo> _obtainedItems; // 存储获得的所有物品
+    void showItemsSummaryPopup();         // 显示物品汇总弹窗
 };

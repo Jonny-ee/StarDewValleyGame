@@ -33,23 +33,31 @@ bool GameMap::loadMap(const std::string& mapName) {
     }
 
     _mapName = mapName;
-
+    
+   
     std::string mapPath = "maps/" + mapName + ".tmx";
 
 
     _tileMap = TMXTiledMap::create(mapPath);
     if (!_tileMap) {
+        //CCLOG("GameMap: Failed to create TMX map from path: %s", mapPath.c_str());
         return false;
     }
+
+    // 加载这个地图之前保存的状态（如果有的话）
+    loadMapState();
 
     // 获取地图和屏幕尺寸
     Size mapSize = _tileMap->getMapSize();
     Size tileSize = _tileMap->getTileSize();
     Size visibleSize = Director::getInstance()->getVisibleSize();
-    // 设置地图缩放
+    
+    //地图缩放比例
     float scale = 2.5f;
-    _tileMap->setScale(scale);
+    
 
+    // 设置地图缩放和位置
+    _tileMap->setScale(scale);
     this->addChild(_tileMap);
 
     // 初始化光照系统
