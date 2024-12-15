@@ -281,6 +281,24 @@ void GameScene::updateCamera()
 
 void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& targetTilePos)
 {
+    // 移除当前 NPC
+    if (lewis) {
+        lewis->removeFromParent(); // 移除刘易斯
+        lewis = nullptr; // 清空指针
+    }
+    if (marlon) {
+        marlon->removeFromParent(); // 移除马龙
+        marlon = nullptr; // 清空指针
+    }
+    if (maru) {
+        maru->removeFromParent(); // 移除玛鲁
+        maru = nullptr; // 清空指针
+    }
+    if (alex) {
+        alex->removeFromParent(); // 移除艾利克斯
+        alex = nullptr; // 清空指针
+    }
+
     // 保存当前背包UI的引用和状态
     auto currentInventoryUI = _inventoryUI;
     bool wasInventoryVisible = false;
@@ -322,7 +340,7 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
     }
 
     // 如果是农场地图，初始化刘易斯
-    if (mapName == "Farm" && !isLewisCreated) {
+    if (mapName == "Farm") {
         CCLOG("Switching to Farm map, initializing lewis...");
         initLewis();
     }
@@ -331,19 +349,17 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
     if (mapName == "Mine") {
         CCLOG("Switching to Mine map, initializing chests and marlon...");
         initChests();
-        if (!isMarlonCreated) {
-            initMarlon();
-        }
+        initMarlon();
     }
 
     // 如果是医院地图，初始化玛鲁
-    if (mapName == "Hospital" && !isMaruCreated) {
+    if (mapName == "Hospital") {
         CCLOG("Switching to Hospital map, initializing maru...");
         initMaru();
     }
 
     // 如果是小镇地图，初始化艾利克斯
-    if (mapName == "Town" && !isAlexCreated) {
+    if (mapName == "Town") {
         CCLOG("Switching to Town map, initializing alex...");
         initAlex();
     }
@@ -398,7 +414,7 @@ void GameScene::initMouseListener()
             if (maru) {
                 float distance = player->getPosition().distance(maru->getPosition());
 
-                if (distance < 150.0f) {
+                if (distance < 120.0f) {
                     Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
                 }
                 else {
@@ -435,6 +451,7 @@ void GameScene::initMouseListener()
 
                     if (player->getCurrentTool() == Player::ToolType::GIFT) {
                         // 如果玩家手持礼物，触发感谢动画
+                        lewis->stopAllActions();
                         lewis->showThanks();
                         dialogueBox = DialogueBox::create("I love this! Thank you! Mmmmmmm......", "Portraits/Lewis.png", "Lewis");
                         this->addChild(dialogueBox, 10);
@@ -465,7 +482,7 @@ void GameScene::initMouseListener()
                     player->setCanPerformAction(true);  // 允许玩家动作
                 }
             }
-            // 检查是否靠近并点击了码鲁
+            // 检查是否靠近并点击了玛鲁
             if (maru) {
                 float distance = player->getPosition().distance(maru->getPosition());
 
