@@ -16,13 +16,13 @@ Marlon* Marlon::create()
 
 bool Marlon::init()
 {
-    const std::string imagePath = "Characters/Marlon.png"; // ÂíÁú NPC µÄÍ¼Æ¬Â·¾¶
+    const std::string imagePath = "Characters/Marlon.png"; // é©¬é¾™ NPC çš„å›¾ç‰‡è·¯å¾„
     if (!NPC::init(imagePath))
     {
         return false;
     }
-    this->setTextureRect(cocos2d::Rect(0, 0, 16, 32)); // ÉèÖÃ³ß´ç
-    this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f)); // ÉèÖÃÃªµã
+    this->setTextureRect(cocos2d::Rect(0, 0, 16, 32)); // è®¾ç½®å°ºå¯¸
+    this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f)); // è®¾ç½®é”šç‚¹
     this->setScale(2.5);
     initializeDefaultBehavior();
     return true;
@@ -30,35 +30,35 @@ bool Marlon::init()
 
 void Marlon::initializeDefaultBehavior()
 {
-    setName("ÂíÁú");
-    setOccupation("¿ó¹¤");
-    setBirthday(Season::SUMMER, 10); // ¼ÙÉèÉúÈÕÔÚÏÄ¼¾µÄµÚ10Ìì
+    setName("é©¬é¾™");
+    setOccupation("çŸ¿å·¥");
+    setBirthday(Season::SUMMER, 10); // å‡è®¾ç”Ÿæ—¥åœ¨å¤å­£çš„ç¬¬10å¤©
 
-    // ³õÊ¼»¯ÈÎÎñÁĞ±í
-    taskList.push_back("²É¼¯5¸ö¿óÊ¯");
-    taskList.push_back("ÕÒµ½Ï¡ÓĞ¿óÊ¯");
-    taskList.push_back("°ïÖúÎÒĞŞÀí¿ó³µ");
+    // åˆå§‹åŒ–ä»»åŠ¡åˆ—è¡¨
+    taskList.push_back("é‡‡é›†5ä¸ªçŸ¿çŸ³");
+    taskList.push_back("æ‰¾åˆ°ç¨€æœ‰çŸ¿çŸ³");
+    taskList.push_back("å¸®åŠ©æˆ‘ä¿®ç†çŸ¿è½¦");
 }
 
 void Marlon::assignTask(Player* player)
 {
-    // ÎªÍæ¼Ò·ÖÅäËæ»úÈÎÎñ
+    // ä¸ºç©å®¶åˆ†é…éšæœºä»»åŠ¡
     if (!taskList.empty()) {
         int randomIndex = rand() % taskList.size();
         std::string task = taskList[randomIndex];
-        CCLOG("ÈÎÎñ·ÖÅä¸øÍæ¼Ò: %s", task.c_str());
+        CCLOG("ä»»åŠ¡åˆ†é…ç»™ç©å®¶: %s", task.c_str());
 
-        // ÕâÀï¿ÉÒÔÌí¼Ó¸ü¶àµÄÈÎÎñÂß¼­£¬ÀıÈç¸üĞÂÍæ¼ÒµÄÈÎÎñ×´Ì¬
-        // player->addTask(task); // ¼ÙÉè Player ÀàÓĞ addTask ·½·¨
+        // è¿™é‡Œå¯ä»¥æ·»åŠ æ›´å¤šçš„ä»»åŠ¡é€»è¾‘ï¼Œä¾‹å¦‚æ›´æ–°ç©å®¶çš„ä»»åŠ¡çŠ¶æ€
+        // player->addTask(task); // å‡è®¾ Player ç±»æœ‰ addTask æ–¹æ³•
     }
 }
 
 void Marlon::startConversation()
 {
-    // ÏÔÊ¾¶Ô»°¿ò
+    // æ˜¾ç¤ºå¯¹è¯æ¡†
     std::string dialogue = getRandomDialogue();
-    // DialogueManager::getInstance()->showDialogue(dialogue); // ¼ÙÉèÓĞ¶Ô»°¹ÜÀíÆ÷
-    CCLOG("¶Ô»°: %s", dialogue.c_str());
+    // DialogueManager::getInstance()->showDialogue(dialogue); // å‡è®¾æœ‰å¯¹è¯ç®¡ç†å™¨
+    CCLOG("å¯¹è¯: %s", dialogue.c_str());
 }
 
 std::string Marlon::getRandomDialogue()
