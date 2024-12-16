@@ -1,5 +1,5 @@
 #include "StatusUI.h"
-
+#include <string>
 USING_NS_CC;
 
 StatusUI* StatusUI::create() {
@@ -33,28 +33,27 @@ void StatusUI::initBackground() {
         _bgSprite->setAnchorPoint(Vec2(1, 1));  // 右上角对齐
         this->addChild(_bgSprite);
 
-        // 可以根据需要设置背景图片的缩放
-        // _bgSprite->setScale(2.0f);
+         _bgSprite->setScale(0.7f);
     }
 }
 
 void StatusUI::initTimeDisplay() {
     // 创建时间标签
-    _timeLabel = Label::createWithSystemFont("", "Arial", 20);
+    _timeLabel = Label::createWithSystemFont("", "Arial", 40);
     if (_timeLabel) {
         _timeLabel->setAnchorPoint(Vec2(1, 1));
-        _timeLabel->setPosition(_bgSprite->getContentSize().width - 10,
-            _bgSprite->getContentSize().height - 10);
+        _timeLabel->setPosition(_bgSprite->getContentSize().width - 53,
+            _bgSprite->getContentSize().height - 108);
         _timeLabel->setTextColor(Color4B::BLACK);
         _bgSprite->addChild(_timeLabel);
     }
 
     // 创建日期标签
-    _dateLabel = Label::createWithSystemFont("", "Arial", 20);
+    _dateLabel = Label::createWithSystemFont("", "Arial", 40);
     if (_dateLabel) {
         _dateLabel->setAnchorPoint(Vec2(1, 1));
-        _dateLabel->setPosition(_bgSprite->getContentSize().width - 10,
-            _bgSprite->getContentSize().height - 40);
+        _dateLabel->setPosition(_bgSprite->getContentSize().width - 53,
+            _bgSprite->getContentSize().height - 19);
         _dateLabel->setTextColor(Color4B::BLACK);
         _bgSprite->addChild(_dateLabel);
     }
@@ -73,13 +72,12 @@ void StatusUI::updateTimeDisplay() {
         sprintf(timeStr, "%02d:%02d", gameTime->getHour(), gameTime->getMinute());
         _timeLabel->setString(timeStr);
     }
-
+    const std::string months[13] = { " ","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec" };
     // 更新日期显示
     if (_dateLabel) {
         char dateStr[32];
-        sprintf(dateStr, "Year %d Month %d Day %d",
-            gameTime->getYear(),
-            gameTime->getMonth(),
+        sprintf(dateStr, "%s %d",
+            months[gameTime->getMonth()].c_str(),
             gameTime->getDay());
         _dateLabel->setString(dateStr);
     }
