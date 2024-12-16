@@ -36,7 +36,7 @@ private:
     std::map<SkillType, int> skillExp;     // 技能经验
 
     const int MAX_LEVEL = 10;              // 最大等级
-    const int BASE_EXP_NEEDED = 10;        // 每级所需基础经验
+    const int BASE_EXP_NEEDED = 5;        // 每级所需基础经验
 
 
     // UI引用

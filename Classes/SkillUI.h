@@ -2,6 +2,7 @@
 #include "cocos2d.h"
 #include "SkillType.h"
 #include <map>
+#include "Player.h"
 
 class SkillUI : public cocos2d::Node {
 public:

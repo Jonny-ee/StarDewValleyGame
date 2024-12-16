@@ -4,6 +4,7 @@
 #include "SkillUI.h"
 USING_NS_CC;
 
+Player* Player::_instance = nullptr;
 
 Player* Player::create()
 {
@@ -11,6 +12,7 @@ Player* Player::create()
     if (player && player->init())
     {
         player->autorelease();
+        _instance = player;  // 设置静态实例
         return player;
     }
     CC_SAFE_DELETE(player);
@@ -51,7 +53,7 @@ bool Player::init()
     // 初始化技能UI
     skillUI = SkillUI::create();
     if (skillUI) {
-        this->addChild(skillUI, 10);
+        this->addChild(skillUI, 999);
         skillUI->setVisible(false);  // 初始时隐藏
         SkillSystem::getInstance()->setSkillUI(skillUI);
     }
@@ -458,7 +460,6 @@ void Player::toggleSkillUI() {
         isSkillUIVisible = !isSkillUIVisible;
         skillUI->setVisible(isSkillUIVisible);
 
-        // 可以添加一些显示/隐藏的动画效果
         if (isSkillUIVisible) {
             // 显示时的动画
             skillUI->setScale(0.8f);
@@ -476,3 +477,4 @@ void Player::toggleSkillUI() {
         }
     }
 }
+

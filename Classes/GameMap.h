@@ -47,8 +47,9 @@ public:
     // 检查宝箱碰撞的方法
     bool isChestCollision(const cocos2d::Vec2& worldPos) const;
 
-    void repairBridge();
-    bool isBridgeRepaired() const { return _bridgeRepaired; }
+    // 资源碰撞检测方法
+    bool isResourceCollision(const cocos2d::Vec2& worldPos) const;
+
 private:
 
     GameMap(); // 私有构造函数
@@ -65,13 +66,6 @@ private:
 
     // 从对象属性中解析传送点信息
     bool parseTransitionProperties(const cocos2d::ValueMap& properties, TransitionInfo& outTransition) const;
-
-    bool _bridgeRepaired = false;
-    const std::vector<std::string> BROKEN_BRIDGE_LAYERS = {
-        "BrokenBridge",
-        "BrokenBridge2",
-        "Buildings-Broken"
-    };
 };
 
 #endif // __GAMEMAP_H__

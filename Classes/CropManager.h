@@ -2,6 +2,7 @@
 #include "cocos2d.h"
 #include "GameMap.h"
 #include "Player.h"
+#include "GameScene.h" 
 
 USING_NS_CC;
 
@@ -25,11 +26,12 @@ public:
 
     void setGameMap(GameMap* map) { _gameMap = map; }      // 设置当前游戏地图引用
     void onMouseDown(const Vec2& mousePos, Player* player); // 处理鼠标事件
-
+    void setGameScene(GameScene* scene) { _gameScene = scene; } 
 private:
     CropManager() {}                // 私有构造函数（单例模式）
     static CropManager* _instance;  // 单例实例指针
     GameMap* _gameMap = nullptr;    // 当前地图引用
+    GameScene* _gameScene = nullptr;  // 添加场景引用
 
     // 浇水效果相关常量
     const Color3B WATER_COLOR = Color3B(173, 216, 230);    // 浇水后的颜色(淡蓝色)
