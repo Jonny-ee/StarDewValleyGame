@@ -72,6 +72,8 @@ bool GameMap::loadMap(const std::string& mapName) {
     // 初始化光照系统
     LightManager::getInstance()->initWithMap(this);
 
+    initFrontLayers();
+
     return true;
 }
 
@@ -199,22 +201,6 @@ bool GameMap::checkForTransition(const Vec2& tilePos, TransitionInfo& outTransit
     return false;
 }
 
-bool GameMap::parseTransitionProperties(const ValueMap& properties, TransitionInfo& outTransition) const {
-    // 检查必要的属性是否存在（意属性名要和Tiled中设置的完全一致）
-    if (properties.find("TargetMap") == properties.end() ||
-        properties.find("TargetX") == properties.end() ||
-        properties.find("TargetY") == properties.end()) {
-        return false;
-    }
-
-    // 解析传送点信息
-    outTransition.targetMap = properties.at("TargetMap").asString();
-    outTransition.targetTilePos.x = properties.at("TargetX").asFloat();
-    outTransition.targetTilePos.y = properties.at("TargetY").asFloat();
-
-    return true;
-}
-
 //参数为世界坐标
 //本函数会将世界坐标改为地图坐标tilePos，判断当前地图坐标上是否有障碍物
 bool GameMap::isWalkable(const Vec2& worldPos) const {
@@ -320,4 +306,82 @@ void GameMap::repairBridge() {
     }
 
     _bridgeRepaired = true;
+}
+
+void GameMap::updateFrontTileVisibility(const Vec2& playerPos) {
+    if (_frontLayers.empty()) return;
+
+    Vec2 currentTilePos = convertToTileCoord(playerPos);
+    if (currentTilePos == _lastPlayerTilePos) return;
+
+    // 恢复上一个位置的瓦片到完全不透明
+    for (const auto& [layer, tilePos] : _fadedTiles) {
+        uint32_t gid = layer->getTileGIDAt(tilePos);
+        if (gid > 0) {
+            auto tile = layer->getTileAt(tilePos);
+            tile->stopAllActions();
+            tile->runAction(FadeTo::create(TRANSITION_TIME, 255));
+        }
+    }
+
+    _fadedTiles.clear();
+
+    // 对每个Front层处理当前位置的瓦片
+    const int radius = 1;
+    for (auto* layer : _frontLayers) {
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dy = -radius; dy <= radius; dy++) {
+                Vec2 checkPos(currentTilePos.x + dx, currentTilePos.y + dy);
+                uint32_t gid = layer->getTileGIDAt(checkPos);
+                if (gid > 0) {
+                    auto tile = layer->getTileAt(checkPos);
+                    tile->stopAllActions();
+                    tile->runAction(FadeTo::create(TRANSITION_TIME, FRONT_TILE_OPACITY));
+                    _fadedTiles.insert({ layer, checkPos });
+                }
+            }
+        }
+    }
+
+    _lastPlayerTilePos = currentTilePos;
+}
+void GameMap::initFrontLayers() {
+    if (!_tileMap) return;
+
+    _frontLayers.clear();
+
+    // 获取所有层
+    const auto& allLayers = _tileMap->getChildren();
+    for (const auto& child : allLayers) {
+        auto layer = dynamic_cast<TMXLayer*>(child);
+        if (layer) {
+            // 获取层名
+            std::string layerName = layer->getLayerName();
+            // 检查是否以"Front"开头
+            if (layerName.substr(0, 5) == "Front") {
+                _frontLayers.push_back(layer);
+                layer->retain();  // 保持引用计数
+            }
+        }
+    }
+}
+void GameMap::restoreAllFrontTiles() {
+    for (const auto& [layer, tilePos] : _fadedTiles) {
+        uint32_t gid = layer->getTileGIDAt(tilePos);
+        if (gid > 0) {
+            auto tile = layer->getTileAt(tilePos);
+            tile->stopAllActions();
+            tile->setOpacity(255);
+        }
+    }
+
+    _fadedTiles.clear();
+    _lastPlayerTilePos = Vec2(-1, -1);
+}
+GameMap::~GameMap() {
+    // 释放所有保持的Front层
+    for (auto* layer : _frontLayers) {
+        layer->release();
+    }
+    _frontLayers.clear();
 }

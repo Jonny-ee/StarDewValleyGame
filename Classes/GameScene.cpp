@@ -245,6 +245,11 @@ void GameScene::update(float dt)
     for (auto event : _events) {
         event->update(dt);
     }
+
+    // 更新前景瓦片可见性
+    if (_gameMap && player) {
+        _gameMap->updateFrontTileVisibility(player->getPosition());
+    }
 }
 
 void GameScene::updateCamera()

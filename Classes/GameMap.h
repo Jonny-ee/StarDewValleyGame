@@ -55,6 +55,10 @@ public:
 
     void repairBridge();
     bool isBridgeRepaired() const { return _bridgeRepaired; }
+
+    void updateFrontTileVisibility(const cocos2d::Vec2& playerPos);
+    void restoreAllFrontTiles();  // 恢复所有前景瓦片
+    ~GameMap();
 private:
 
     GameMap(); // 私有构造函数
@@ -68,9 +72,13 @@ private:
     void loadMapState();
     std::string _mapName;
     cocos2d::TMXTiledMap* _tileMap=nullptr;
-
-    // 从对象属性中解析传送点信息
-    bool parseTransitionProperties(const cocos2d::ValueMap& properties, TransitionInfo& outTransition) const;
+   
+    const float FRONT_TILE_OPACITY = 128.0f;  // 半透明度 (0-255)
+    const float TRANSITION_TIME = 0.3f;        // 过渡时间
+    std::vector<cocos2d::TMXLayer*> _frontLayers;  // 存储所有Front层
+    cocos2d::Vec2 _lastPlayerTilePos = cocos2d::Vec2(-1, -1);
+    std::set<std::pair<cocos2d::TMXLayer*, cocos2d::Vec2>> _fadedTiles;  // 记录层和位置
+    void initFrontLayers();  // 初始化所有Front层
 
     bool _bridgeRepaired = false;
     const std::vector<std::string> BROKEN_BRIDGE_LAYERS = {
