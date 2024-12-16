@@ -47,6 +47,9 @@ public:
     // 检查宝箱碰撞的方法
     bool isChestCollision(const cocos2d::Vec2& worldPos) const;
 
+    // 资源碰撞检测方法
+    bool isResourceCollision(const cocos2d::Vec2& worldPos) const;
+
     void repairBridge();
     bool isBridgeRepaired() const { return _bridgeRepaired; }
 private:

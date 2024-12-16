@@ -1,7 +1,8 @@
-#include "GameScene.h"
+﻿#include "GameScene.h"
 #include "GameTime.h"
 #include"LightManager.h"
 #include "Chest.h" 
+
 USING_NS_CC;
 
 Scene* GameScene::createScene()
@@ -171,6 +172,8 @@ bool GameScene::init()
     initChests();
 
     // 设置CropManager的地图引用
+    auto cropManager = CropManager::getInstance();
+    cropManager->setGameScene(this);
     CropManager::getInstance()->setGameMap(_gameMap);
 
     // 创建状态UI
@@ -185,7 +188,6 @@ bool GameScene::init()
         // 添加到最上层，确保不会被其他内容遮挡
         this->addChild(_statusUI, 10);
     }
-
     return true;
 }
 
@@ -515,7 +517,6 @@ void GameScene::initMouseListener()
             {
                 CropManager::getInstance()->onMouseDown(clickPos, player);
             }
-
             // 鼠标点击时触发浇水
             if (player && player->getCurrentTool() == Player::ToolType::WATERING)
             {
@@ -886,4 +887,24 @@ void GameScene::checkAutoBridgeRepair() {
 
         this->runAction(sequence);
     }
+}
+
+void GameMap::repairBridge() {
+    if (!_tileMap || _bridgeRepaired) return;
+    // 遍历并处理所有断桥相关图层
+    for (const auto& layerName : BROKEN_BRIDGE_LAYERS) {
+        auto layer = _tileMap->getLayer(layerName);
+        if (layer) {
+            if (layerName == "Buildings-Broken") {
+                // 移除碰撞层
+                _tileMap->removeChild(layer, true);
+            }
+            else {
+                // 隐藏视觉层
+                layer->setVisible(false);
+            }
+        }
+    }
+    // 标记桥已修复
+    _bridgeRepaired = true;
 }

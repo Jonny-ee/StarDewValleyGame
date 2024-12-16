@@ -55,23 +55,6 @@ bool GameMap::loadMap(const std::string& mapName) {
     // 初始化光照系统
     LightManager::getInstance()->initWithMap(this);
 
-
-    // 如果桥已经修复，处理所有断桥图层
-    if (_bridgeRepaired) {
-        for (const auto& layerName : BROKEN_BRIDGE_LAYERS) {
-            auto layer = _tileMap->getLayer(layerName);
-            if (layer) {
-                if (layerName == "Buildings-Broken") {
-                    _tileMap->removeChild(layer, true);
-                }
-                else {
-                    layer->setVisible(false);
-                }
-            }
-        }
-    }
-
-
     return true;
 }
 
@@ -204,6 +187,12 @@ bool GameMap::isWalkable(const Vec2& worldPos) const {
         return false;
     }
 
+    // 检查资源碰撞
+    if (isResourceCollision(worldPos)) {
+        return false;
+    }
+
+
     // 检查所有Buildings层
     const auto& allLayers = _tileMap->getChildren();
     for (const auto& child : allLayers) {
@@ -256,24 +245,23 @@ bool GameMap::isChestCollision(const Vec2& worldPos) const
     return false;  // 无碰撞
 }
 
-void GameMap::repairBridge() {
-    if (!_tileMap || _bridgeRepaired) return;
+bool GameMap::isResourceCollision(const Vec2& worldPos) const {
+    if (!_tileMap) {
+        return false;
+    }
 
-    // 遍历并处理所有断桥相关图层
-    for (const auto& layerName : BROKEN_BRIDGE_LAYERS) {
-        auto layer = _tileMap->getLayer(layerName);
-        if (layer) {
-            if (layerName == "Buildings-Broken") {
-                // 移除碰撞层
-                _tileMap->removeChild(layer, true);
-            }
-            else {
-                // 隐藏视觉层
-                layer->setVisible(false);
-            }
+    // 转换为瓦片坐标
+    Vec2 tilePos = convertToTileCoord(worldPos);
+
+    // 获取资源层
+    auto resourceLayer = _tileMap->getLayer("resource");
+    if (resourceLayer) {
+        // 检查该位置是否有资源图块
+        int tileGID = resourceLayer->getTileGIDAt(tilePos);
+        if (tileGID > 0) {
+            return true;  // 有资源，发生碰撞
         }
     }
 
-    // 标记桥已修复
-    _bridgeRepaired = true;
+    return false;  // 无碰撞
 }

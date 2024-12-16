@@ -50,26 +50,88 @@ std::string SkillUI::getSkillName(SkillType type) {
  * 功能：创建并显示技能升级的动画提示
  */
 void SkillUI::showLevelUpTip(SkillType type, int newLevel, float bonus) {
+    // 获取玩家位置
+    auto player = Player::getInstance();
+    if (!player) return;
+
+    Vec2 playerPos = player->getPosition();
+
+    // 创建半透明黑色背景层
+    auto bgLayer = LayerColor::create(Color4B(0, 0, 0, 180), 300, 150);
+
     // 创建提示文本
-    std::string tipText = getSkillName(type) + " Level Up! " +
-        "Now Level " + std::to_string(newLevel);
+    std::string skillName = getSkillName(type);
+    std::string bonusText;
 
-    auto tipLabel = Label::createWithSystemFont(tipText, "Arial", 20);
-    if (tipLabel) {
-        // 设置标签位置和缩放
-        tipLabel->setPosition(Director::getInstance()->getVisibleSize() / 2);
-        tipLabel->setScale(0.8f);
-        this->addChild(tipLabel, 10);
-
-        // 创建渐入渐出动画序列
-        tipLabel->setOpacity(0);
-        auto fadeIn = FadeIn::create(0.5f);
-        auto delay = DelayTime::create(1.5f);
-        auto fadeOut = FadeOut::create(0.5f);
-        auto remove = RemoveSelf::create();
-
-        tipLabel->runAction(Sequence::create(fadeIn, delay, fadeOut, remove, nullptr));
+    // 根据不同技能类型显示不同的加成说明
+    switch (type) {
+        case SkillType::FARMING:
+            bonusText = StringUtils::format("Harvest bonus: +%.0f%%", (bonus - 1.0f) * 100);
+            break;
+        case SkillType::MINING:
+            bonusText = StringUtils::format("Ore acquisition: +%.0f%%", (bonus - 1.0f) * 100);
+            break;
+        case SkillType::FISHING:
+            bonusText = StringUtils::format("Fishing time: -%.0f%%", (1.0f - bonus) * 100);
+            break;
+        case SkillType::COOKING:
+            bonusText = StringUtils::format("Cooking success rate: +%.0f%%", (bonus - 1.0f) * 100);
+            break;
     }
+
+    // 创建标题
+    auto titleLabel = Label::createWithSystemFont(skillName + " Level Up!", "Arial", 24);
+    titleLabel->setPosition(Vec2(150, 110));
+    titleLabel->setColor(Color3B::YELLOW);
+    bgLayer->addChild(titleLabel);
+
+    // 创建等级文本
+    auto levelLabel = Label::createWithSystemFont("Level " + std::to_string(newLevel), "Arial", 22);
+    levelLabel->setPosition(Vec2(150, 70));
+    levelLabel->setColor(Color3B::WHITE);
+    bgLayer->addChild(levelLabel);
+
+    // 创建加成文本
+    auto bonusLabel = Label::createWithSystemFont(bonusText, "Arial", 20);
+    bonusLabel->setPosition(Vec2(150, 30));
+    bonusLabel->setColor(Color3B::GREEN);
+    bgLayer->addChild(bonusLabel);
+
+    // 设置弹窗位置（在玩家头顶上方）
+    Vec2 tipPos = Vec2(
+        playerPos.x,
+        playerPos.y + 100  // 在玩家上方100像素
+    );
+    bgLayer->setPosition(tipPos - Vec2(150, 75));  // 居中显示
+
+    // 添加到场景
+    Director::getInstance()->getRunningScene()->addChild(bgLayer, 1000);
+
+    // 创建入场动画
+    bgLayer->setScale(0.1f);
+    bgLayer->runAction(ScaleTo::create(0.2f, 1.0f));
+
+    // 添加点击监听器
+    auto listener = EventListenerTouchOneByOne::create();
+    listener->onTouchBegan = [bgLayer](Touch* touch, Event* event) {
+        // 创建消失动画
+        auto fadeOut = FadeOut::create(0.2f);
+        auto remove = RemoveSelf::create();
+        bgLayer->runAction(Sequence::create(fadeOut, remove, nullptr));
+        return true;  // 消费这个触摸事件
+        };
+
+    // 启用点击监听
+    Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, bgLayer);
+
+    // 添加自动消失定时器（如果10秒内没有点击）
+    auto autoHide = Sequence::create(
+        DelayTime::create(10.0f),
+        FadeOut::create(0.5f),
+        RemoveSelf::create(),
+        nullptr
+    );
+    bgLayer->runAction(autoHide);
 }
 
 /*
@@ -103,6 +165,8 @@ bool SkillUI::init() {
         return false;
     }
 
+    // 设置更高的Z序
+    this->setLocalZOrder(1000);
     // 创建背景图片
     auto background = Sprite::create("LooseSprites/JunimoNoteMobile.png");
     if (background) {
@@ -140,7 +204,7 @@ bool SkillUI::init() {
         }
 
         // 创建经验值标签
-        auto expLabel = Label::createWithSystemFont("EXP: 0/100", "Arial", 13);
+        auto expLabel = Label::createWithSystemFont("EXP: 0/5", "Arial", 13);
         if (expLabel) {
             expLabel->setPosition(Vec2(160, currentY));
             expLabel->setScale(0.3f);

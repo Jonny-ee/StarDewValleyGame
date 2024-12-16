@@ -10,9 +10,10 @@
  * 3. 键盘输入处理
  * 4. 动画状态管理
  */
-class GameMap;      // 前向声明
-class GameScene;    // 前向声明（防止循环包含）
 
+class GameScene;    // 前向声明
+class GameMap;  // 前向声明
+class SkillUI;  // 前向声明
 class Player : public cocos2d::Sprite
 {
 
@@ -38,7 +39,7 @@ public:
     float getMoveSpeed() const;                         // 获取玩家移动速度
     void removeAllListeners();                          // 清理方法声明
     void setGameMap(GameMap* map) { gameMap = map; }    // 设置方法
-
+    static Player* getInstance() { return _instance; }// 添加静态实例获取方法
     // 事件监听相关
     void initKeyboardListener();                        // 初始化键盘监听器
     void initMouseListener();                           // 初始化鼠标监听器
@@ -56,10 +57,10 @@ public:
 
     // 设置玩家是否可执行动作
     void setCanPerformAction(bool select) { canPerformAction = select; }
-
+  
 private:
     GameMap* gameMap = nullptr;                             // GameMap 引用                  
-
+    static Player* _instance;
     // 基础属性
     float moveSpeed = 200.0f;                               // 玩家移动速度（像素/秒）
 

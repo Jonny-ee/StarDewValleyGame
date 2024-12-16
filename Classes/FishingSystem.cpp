@@ -160,7 +160,7 @@ void FishingSystem::finishFishing()
             if (randomNum < 70)     // 70%概率钓到东西
             {
                 randomNum = rand() % 100;
-                if (randomNum < 50)     // 80%概率钓到普通鱼
+                if (randomNum < 80)     // 80%概率钓到普通鱼
                 {
                     ItemSystem::getInstance()->addItem("fish", 1);
 

@@ -115,9 +115,13 @@ void CropManager::createWaterEffect(Sprite* tile)
 /*
  * 显示浇水提示
  */
-void CropManager::showWateringPopup()
-{
-    if (!_gameMap) return;
+void CropManager::showWateringPopup() {
+    if (!_gameScene || !_gameMap) return;
+
+    // 获取玩家位置
+    auto player = Player::getInstance();
+    if (!player) return;
+    Vec2 playerPos = player->getPosition();
 
     // 创建半透明背景
     auto popupBg = LayerColor::create(Color4B(0, 0, 0, 150), 200, 80);
@@ -128,15 +132,14 @@ void CropManager::showWateringPopup()
     label->setColor(Color3B::WHITE);
     popupBg->addChild(label);
 
-    // 设置弹窗位置到屏幕中央
-    Size visibleSize = Director::getInstance()->getVisibleSize();
+    // 设置弹窗位置到玩家头顶
     popupBg->setPosition(Vec2(
-        (visibleSize.width - popupBg->getContentSize().width) / 2,
-        (visibleSize.height - popupBg->getContentSize().height) / 2
+        playerPos.x - 100,  // 居中显示
+        playerPos.y + 50    // 在玩家上方
     ));
 
-    // 添加到地图所在的场景
-    _gameMap->getParent()->addChild(popupBg, 100);
+    // 添加到游戏场景
+    _gameScene->addChild(popupBg, 1000);
 
     // 创建动画序列
     popupBg->setScale(0);
@@ -147,6 +150,18 @@ void CropManager::showWateringPopup()
         RemoveSelf::create(),
         nullptr
     ));
+
+    // 添加点击监听器
+    auto listener = EventListenerTouchOneByOne::create();
+    listener->onTouchBegan = [popupBg](Touch* touch, Event* event) {
+        popupBg->runAction(Sequence::create(
+            FadeOut::create(0.2f),
+            RemoveSelf::create(),
+            nullptr
+        ));
+        return true;
+        };
+    Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, popupBg);
 }
 /*
  * 处理鼠标按下事件，执行开垦操作
