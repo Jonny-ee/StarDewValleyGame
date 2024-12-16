@@ -103,7 +103,7 @@ bool GameScene::init()
 
 
     // 设置玩家初始位置
-    Vec2 tilePos = Vec2(23, 6);
+    Vec2 tilePos = Vec2(9, 7);
     Vec2 worldPos = _gameMap->convertToWorldCoord(tilePos);
     player->setPosition(worldPos);
     player->setScale(3.0f);

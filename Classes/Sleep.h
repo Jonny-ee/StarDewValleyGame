@@ -11,7 +11,7 @@ protected:
         return "Please enter M to sleep";
     }
 private:
-    const cocos2d::Vec2 TRIGGER_POS = cocos2d::Vec2(26, 6);
-    const cocos2d::Vec2 SLEEP_POS = cocos2d::Vec2(25, 6);
-    const cocos2d::Vec2 WAKEUP_POS = cocos2d::Vec2(23, 6);
+    const cocos2d::Vec2 TRIGGER_POS = cocos2d::Vec2(13, 8);
+    const cocos2d::Vec2 SLEEP_POS = cocos2d::Vec2(14, 8);
+    const cocos2d::Vec2 WAKEUP_POS = cocos2d::Vec2(12, 8);
 };
