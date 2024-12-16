@@ -858,19 +858,19 @@ void GameScene::checkAutoBridgeRepair() {
                 _gameMap->repairBridge();
 
                 // 可以添加修复完成的提示
-                auto visibleSize = Director::getInstance()->getVisibleSize();
-                auto label = Label::createWithSystemFont(
-                    "The bridge has been repaired！", "Arial", 24);
-                label->setPosition(visibleSize / 2);
-                this->addChild(label, 100);
+                //auto visibleSize = Director::getInstance()->getVisibleSize();
+                //auto label = Label::createWithSystemFont(
+                //    "The bridge has been repaired！", "Arial", 24);
+                //label->setPosition(visibleSize / 2);
+                //this->addChild(label, 100);
 
-                // 2秒后淡出提示
-                label->runAction(Sequence::create(
-                    DelayTime::create(2.0f),
-                    FadeOut::create(1.0f),
-                    RemoveSelf::create(),
-                    nullptr
-                ));
+                //// 2秒后淡出提示
+                //label->runAction(Sequence::create(
+                //    DelayTime::create(2.0f),
+                //    FadeOut::create(1.0f),
+                //    RemoveSelf::create(),
+                //    nullptr
+               //));
                 }),
 
             // 等待提示显示
