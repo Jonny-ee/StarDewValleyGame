@@ -35,9 +35,9 @@ void Marlon::initializeDefaultBehavior()
     setBirthday(Season::SUMMER, 10); // 假设生日在夏季的第10天
 
     // 初始化任务列表
-    taskList.push_back("采集5个矿石");
-    taskList.push_back("找到稀有矿石");
-    taskList.push_back("帮助我修理矿车");
+    taskList.push_back("1");
+    taskList.push_back("1");
+    taskList.push_back("1");
 }
 
 void Marlon::assignTask(Player* player)
