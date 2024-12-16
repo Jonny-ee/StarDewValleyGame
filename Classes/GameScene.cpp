@@ -92,7 +92,6 @@ bool GameScene::init()
         return false;
     }
     this->addChild(_gameMap);
-
     // 创建玩家
     player = Player::create();
     if (player == nullptr)
@@ -158,9 +157,6 @@ bool GameScene::init()
 
     // 启动更新
     this->scheduleUpdate();
-
-    // 更新相机位置
-    updateCamera();
 
     // 初始化工具图标
     initToolIcon();
@@ -440,9 +436,6 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
 
     // 更新CropManager的地图引用
     CropManager::getInstance()->setGameMap(_gameMap);
-
-    // 更新相机位置
-    this->updateCamera();
 }
 
 void GameScene::initMouseListener()
@@ -887,24 +880,4 @@ void GameScene::checkAutoBridgeRepair() {
 
         this->runAction(sequence);
     }
-}
-
-void GameMap::repairBridge() {
-    if (!_tileMap || _bridgeRepaired) return;
-    // 遍历并处理所有断桥相关图层
-    for (const auto& layerName : BROKEN_BRIDGE_LAYERS) {
-        auto layer = _tileMap->getLayer(layerName);
-        if (layer) {
-            if (layerName == "Buildings-Broken") {
-                // 移除碰撞层
-                _tileMap->removeChild(layer, true);
-            }
-            else {
-                // 隐藏视觉层
-                layer->setVisible(false);
-            }
-        }
-    }
-    // 标记桥已修复
-    _bridgeRepaired = true;
 }

@@ -65,7 +65,10 @@ bool GameMap::loadMap(const std::string& mapName) {
     if (mapName == "Farm") {
         loadMapState();
     }
-
+    if (_bridgeRepaired)
+    {
+        repairBridge();
+    }
     // 初始化光照系统
     LightManager::getInstance()->initWithMap(this);
 
@@ -304,4 +307,17 @@ bool GameMap::isResourceCollision(const Vec2& worldPos) const {
     }
 
     return false;  // 无碰撞
+}
+
+void GameMap::repairBridge() {
+
+    // 遍历并处理所有断桥相关图层
+    for (const auto& layerName : BROKEN_BRIDGE_LAYERS) {
+        auto layer = _tileMap->getLayer(layerName);
+        if (layer) {
+                _tileMap->removeChild(layer, true);
+        }
+    }
+
+    _bridgeRepaired = true;
 }
