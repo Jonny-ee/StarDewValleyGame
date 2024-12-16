@@ -2,6 +2,8 @@
 #include "GameTime.h"
 #include"LightManager.h"
 #include "Chest.h" 
+#include "Sleep.h"
+#include "BridgeEvent.h"
 
 USING_NS_CC;
 
@@ -184,6 +186,14 @@ bool GameScene::init()
         // 添加到最上层，确保不会被其他内容遮挡
         this->addChild(_statusUI, 10);
     }
+
+    // 创建事件
+    _events.push_back(SleepEvent::create(_gameMap, player));
+    _events.push_back(BridgeEvent::create(_gameMap, player));
+
+    for (auto event : _events) {
+        this->addChild(event);
+    }
     return true;
 }
 
@@ -231,10 +241,10 @@ void GameScene::update(float dt)
         }
     }
 
-    // 检查并执行睡觉事件
-    checkAndExecuteSleepEvent();
-
-    checkAutoBridgeRepair();
+    // 检查所有事件
+    for (auto event : _events) {
+        event->update(dt);
+    }
 }
 
 void GameScene::updateCamera()
@@ -747,137 +757,4 @@ void GameScene::clearChests()
     }
     _chests.clear();
     CCLOG("所有宝箱已清理");
-}
-void GameScene::checkAndExecuteSleepEvent() {
-    // 如果已经在执行睡觉事件，则返回
-    if ( !player || !_gameMap) return;
-
-    // 获取玩家当前瓦片位置
-    Vec2 playerTilePos = _gameMap->convertToTileCoord(player->getPosition());
-
-    // 检查是否在触发位置 (26,6)
-    if (_gameMap->getMapName() == "House" &&
-        std::abs(playerTilePos.x - 26) < 0.5f &&
-        std::abs(playerTilePos.y - 6) < 0.5f) {
-
-        // 禁用玩家输入
-        player->setCanPerformAction(false);
-
-        // 计算地图实际大小
-        Size mapSize = _gameMap->getTileMap()->getMapSize();
-        Size tileSize = _gameMap->getTileMap()->getTileSize();
-        float scale = _gameMap->getTileMap()->getScale();
-        Size actualMapSize = Size(mapSize.width * tileSize.width * scale,
-            mapSize.height * tileSize.height * scale);
-
-        // 创建覆盖整个地图的黑色滤镜
-        auto blackFilter = LayerColor::create(Color4B(0, 0, 0, 0));
-        blackFilter->setContentSize(actualMapSize);
-        // 设置位置与地图对齐
-        blackFilter->setPosition(_gameMap->getTileMap()->getPosition());
-        _gameMap->addChild(blackFilter, 9999);  // 添加到地图上，确保在最上层
-
-        // 创建睡觉序列
-        auto sequence = Sequence::create(
-            // 1. 移动到睡觉位置 (25,6)
-            CallFunc::create([this]() {
-                Vec2 sleepPos = _gameMap->convertToWorldCoord(Vec2(25, 6));
-                player->setPosition(sleepPos);
-                }),
-
-            // 2. 淡入黑色滤镜
-            CallFunc::create([blackFilter]() {
-                blackFilter->runAction(FadeTo::create(1.0f, 255));
-                }),
-
-            // 3. 等待1秒
-            DelayTime::create(1.0f),
-
-            // 4. 修改游戏时间并移动到醒来位置
-            CallFunc::create([this]() {
-                // 修改游戏时间到第二天早上6点
-                GameTime::getInstance()->modifyGameTime(6);
-
-                // 移动到醒来位置 (23,6)
-                Vec2 wakeupPos = _gameMap->convertToWorldCoord(Vec2(23, 6));
-                player->setPosition(wakeupPos);
-                }),
-                // 5. 淡出黑色滤镜
-                CallFunc::create([blackFilter]() {
-                    blackFilter->runAction(Sequence::create(
-                        FadeTo::create(1.0f, 0),
-                        CallFunc::create([blackFilter]() {
-                            blackFilter->removeFromParent();
-                            }),
-                        nullptr
-                    ));
-                    }),
-
-                    // 6. 重新启用玩家输入
-                    CallFunc::create([this]() {
-                    player->setCanPerformAction(true);
-                        }),
-
-                    nullptr
-                    );
-
-        // 执行动作序列
-        player->runAction(sequence);
-    }
-}
-
-void GameScene::checkAutoBridgeRepair() {
-    if (!player || !_gameMap || _gameMap->isBridgeRepaired()) return;
-
-    // 获取玩家当前瓦片位置
-    Vec2 playerTilePos = _gameMap->convertToTileCoord(player->getPosition());
-
-    // 检查是否在触发位置（Mountain地图的5,26）
-    if (_gameMap->getMapName() == "Mountain" &&
-        std::abs(playerTilePos.x - 5) < 0.5f &&
-        (std::abs(playerTilePos.y - 26) < 0.5f ||
-            std::abs(playerTilePos.y - 27) < 0.5f)
-        ) {
-
-        // 禁用玩家输入
-        player->setCanPerformAction(false);
-
-        // 创建修桥序列
-        auto sequence = Sequence::create(
-            // 可以添加修桥前的效果
-            DelayTime::create(0.5f),
-
-            // 修复桥
-            CallFunc::create([this]() {
-                _gameMap->repairBridge();
-
-                // 可以添加修复完成的提示
-                //auto visibleSize = Director::getInstance()->getVisibleSize();
-                //auto label = Label::createWithSystemFont(
-                //    "The bridge has been repaired！", "Arial", 24);
-                //label->setPosition(visibleSize / 2);
-                //this->addChild(label, 100);
-
-                //// 2秒后淡出提示
-                //label->runAction(Sequence::create(
-                //    DelayTime::create(2.0f),
-                //    FadeOut::create(1.0f),
-                //    RemoveSelf::create(),
-                //    nullptr
-               //));
-                }),
-
-            // 等待提示显示
-            DelayTime::create(1.0f),
-
-            // 重新启用玩家输入
-            CallFunc::create([this]() {
-                player->setCanPerformAction(true);
-                }),
-
-            nullptr
-        );
-
-        this->runAction(sequence);
-    }
 }
