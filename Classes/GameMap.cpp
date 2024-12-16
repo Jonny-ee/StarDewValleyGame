@@ -27,30 +27,44 @@ GameMap* GameMap::create(const std::string& mapName) {
 }
 
 bool GameMap::loadMap(const std::string& mapName) {
-    // 保存当前地图状态（如果有的话）
-    if (_tileMap && !_mapName.empty()) {
+    // 如果从Farm地图切换出去，保存耕地状态
+    if (_tileMap && _mapName == "Farm") {
         saveCurrentMapState();
+    }
+
+    // 清理旧地图
+    if (_tileMap) {
+        _tileMap->removeAllChildren();
+        _tileMap->release();
+        _tileMap = nullptr;
     }
 
     _mapName = mapName;
 
     std::string mapPath = "maps/" + mapName + ".tmx";
 
-
+    // 创建新地图
     _tileMap = TMXTiledMap::create(mapPath);
     if (!_tileMap) {
         return false;
     }
+    _tileMap->retain();
 
     // 获取地图和屏幕尺寸
     Size mapSize = _tileMap->getMapSize();
     Size tileSize = _tileMap->getTileSize();
     Size visibleSize = Director::getInstance()->getVisibleSize();
+
     // 设置地图缩放
     float scale = 2.5f;
     _tileMap->setScale(scale);
 
     this->addChild(_tileMap);
+
+    // 如果切换到Farm地图，加载耕地状态
+    if (mapName == "Farm") {
+        loadMapState();
+    }
 
     // 初始化光照系统
     LightManager::getInstance()->initWithMap(this);
@@ -58,23 +72,49 @@ bool GameMap::loadMap(const std::string& mapName) {
     return true;
 }
 
-
 void GameMap::saveCurrentMapState() {
-    std::vector<MapObject> currentState;
-    // 收集当前地图上的所有对象状态
-    // 比如农作物、放置的物品等
-    _mapStates[_mapName] = currentState;
+    if (_mapName != "Farm") return;
+
+    std::vector<MapObject> farmState;
+    auto backLayer = _tileMap->getLayer("Back");
+    if (!backLayer) return;
+
+    Size mapSize = _tileMap->getMapSize();
+    // 遍历地图所有瓦片
+    for (int x = 0; x < mapSize.width; x++) {
+        for (int y = 0; y < mapSize.height; y++) {
+            int tileGID = backLayer->getTileGIDAt(Vec2(x, y));
+            // 如果是耕地（TILLED_TILE_ID = 681）
+            if (tileGID == 681) {
+                MapObject obj;
+                obj.type = "tilled";
+                obj.position = Vec2(x, y);
+                obj.tileGID = tileGID;
+                farmState.push_back(obj);
+            }
+        }
+    }
+
+    _mapStates["Farm"] = farmState;
 }
+
 void GameMap::loadMapState() {
-    auto it = _mapStates.find(_mapName);
+    if (_mapName != "Farm") return;
+
+    auto it = _mapStates.find("Farm");
     if (it != _mapStates.end()) {
-        // 根据保存的状态重新创建对象
+        auto backLayer = _tileMap->getLayer("Back");
+        if (!backLayer) return;
+
+        // 恢复所有保存的耕地
         for (const auto& obj : it->second) {
-            // 重新创建对象
-            // 展示无需创建
+            if (obj.type == "tilled") {
+                backLayer->setTileGID(obj.tileGID, obj.position);
+            }
         }
     }
 }
+
 std::string GameMap::getMapName() const {
     return _mapName;
 }

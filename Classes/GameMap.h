@@ -14,8 +14,11 @@ struct TransitionInfo {
 // 来存储地图对象的状态的机构体
 struct MapObject {
     std::string type;
-    // 其他需要的属性...
+    cocos2d::Vec2 position;     // 瓦片坐标
+    int tileGID;                // 图块ID
+    bool isWatered;             // 是否已浇水
 };
+
 class GameMap : public cocos2d::Node {
 public:
     // 获取单例实例
