@@ -27,6 +27,9 @@ public:
     bool canWater(const Vec2& tilePos) const;               // 检查指定位置是否可以浇水
     bool waterSoil(const Vec2& tilePos);                    // 浇水指定位置的土地
 
+    bool canHarvest(const Vec2& tilePos) const;             // 检查指定位置是否可以收获
+    bool harvestCrop(const Vec2& tilePos);                  // 收获指定位置的作物
+
     void setGameMap(GameMap* map)                           // 设置当前游戏地图引用
     {
         // 如果已经有监听器，先移除
@@ -39,7 +42,7 @@ public:
         _gameMap = map;
         initKeyboardListener();
     }
-    void onMouseDown(const Vec2& mousePos, Player* player); // 处理鼠标事件
+    void onMouseDown(const cocos2d::Vec2& mousePos, Player* player);
     void setGameScene(GameScene* scene) { _gameScene = scene; } 
 
     // 新增种植相关方法
@@ -98,6 +101,8 @@ private:
     std::vector<Node*> _crops;          // 当前显示的作物精灵
     void updateCrops();                 // 更新作物状态，实现生长（在GameScene里调用）
 
+    void createHarvestDrop(const Vec2& position);   // 创建收获掉落物
+    const int FINAL_GROWTH_STAGE = 3;               // 最终生长阶段
     /*
      * 图块ID说明：
      * 1. Tiled编辑器中图块ID从0开始，实际使用时需要加1

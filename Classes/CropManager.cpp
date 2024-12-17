@@ -96,7 +96,7 @@ bool CropManager::waterSoil(const Vec2& tilePos)
     showWateringPopup();
 
      // 更新作物的水分状态
-    for (size_t i = 0; i < _cropInfos.size(); ++i)
+    for (size_t i = 0; i < _cropInfos.size(); i++)
     {
         if (_cropInfos[i].tilePos == tilePos)
         {
@@ -320,34 +320,46 @@ bool CropManager::plantCorn(const Vec2& tilePos)
  */
 void CropManager::initKeyboardListener()
 {
-    // 如果已经有监听器，直接返回
     if (_keyboardListener)
-    {
         return;
-    }
 
-    _keyboardListener = cocos2d::EventListenerKeyboard::create();
+    _keyboardListener = EventListenerKeyboard::create();
 
     _keyboardListener->onKeyPressed = [this](EventKeyboard::KeyCode keyCode, Event* event)
         {
-            if (keyCode == EventKeyboard::KeyCode::KEY_P)
+            auto player = Player::getInstance();
+            if (!player) return;
+
+            // 获取玩家位置
+            Vec2 playerPos = player->getPosition();
+            Vec2 playerTilePos = _gameMap->convertToTileCoord(playerPos);
+
+            if (keyCode == EventKeyboard::KeyCode::KEY_P)  // P键种植
             {
-                // 获取玩家当前位置
-                auto player = Player::getInstance();
-                if (!player || player->getCurrentTool() != Player::ToolType::NONE)
+                if (player->getCurrentTool() == Player::ToolType::NONE)
                 {
-                    return;
+                    if (plantCorn(playerTilePos))
+                    {
+                        CCLOG("Successfully planted corn");
+                    }
                 }
-
-                // 获取玩家所在的瓦片坐标
-                Vec2 playerPos = player->getPosition();
-                Vec2 tilePos = _gameMap->convertToTileCoord(playerPos);
-
-                // 尝试种植玉米
-                if (plantCorn(tilePos))
+            }
+            else if (keyCode == EventKeyboard::KeyCode::KEY_H)  // H键收获
+            {
+                if (player->getCurrentTool() == Player::ToolType::AXE)  // 需要装备斧头
                 {
-                    CCLOG("Successfully planted corn at tile position (%.1f, %.1f)",
-                        tilePos.x, tilePos.y);
+                    CCLOG("Trying to harvest with axe...");
+                    if (canHarvest(playerTilePos))
+                    {
+                        if (harvestCrop(playerTilePos))
+                        {
+                            CCLOG("Successfully harvested crop");
+                        }
+                    }
+                    else
+                    {
+                        CCLOG("Cannot harvest at this position");
+                    }
                 }
             }
         };
@@ -362,7 +374,7 @@ void CropManager::initKeyboardListener()
  */
 void CropManager::updateCrops()
 {
-    for (size_t i = 0; i < _cropInfos.size(); ++i)
+    for (size_t i = 0; i < _cropInfos.size(); i++)
     {
         auto& info = _cropInfos[i];
 
@@ -508,4 +520,98 @@ void CropManager::clearCrops()
         }
     }
     _crops.clear();
+}
+
+/*
+ * 检查指定位置是否可以收获
+ * @param tilePos 要检查的瓦片坐标
+ * @return 如果作物已成熟可以收获返回true，否则返回false
+ */
+bool CropManager::canHarvest(const Vec2& tilePos) const
+{
+    for (size_t i = 0; i < _cropInfos.size(); i++)
+    {
+        if (_cropInfos[i].tilePos == tilePos && _cropInfos[i].growthStage == FINAL_GROWTH_STAGE)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+/*
+ * 收获指定位置的作物
+ * @param tilePos 要收获的瓦片坐标
+ * @return 收获成功返回true，否则返回false
+ */
+bool CropManager::harvestCrop(const Vec2& tilePos)
+{
+    for (size_t i = 0; i < _cropInfos.size(); i++)
+    {
+        if (_cropInfos[i].tilePos == tilePos && _cropInfos[i].growthStage == FINAL_GROWTH_STAGE)
+        {
+            // 创建收获掉落物
+            createHarvestDrop(_cropInfos[i].position);
+
+            // 移除作物
+            if (i < _crops.size() && _crops[i])
+            {
+                _crops[i]->removeFromParent();
+                _crops.erase(_crops.begin() + i);
+            }
+            _cropInfos.erase(_cropInfos.begin() + i);
+
+            CCLOG("Harvested crop at position (%f, %f)", tilePos.x, tilePos.y);
+            return true;
+        }
+    }
+    return false;
+}
+
+/*
+ * 创建收获后的掉落物
+ * @param position 掉落物生成的世界坐标位置
+ * 功能：
+ * 1.创建掉落物精灵
+ * 2.设置掉落物外观和位置
+ * 3.添加自动拾取检测
+ */
+void CropManager::createHarvestDrop(const Vec2& position)
+{
+    // 创建掉落物精灵
+    auto drop = Sprite::create("Plants.png");
+
+    if (drop)
+    {
+        // 设置掉落物贴图区域（第一行最后一个格子）
+        drop->setTextureRect(Rect(80, 0, 16, 16));
+
+        // 设置位置（稍微偏移一点，避免完全重叠）
+        drop->setPosition(position + Vec2(30, 0));
+
+        // 设置缩放比例为2.0
+        drop->setScale(2.0f);
+
+        // 添加到场景
+        _gameScene->addChild(drop);
+
+        // 创建定时器来检查距离
+        auto scheduler = Director::getInstance()->getScheduler();
+        scheduler->schedule([this, drop](float dt) {
+            auto player = Player::getInstance();
+            if (player)
+            {
+                // 检查玩家是否足够近（16像素内）
+                if (player->getPosition().distance(drop->getPosition()) < 16)
+                {
+                    // 添加到背包
+                    ItemSystem::getInstance()->addItem("corn", 1);
+                    // 移除掉落物
+                    drop->removeFromParent();
+                    // 停止定时器
+                    Director::getInstance()->getScheduler()->unschedule("check_drop_distance", drop);
+                }
+            }
+            }, drop, 0.1f, false, "check_drop_distance");  // 每0.1秒检查一次
+    }
 }
