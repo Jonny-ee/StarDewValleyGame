@@ -116,6 +116,9 @@ void Player::switchTool()
     // 循环切换工具
     switch (currentTool)
     {
+        case ToolType::NONE:
+            currentTool = ToolType::SHOVEL;
+            break;
         case ToolType::SHOVEL:
             currentTool = ToolType::AXE;
             break;
@@ -457,7 +460,7 @@ void Player::update(float dt)
                 break;
         }
     }
-    
+
     if (direction != Vec2::ZERO && !isActioning)
     {
         Vec2 movement = direction.getNormalized() * moveSpeed * dt;
