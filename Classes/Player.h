@@ -86,7 +86,7 @@ private:
     void updateAction(float dt);                // 动作动画
 
     // 工具相关
-    ToolType currentTool = ToolType::WATERING;      // 当前装备的工具
+    ToolType currentTool = ToolType::NONE;      // 当前装备的工具（初始化默认空手）
     cocos2d::Sprite* rodSprite = nullptr;           // 鱼竿精灵
     cocos2d::Sprite* gift = nullptr;                // 礼物精灵
 

@@ -1,6 +1,6 @@
 ﻿#include "GameScene.h"
 #include "GameTime.h"
-#include"LightManager.h"
+#include "LightManager.h"
 #include "Chest.h" 
 #include "Sleep.h"
 #include "BridgeEvent.h"
@@ -34,8 +34,8 @@ void GameScene::updateToolIcon()
     // 根据实际的枚举值设置对应的纹理区域
     switch (toolIndex) {
         case 0:  // NONE
-            toolIcon->setTexture("tools.png");  // 使用原来的工具贴图
             toolIcon->setVisible(false);        // 没有工具，隐藏贴图
+            break;
         case 1:  // SHOVEL
             toolIcon->setTexture("tools.png");  // 使用原来的工具贴图
             toolIcon->setVisible(true);
@@ -194,6 +194,10 @@ bool GameScene::init()
     for (auto event : _events) {
         this->addChild(event);
     }
+
+    ItemSystem* itemSystem = ItemSystem::getInstance();
+    itemSystem->addItem("corn seed", 5);
+
     return true;
 }
 
@@ -326,6 +330,12 @@ void GameScene::updateCamera()
 
 void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& targetTilePos)
 {
+     // 如果当前是农场地图，保存作物信息
+    if (_gameMap && _gameMap->getMapName() == "Farm") 
+    {
+        CropManager::getInstance()->saveCrops();
+    }
+
     // 清理宝箱
     clearChests();
 
@@ -387,9 +397,14 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         currentInventoryUI->release();
     }
 
-    // 如果是农场地图，初始化刘易斯
-    if (mapName == "Farm") {
-        CCLOG("Switching to Farm map, initializing lewis...");
+    // 更新CropManager的地图引用
+    CropManager::getInstance()->setGameMap(_gameMap);
+
+    // 如果切换到农场地图，加载作物，初始化刘易斯
+    if (mapName == "Farm")
+    {
+        CropManager::getInstance()->loadCrops();
+        CCLOG("Switching to Farm map, loading crops...");
         initLewis();
     }
 

@@ -21,7 +21,7 @@ private:
     // 有效物品ID列表
     const std::set<std::string> validItems =
     {
-        "wood",  "apple", "corn", "bread", "tomato", "fish", "mermaid's KISS(*)", "stone"
+        "wood",  "apple", "corn", "bread", "tomato", "fish", "mermaid's KISS(*)", "stone", "corn seed", "tomato seed"
     };
 
     // 单例模式相关

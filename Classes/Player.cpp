@@ -106,6 +106,9 @@ void Player::switchTool()
     // 循环切换工具
     switch (currentTool)
     {
+        case ToolType::NONE:
+            currentTool = ToolType::SHOVEL;
+            break;
         case ToolType::SHOVEL:
             currentTool = ToolType::AXE;
             break;
@@ -119,10 +122,10 @@ void Player::switchTool()
             currentTool = ToolType::GIFT;
             break;
         case ToolType::GIFT:
-            currentTool = ToolType::SHOVEL;
+            currentTool = ToolType::NONE;  // 从礼物切换到空手
             break;
         default:
-            currentTool = ToolType::SHOVEL;
+            currentTool = ToolType::NONE;  // 默认切换到空手
             break;
     }
 

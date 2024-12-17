@@ -12,7 +12,7 @@
 #include "StatusUI.h"
 #include "BaseEvent.h"
 #include <vector>
-
+#include "ItemSystem.h"
 // 添加前向声明
 class Player;
 class GameMap;

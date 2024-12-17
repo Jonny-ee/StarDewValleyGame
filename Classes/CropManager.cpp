@@ -205,3 +205,174 @@ void CropManager::onMouseDown(const Vec2& mousePos, Player* player)
         }
     }
 }
+
+/*
+ * 检查指定位置是否可以种植
+ * @param tilePos 要检查的瓦片坐标
+ * @return 如果可以种植返回true，否则返回false
+ */
+bool CropManager::canPlant(const Vec2& tilePos) const
+{
+    if (!_gameMap || _gameMap->getMapName() != "Farm")
+    {
+        return false;
+    }
+
+    auto backLayer = _gameMap->getTileMap()->getLayer("Back");
+    if (!backLayer)
+    {
+        return false;
+    }
+
+    int tileGID = backLayer->getTileGIDAt(tilePos);
+    return tileGID == TILLED_TILE_ID;
+}
+
+/*
+ * 在指定位置种植玉米
+ * @param tilePos 要种植的瓦片坐标
+ * @return 种植成功返回true，否则返回false
+ */
+bool CropManager::plantCorn(const Vec2& tilePos)
+{
+    if (!canPlant(tilePos))
+    {
+        return false;
+    }
+
+    // 检查玩家背包中是否有玉米种子
+    auto itemSystem = ItemSystem::getInstance();
+    if (!itemSystem->hasEnoughItems("corn seed", 1))
+    {
+        CCLOG("No corn seeds available");
+        return false;
+    }
+
+    // 扣除一个玉米种子
+    if (!itemSystem->removeItem("corn seed", 1))
+    {
+        return false;
+    }
+
+    // 获取世界坐标并应用偏移
+    Vec2 worldPos = _gameMap->convertToWorldCoord(tilePos);
+    worldPos.x += CROP_OFFSET_X;
+    worldPos.y += CROP_OFFSET_Y;
+
+    // 创建玉米作物
+   auto corn = Corn::create(worldPos);
+    if (corn) 
+    {
+        _gameScene->addChild(corn, 0);
+        _crops.push_back(corn);     // 添加到容器
+        CCLOG("Corn added to scene with adjusted position: (%.1f, %.1f)", 
+              worldPos.x, worldPos.y);
+        return true;
+    }
+
+    return false;
+}
+
+/*
+ * 初始化键盘监听器
+ * 监听P键用于种植操作
+ */
+void CropManager::initKeyboardListener()
+{
+    // 如果已经有监听器，直接返回
+    if (_keyboardListener)
+    {
+        return;
+    }
+
+    _keyboardListener = cocos2d::EventListenerKeyboard::create();
+
+    _keyboardListener->onKeyPressed = [this](EventKeyboard::KeyCode keyCode, Event* event)
+        {
+            if (keyCode == EventKeyboard::KeyCode::KEY_P)
+            {
+                // 获取玩家当前位置
+                auto player = Player::getInstance();
+                if (!player || player->getCurrentTool() != Player::ToolType::NONE)
+                {
+                    return;
+                }
+
+                // 获取玩家所在的瓦片坐标
+                Vec2 playerPos = player->getPosition();
+                Vec2 tilePos = _gameMap->convertToTileCoord(playerPos);
+
+                // 尝试种植玉米
+                if (plantCorn(tilePos))
+                {
+                    CCLOG("Successfully planted corn at tile position (%.1f, %.1f)",
+                        tilePos.x, tilePos.y);
+                }
+            }
+        };
+
+    Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(
+        _keyboardListener, _gameMap->getTileMap());
+}
+
+/*
+ * 保存当前地图上所有作物的信息
+ */
+void CropManager::saveCrops()
+{
+    _cropInfos.clear();
+
+    // 保存每个作物的信息
+    for (auto crop : _crops)
+    {
+        if (crop)
+        {
+            CropInfo info;
+            info.position = crop->getPosition();
+            info.tilePos = _gameMap->convertToTileCoord(crop->getPosition());
+            info.growthStage = 0;  // 目前先存0，后续实现生长系统后再修改
+            info.type = "corn";    // 目前只有玉米，后续添加更多作物类型时再修改
+
+            _cropInfos.push_back(info);
+        }
+    }
+}
+
+/*
+ * 加载并重新创建保存的作物
+ */
+void CropManager::loadCrops()
+{
+    clearCrops();  // 先清理当前的作物
+
+    // 重新创建所有保存的作物
+    for (const auto& info : _cropInfos)
+    {
+        if (info.type == "corn")
+        {
+            auto corn = Corn::create(info.position);
+            if (corn)
+            {
+                _gameScene->addChild(corn, 0);
+                _crops.push_back(corn);
+                // 后续添加生长阶段的设置
+                // corn->updateGrowthStage(info.growthStage);
+            }
+        }
+    }
+}
+
+/*
+ * 清理当前地图上的所有作物精灵
+ */
+void CropManager::clearCrops()
+{
+    for (auto crop : _crops)
+    {
+        if (crop)
+        {
+            crop->removeFromParent();
+        }
+    }
+    _crops.clear();
+}
