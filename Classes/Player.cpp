@@ -77,6 +77,16 @@ bool Player::init()
         gift->setVisible(false);
         this->addChild(gift);
     }
+
+    // 初始化胡萝卜精灵
+    carrot = Sprite::create("LooseSprites/emojis.png");
+    if (carrot) {
+        carrot->setTextureRect(cocos2d::Rect(18, 36, 9, 9));
+        carrot->setScale(1.0f);
+        carrot->setPosition(Vec2(48, 0));  // 位于角色右侧
+        carrot->setVisible(false);
+        this->addChild(carrot);
+    }
     return true;
 }
 
@@ -106,9 +116,6 @@ void Player::switchTool()
     // 循环切换工具
     switch (currentTool)
     {
-        case ToolType::NONE:
-            currentTool = ToolType::SHOVEL;
-            break;
         case ToolType::SHOVEL:
             currentTool = ToolType::AXE;
             break;
@@ -122,10 +129,13 @@ void Player::switchTool()
             currentTool = ToolType::GIFT;
             break;
         case ToolType::GIFT:
-            currentTool = ToolType::NONE;  // 从礼物切换到空手
+            currentTool = ToolType::CARROT;
+            break;
+        case ToolType::CARROT:
+            currentTool = ToolType::NONE;
             break;
         default:
-            currentTool = ToolType::NONE;  // 默认切换到空手
+            currentTool = ToolType::NONE;
             break;
     }
 
@@ -139,6 +149,12 @@ void Player::switchTool()
     if (gift)
     {
         gift->setVisible(currentTool == ToolType::GIFT);
+    }
+
+    // 更新胡萝卜显示状态
+    if (carrot)
+    {
+        carrot->setVisible(currentTool == ToolType::CARROT);
     }
 }
 
@@ -263,7 +279,7 @@ bool Player::checkCollision(const Vec2& nextPosition)
 
 void Player::performAction(const Vec2& clickPos)
 {
-    if (!actionSprite || currentTool == ToolType::NONE || currentTool == ToolType::ROD || currentTool == ToolType::GIFT)  // 添加对ROD和GIFT的判断
+    if (!actionSprite || currentTool == ToolType::NONE || currentTool == ToolType::ROD || currentTool == ToolType::GIFT || currentTool == ToolType::CARROT)  // 添加对ROD和GIFT和CARROT的判断
     {
         return;
     }
@@ -416,6 +432,32 @@ void Player::update(float dt)
         }
     }
 
+    // 更新胡萝卜朝向
+    if (carrot && carrot->isVisible()) {
+        switch (currentDirection) {
+            case 0: // 下
+                carrot->setPosition(Vec2(37, 25));
+                carrot->setFlippedX(false);  // 恢复正常方向
+                carrot->setLocalZOrder(1);  // 在角色上层
+                break;
+            case 1: // 上
+                carrot->setPosition(Vec2(12, 25));
+                carrot->setFlippedX(true);   // 翻转鱼竿
+                carrot->setLocalZOrder(-1);  // 在角色下层
+                break;
+            case 2: // 左
+                carrot->setPosition(Vec2(15, 25));
+                carrot->setFlippedX(true);   // 翻转鱼竿
+                carrot->setLocalZOrder(1);  // 在角色上层
+                break;
+            case 3: // 右
+                carrot->setPosition(Vec2(30, 25));
+                carrot->setFlippedX(false);  // 恢复正常方向
+                carrot->setLocalZOrder(-1);  // 在角色下层
+                break;
+        }
+    }
+    
     if (direction != Vec2::ZERO && !isActioning)
     {
         Vec2 movement = direction.getNormalized() * moveSpeed * dt;
