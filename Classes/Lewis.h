@@ -5,11 +5,7 @@
 #include "DialogueBox.h"
 #include <vector>
 
-enum class ActionState
-{
-    IDLE,
-    MOVING,
-};
+
 //刘易斯类
 class Lewis : public NPC
 {
