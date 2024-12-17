@@ -9,6 +9,11 @@
 class NPC :public cocos2d::Sprite//继承自精灵类
 {
 public:
+    enum class ActionState
+    {
+        IDLE,
+        MOVING,
+    };
     //心情
     enum class Mood
     {
@@ -66,6 +71,7 @@ public:
     bool hasCompletedEvent(const std::string& eventId) const;
     //动画相关
     void updateMood(Mood newMood);
+    void showFull();
 protected:
     //基本信息
     std::string npcName;//姓名
