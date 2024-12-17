@@ -6,6 +6,9 @@
 #include "Marlon.h"
 #include "Maru.h"
 #include "Alex.h"
+#include "Pig.h"
+#include "Chicken.h"
+#include "Sheep.h"
 #include "InventoryUI.h"
 #include "FishingSystem.h"
 #include "CropManager.h"
@@ -58,6 +61,12 @@ private:
     bool isMaruCreated = false;                             // 添加标志以跟踪玛鲁是否已创建
     Alex* alex = nullptr;                                 // Alex指针
     bool isAlexCreated = false;                             // 添加标志以跟踪艾利克斯是否已创建
+    std::vector<Pig*> pigs;                               // 存储所有猪的指针
+    bool isPigCreated = false;                            // 添加标志以跟踪猪是否已经创建
+    std::vector<Chicken*> chickens;                        // 存储所有鸡的指针
+    bool isChickenCreated = false;                         // 添加标志以跟踪鸡是否已经创建
+    std::vector<Sheep*> sheeps;                        // 存储所有羊的指针
+    bool isSheepCreated = false;                         // 添加标志以跟踪羊是否已经创建
     DialogueBox* dialogueBox = nullptr;                   // 对话框指针
     cocos2d::TMXTiledMap* tileMap = nullptr;              // Tiled 地图系统
     cocos2d::TMXObjectGroup* collisionsGroup = nullptr;   // 碰撞组
@@ -70,6 +79,15 @@ private:
     void initMarlon();            // 初始化马龙
     void initMaru();            // 初始化玛鲁
     void initAlex();            // 初始化艾利克斯
+    void initPig();                 // 初始化猪
+    void initChicken();                 // 初始化鸡
+    void initSheep();                   // 初始化羊
+    void createPig(const Vec2& initialPosition, const std::vector<Vec2>& path);
+    void createPig(const Vec2& initialPosition);
+    void createChicken(const Vec2& initialPosition, const std::vector<Vec2>& path);
+    void createChicken(const Vec2& initialPosition);
+    void createSheep(const Vec2& initialPosition, const std::vector<Vec2>& path);
+    void createSheep(const Vec2& initialPosition);
     std::vector<Chest*> _chests;     // 存储所有宝箱
     void initChests();               // 初始化宝箱
     void clearChests();              // 清理宝箱
