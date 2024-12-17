@@ -37,12 +37,12 @@ bool Corn::init()
         return false;
     }
 
-    // 直接设置纹理和初始区域
+    // 设置初始纹理（种子状态，第一行第二个格子）
     this->setTexture("Plants.png");
-    this->setTextureRect(Rect(16, 0, 16, 16));
+    this->setTextureRect(Rect(16, 0, 16, 16));  // 种子状态
     this->setScale(2.0f);
 
-    CCLOG("Corn initialized with texture");
+    CCLOG("Corn initialized with seed texture");
     return true;
 }
 
@@ -54,7 +54,8 @@ void Corn::updateGrowthStage(int stage)
 {
     if (stage >= 0 && stage < TOTAL_GROWTH_STAGES)
     {
-        this->setTextureRect(Rect(stage * 16, 0, 16, 16));
-        CCLOG("Updated corn growth stage to: %d", stage);
+        // 第一行，从第一个格子开始，每个状态占16x16像素
+        this->setTextureRect(Rect(16 * (stage + 1), 0, 16, 16));
+        CCLOG("Updated corn growth stage to: %d, texture rect: x=%d", stage, 16 * (stage + 1));
     }
 }

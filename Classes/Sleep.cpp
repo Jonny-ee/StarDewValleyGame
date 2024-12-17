@@ -1,5 +1,6 @@
-#include"Sleep.h"
-#include"GameTime.h"
+#include "Sleep.h"
+#include "GameTime.h"
+#include "GameScene.h"
 
 SleepEvent* SleepEvent::create(GameMap* gameMap, Player* player) {
     auto event = new (std::nothrow) SleepEvent();
@@ -37,6 +38,13 @@ void SleepEvent::executeEvent() {
 
         CallFunc::create([this]() {
             GameTime::getInstance()->modifyGameTime(6);
+
+            // 获取当前场景并调用onDayChanged
+            if (auto scene = dynamic_cast<GameScene*>(Director::getInstance()->getRunningScene()))
+            {
+                scene->onDayChanged();  // 添加这一行
+            }
+
             Vec2 wakeupPos = _gameMap->convertToWorldCoord(WAKEUP_POS);
             _player->setPosition(wakeupPos);
             this->hideBlackFilter();

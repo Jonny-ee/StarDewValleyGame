@@ -201,6 +201,15 @@ bool GameScene::init()
     return true;
 }
 
+void GameScene::onDayChanged()
+{
+    // 更新作物生长
+    CropManager::getInstance()->updateCrops();
+
+    // 这里可以添加其他每日更新的内容
+    CCLOG("A new day has started!");
+}
+
 void GameScene::update(float dt)
 {
     if (!player || !_gameMap) {
@@ -208,8 +217,19 @@ void GameScene::update(float dt)
     }
     // 获取GameTime单例实例
     GameTime* gameTime = GameTime::getInstance();
+
+    // 记录更新前的日期
+    int oldDay = gameTime->getDay();
+
     // 更新游戏时间
     gameTime->update();
+
+    // 检查是否日期发生变化
+    if (gameTime->getDay() != oldDay)
+    {
+        onDayChanged();
+    }
+
     // 更新光照效果
     LightManager::getInstance()->update();
     // 只保留一次update调用
@@ -334,6 +354,7 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
     if (_gameMap && _gameMap->getMapName() == "Farm") 
     {
         CropManager::getInstance()->saveCrops();
+        CropManager::getInstance()->clearCrops();  // 离开农场时清理显示
     }
 
     // 清理宝箱
@@ -463,9 +484,6 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
 
     // 重新初始化钓鱼系统
     FishingSystem::getInstance()->initFishingAreas(_gameMap);
-
-    // 更新CropManager的地图引用
-    CropManager::getInstance()->setGameMap(_gameMap);
 }
 
 void GameScene::initMouseListener()

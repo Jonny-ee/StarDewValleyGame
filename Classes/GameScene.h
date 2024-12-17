@@ -11,8 +11,8 @@
 #include "CropManager.h"
 #include "StatusUI.h"
 #include "BaseEvent.h"
-#include <vector>
 #include "ItemSystem.h"
+
 // 添加前向声明
 class Player;
 class GameMap;
@@ -43,6 +43,8 @@ public:
     // 相机控制
     void updateCamera();                    // 更新相机位置
 
+    // 时间更新相关
+    void onDayChanged();                    // 每日更新函数声明
 
 private:
     // 场景对象

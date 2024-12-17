@@ -260,13 +260,29 @@ bool CropManager::plantCorn(const Vec2& tilePos)
     worldPos.y += CROP_OFFSET_Y;
 
     // 创建玉米作物
-   auto corn = Corn::create(worldPos);
-    if (corn) 
+    auto corn = Corn::create(worldPos);
+    if (corn)
     {
         _gameScene->addChild(corn, 0);
-        _crops.push_back(corn);     // 添加到容器
-        CCLOG("Corn added to scene with adjusted position: (%.1f, %.1f)", 
-              worldPos.x, worldPos.y);
+        _crops.push_back(corn);
+
+        // 记录作物信息
+        CropInfo info;
+        info.position = worldPos;
+        info.tilePos = tilePos;
+        info.growthStage = 0;
+        info.type = "corn";
+
+        // 记录种植时间
+        auto gameTime = GameTime::getInstance();
+        info.plantDay = gameTime->getDay();
+        info.plantMonth = gameTime->getMonth();
+        info.plantYear = gameTime->getYear();
+
+        _cropInfos.push_back(info);
+
+        CCLOG("Corn planted on day %d, month %d, year %d",
+            info.plantDay, info.plantMonth, info.plantYear);
         return true;
     }
 
@@ -316,13 +332,59 @@ void CropManager::initKeyboardListener()
 }
 
 /*
+ * 更新所有作物的生长状态
+ * 每天调用一次
+ */
+void CropManager::updateCrops()
+{
+    // 即使不在农场地图，也要更新作物信息
+    auto gameTime = GameTime::getInstance();
+    int currentDay = gameTime->getDay();
+    int currentMonth = gameTime->getMonth();
+    int currentYear = gameTime->getYear();
+
+    CCLOG("Updating crops: Current time %d/%d/%d, Total crops: %d",
+        currentDay, currentMonth, currentYear, (int)_cropInfos.size());
+
+    for (size_t i = 0; i < _cropInfos.size(); ++i)
+    {
+        auto& info = _cropInfos[i];
+
+        // 计算经过的天数
+        int daysElapsed = (currentYear - info.plantYear) * 365 +
+            (currentMonth - info.plantMonth) * 30 +
+            (currentDay - info.plantDay);
+
+        // 计算新的生长阶段
+        int newStage = daysElapsed;
+        if (newStage > 4) newStage = 4;
+
+        // 更新生长阶段
+        if (newStage != info.growthStage)
+        {
+            CCLOG("Updating crop %zu from stage %d to %d",
+                i, info.growthStage, newStage);
+            info.growthStage = newStage;
+
+            // 只有在农场地图时才更新显示
+            if (_gameMap && _gameMap->getMapName() == "Farm" && i < _crops.size())
+            {
+                if (auto corn = dynamic_cast<Corn*>(_crops[i]))
+                {
+                    corn->updateGrowthStage(newStage);
+                }
+            }
+        }
+    }
+}
+
+/*
  * 保存当前地图上所有作物的信息
  */
 void CropManager::saveCrops()
 {
-    _cropInfos.clear();
+    std::vector<CropInfo> newCropInfos;  // 创建新的临时容器
 
-    // 保存每个作物的信息
     for (auto crop : _crops)
     {
         if (crop)
@@ -330,12 +392,38 @@ void CropManager::saveCrops()
             CropInfo info;
             info.position = crop->getPosition();
             info.tilePos = _gameMap->convertToTileCoord(crop->getPosition());
-            info.growthStage = 0;  // 目前先存0，后续实现生长系统后再修改
-            info.type = "corn";    // 目前只有玉米，后续添加更多作物类型时再修改
 
-            _cropInfos.push_back(info);
+            // 在现有的 _cropInfos 中查找对应位置的作物信息
+            auto it = std::find_if(_cropInfos.begin(), _cropInfos.end(),
+                [&info](const CropInfo& existingInfo) {
+                    return existingInfo.position == info.position;
+                });
+
+            if (it != _cropInfos.end())
+            {
+                // 如果找到了，使用现有的生长信息
+                info.growthStage = it->growthStage;
+                info.plantDay = it->plantDay;
+                info.plantMonth = it->plantMonth;
+                info.plantYear = it->plantYear;
+            }
+            else
+            {
+                // 如果是新作物，使用默认值
+                info.growthStage = 0;
+                auto gameTime = GameTime::getInstance();
+                info.plantDay = gameTime->getDay();
+                info.plantMonth = gameTime->getMonth();
+                info.plantYear = gameTime->getYear();
+            }
+
+            info.type = "corn";
+            newCropInfos.push_back(info);
         }
     }
+
+    // 用新的信息替换旧的
+    _cropInfos = std::move(newCropInfos);
 }
 
 /*
@@ -343,9 +431,15 @@ void CropManager::saveCrops()
  */
 void CropManager::loadCrops()
 {
-    clearCrops();  // 先清理当前的作物
+    // 只在Farm地图加载作物
+    if (!_gameMap || _gameMap->getMapName() != "Farm")
+    {
+        CCLOG("Not loading crops: not in Farm map");
+        return;
+    }
 
-    // 重新创建所有保存的作物
+    clearCrops();
+
     for (const auto& info : _cropInfos)
     {
         if (info.type == "corn")
@@ -355,8 +449,9 @@ void CropManager::loadCrops()
             {
                 _gameScene->addChild(corn, 0);
                 _crops.push_back(corn);
-                // 后续添加生长阶段的设置
-                // corn->updateGrowthStage(info.growthStage);
+                corn->updateGrowthStage(info.growthStage);
+                CCLOG("Loaded corn at (%.1f, %.1f) with growth stage %d", 
+                      info.position.x, info.position.y, info.growthStage);
             }
         }
     }

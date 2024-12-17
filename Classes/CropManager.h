@@ -5,6 +5,7 @@
 #include "GameScene.h" 
 #include "ItemSystem.h"
 #include "Corn.h"
+#include "GameTime.h"
 
 USING_NS_CC;
 
@@ -52,6 +53,8 @@ public:
     void clearCrops();                  // 切换地图时清理作物精灵
 
 private:
+    friend class GameScene;
+
     CropManager() {}                    // 私有构造函数（单例模式）              
     bool _isInitialized = false;        // 添加初始化标志
 
@@ -64,10 +67,10 @@ private:
     const float WATER_DURATION = 1.0f;                      // 浇水效果持续时间
     const float FADE_DURATION = 0.3f;                       // 颜色恢复过渡时间
 
-    // 新增成员
     // 作物位置偏移常量
-    const float CROP_OFFSET_X = 21.0f;     // 作物水平偏移量
-    const float CROP_OFFSET_Y = -14.0f;    // 作物垂直偏移量
+    // 注：别动我偏移量！！我也不知道为什么是这个数，但试出来你就说在不在中间吧~
+    const float CROP_OFFSET_X = 20.0f;     // 作物水平偏移量
+    const float CROP_OFFSET_Y = -12.0f;    // 作物垂直偏移量
     cocos2d::EventListenerKeyboard* _keyboardListener = nullptr;
     // 玉米生长阶段的图块ID
     const std::vector<cocos2d::Rect> CORN_GROWTH_RECTS = {
@@ -80,14 +83,18 @@ private:
     // 作物信息结构体
     struct CropInfo
     {
-        Vec2 position;      // 种植位置
-        Vec2 tilePos;       // 瓦片坐标
-        int growthStage;    // 生长阶段
-        std::string type;   // 作物类型("corn"等)
+        Vec2 position;          // 种植位置
+        Vec2 tilePos;           // 瓦片坐标
+        int growthStage;        // 生长阶段
+        std::string type;       // 作物类型("corn"等)
+        int plantDay;           // 种植时的游戏天数
+        int plantMonth;         // 种植时的游戏月份
+        int plantYear;          // 种植时的游戏年份
     };
 
-    std::vector<CropInfo> _cropInfos;     // 存储所有作物信息
-    std::vector<Crop*> _crops;            // 当前显示的作物精灵
+    std::vector<CropInfo> _cropInfos;   // 存储所有作物信息
+    std::vector<Crop*> _crops;          // 当前显示的作物精灵
+    void updateCrops();                 // 更新作物状态，实现生长（在GameScene里调用）
 
     /*
      * 图块ID说明：
