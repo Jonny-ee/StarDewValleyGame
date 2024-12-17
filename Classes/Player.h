@@ -25,7 +25,8 @@ public:
         AXE,        // 斧头
         WATERING,   // 水壶
         ROD,        // 鱼竿
-        GIFT        // 礼物(送给NPC)
+        GIFT,       // 礼物(送给NPC)
+        CARROT      // 胡萝卜(喂养动物)
     };
     ToolType getCurrentTool() const { return currentTool; }
     void switchTool();                                  // 切换工具的方法
@@ -86,9 +87,10 @@ private:
     void updateAction(float dt);                // 动作动画
 
     // 工具相关
-    ToolType currentTool = ToolType::NONE;      // 当前装备的工具（初始化默认空手）
+    ToolType currentTool = ToolType::NONE;      // 当前装备的工具
     cocos2d::Sprite* rodSprite = nullptr;           // 鱼竿精灵
     cocos2d::Sprite* gift = nullptr;                // 礼物精灵
+    cocos2d::Sprite* carrot = nullptr;              // 胡萝卜精灵
 
     //技能等级系统相关
     bool isSkillUIVisible{ false };  // 技能界面显示状态
