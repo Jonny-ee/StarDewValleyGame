@@ -193,37 +193,37 @@ void CropManager::showWateringPopup()
  */
 void CropManager::onMouseDown(const Vec2& mousePos, Player* player)
 {
-    if (!player || !_gameMap)  // 检查必要对象
+    if (!player || !_gameMap)               // 检查必要对象
     {
         return;
     }
 
-    if (_gameMap->getMapName() != "Farm")  // 确保只在Farm地图中执行
+    if (_gameMap->getMapName() != "Farm")   // 确保只在Farm地图中执行
     {
         return;
     }
 
-    Vec2 playerPos = player->getPosition();  // 获取玩家位置
-    Vec2 playerTilePos = _gameMap->convertToTileCoord(playerPos);  // 转换为瓦片坐标
+    Vec2 playerPos = player->getPosition();                         // 获取玩家位置
+    Vec2 playerTilePos = _gameMap->convertToTileCoord(playerPos);   // 转换为瓦片坐标
 
     // 根据当前工具执行相应操作
     if (player->getCurrentTool() == Player::ToolType::SHOVEL)
     {
-        if (canTill(playerTilePos))  // 检查是否可以开垦
+        if (canTill(playerTilePos))                 // 检查是否可以开垦
         {
-            if (tillSoil(playerTilePos))  // 尝试开垦土地
+            if (tillSoil(playerTilePos))            // 尝试开垦土地
             {
-                player->performAction(mousePos);  // 执行开垦动作
+                player->performAction(mousePos);    // 执行开垦动作
             }
         }
     }
     else if (player->getCurrentTool() == Player::ToolType::WATERING)
     {
-        if (canWater(playerTilePos))  // 检查是否可以浇水
+        if (canWater(playerTilePos))                // 检查是否可以浇水
         {
-            if (waterSoil(playerTilePos))  // 尝试浇水
+            if (waterSoil(playerTilePos))           // 尝试浇水
             {
-                player->performAction(mousePos);  // 执行浇水动作
+                player->performAction(mousePos);    // 执行浇水动作
             }
         }
     }
@@ -301,8 +301,8 @@ bool CropManager::plantCorn(const Vec2& tilePos)
         info.plantDay = gameTime->getDay();
         info.plantMonth = gameTime->getMonth();
         info.plantYear = gameTime->getYear();
-        info.waterLevel = 2;    // 初始水分充足
-        info.isWatered = false;  // 种植时视为已浇水
+        info.waterLevel = 2;        // 初始水分充足
+        info.isWatered = false;     // 种植时视为已浇水
 
         _cropInfos.push_back(info);
 
@@ -487,7 +487,7 @@ void CropManager::loadCrops()
                 _gameScene->addChild(corn, 0);
                 _crops.push_back(corn);
                 corn->updateGrowthStage(info.growthStage);
-                corn->updateWaterStatus(info.waterLevel);  // 添加这行
+                corn->updateWaterStatus(info.waterLevel);
                 CCLOG("Loaded corn at (%.1f, %.1f) with growth stage %d and water level %d",
                     info.position.x, info.position.y, info.growthStage, info.waterLevel);
             }
