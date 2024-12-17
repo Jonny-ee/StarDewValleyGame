@@ -61,6 +61,11 @@ void GameScene::updateToolIcon()
             toolIcon->setVisible(true);
             toolIcon->setTextureRect(cocos2d::Rect(96, 32, 16, 16));
             break;
+        case 6:  // CARROT
+            toolIcon->setTexture("LooseSprites/emojis.png");  // 使用新的贴图
+            toolIcon->setVisible(true);
+            toolIcon->setTextureRect(cocos2d::Rect(18, 36, 9, 9));
+            break;
     }
 }
 
@@ -253,6 +258,27 @@ void GameScene::update(float dt)
         lewis->moveAlongPath(dt); // 移动沿路径
     }
 
+    // 更新所有猪的状态
+    for (auto pig : pigs) {
+        if (pig) {
+            pig->moveAlongPath(dt); // 移动沿路径
+        }
+    }
+
+    // 更新所有鸡的状态
+    for (auto chicken : chickens) {
+        if (chicken) {
+            chicken->moveAlongPath(dt); // 移动沿路径
+        }
+    }
+
+    // 更新所有羊的状态
+    for (auto sheep : sheeps) {
+        if (sheep) {
+            sheep->moveAlongPath(dt); // 移动沿路径
+        }
+    }
+
     // 持续检查钓鱼条件
     auto fishingSystem = FishingSystem::getInstance();
     fishingSystem->canFish(player->getPosition(), player);
@@ -378,6 +404,27 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         alex->removeFromParent(); // 移除艾利克斯
         alex = nullptr; // 清空指针
     }
+    // 移除所有猪
+    for (auto pig : pigs) {
+        if (pig) {
+            pig->removeFromParent(); // 移除猪
+        }
+    }
+    pigs.clear(); // 清空猪的向量
+    // 移除所有鸡
+    for (auto chicken : chickens) {
+        if (chicken) {
+            chicken->removeFromParent(); // 移除鸡
+        }
+    }
+    chickens.clear(); // 清空鸡的向量
+    // 移除所有羊
+    for (auto sheep : sheeps) {
+        if (sheep) {
+            sheep->removeFromParent(); // 移除羊
+        }
+    }
+    sheeps.clear(); // 清空羊的向量
 
     // 保存当前背包UI的引用和状态
     auto currentInventoryUI = _inventoryUI;
@@ -422,12 +469,15 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
     // 更新CropManager的地图引用
     CropManager::getInstance()->setGameMap(_gameMap);
 
-    // 如果切换到农场地图，加载作物，初始化刘易斯
+    // 如果切换到农场地图，加载作物，初始化刘易斯和动物
     if (mapName == "Farm")
     {
         CropManager::getInstance()->loadCrops();
         CCLOG("Switching to Farm map, loading crops...");
         initLewis();
+        initPig();
+        initChicken();
+        initSheep();
     }
 
     // 如果是医院地图，初始化玛鲁
@@ -639,6 +689,45 @@ void GameScene::initMouseListener()
                     player->setCanPerformAction(true);  // 允许玩家动作
                 }
             }
+            // 检查是否靠近并点击了猪
+            if (!pigs.empty()) {  // 确保vector不为空
+                for (auto pig : pigs) {  // 遍历所有的pig
+                    float distance = player->getPosition().distance(pig->getPosition());
+                    if (distance < 50.0f) {
+                        if (player->getCurrentTool() == Player::ToolType::CARROT) {
+                            // 如果玩家手持胡萝卜，触发吃饱了动画
+                            pig->showFull();
+                        }
+                        break; 
+                    }
+                }
+            }
+            // 检查是否靠近并点击了鸡
+            if (!chickens.empty()) {  // 确保vector不为空
+                for (auto chicken : chickens) {  
+                    float distance = player->getPosition().distance(chicken->getPosition());
+                    if (distance < 50.0f) {
+                        if (player->getCurrentTool() == Player::ToolType::CARROT) {
+                            // 如果玩家手持胡萝卜，触发吃饱了动画
+                            chicken->showFull();
+                        }
+                        break;  
+                    }
+                }
+            }
+            // 检查是否靠近并点击了羊
+            if (!sheeps.empty()) {  // 确保vector不为空
+                for (auto sheep : sheeps) {
+                    float distance = player->getPosition().distance(sheep->getPosition());
+                    if (distance < 50.0f) {
+                        if (player->getCurrentTool() == Player::ToolType::CARROT) {
+                            // 如果玩家手持胡萝卜，触发吃饱了动画
+                            sheep->showFull();
+                        }
+                        break;
+                    }
+                }
+            }
         };
 
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
@@ -728,7 +817,200 @@ void GameScene::initAlex()
     alex->initializeAnimations();
     isAlexCreated = true; // 设置标志为已创建
 }
+void GameScene::createPig(const Vec2& initialPosition, const std::vector<Vec2>& path)
+{
+    Pig* newPig = Pig::create(); // 创建新的猪实例
+    if (newPig) {
+        newPig->setPosition(initialPosition); // 设置初始位置
+        // 设置猪初始位置
+        Vec2 newpig_tilePos = Vec2(initialPosition);
+        Vec2 newpig_worldPos = _gameMap->convertToWorldCoord(newpig_tilePos);
+        newPig->setPosition(newpig_worldPos);
+        newPig->setPath(path); // 设置路径
+        this->addChild(newPig, 1); // 将猪添加到场景中
+        pigs.push_back(newPig); // 将新猪添加到向量中
+        CCLOG("Pig created successfully at position: (%.1f, %.1f)", newPig->getPosition().x, newPig->getPosition().y);
+    }
+    else {
+        CCLOG("Failed to create Pig instance.");
+        return;
+    }
+}
+// 重载 createPig 方法，用于创建静止猪
+void GameScene::createPig(const Vec2& initialPosition)
+{
+    Pig* staticPig = Pig::create(); // 创建新的猪实例
+    if (staticPig) {
+        staticPig->setPosition(initialPosition); // 设置初始位置
+        // 设置猪初始位置
+        Vec2 staticpig_tilePos = Vec2(initialPosition);
+        Vec2 staticpig_worldPos = _gameMap->convertToWorldCoord(staticpig_tilePos);
+        staticPig->setPosition(staticpig_worldPos);
+        this->addChild(staticPig, 1); // 将静止猪添加到场景中
+        pigs.push_back(staticPig); // 将静止猪添加到向量中
+        staticPig->staticAnimation(); // 播放静止动画
+        CCLOG("Static pig created at position: (%.1f, %.1f)", staticPig->getPosition().x, staticPig->getPosition().y);
+    }
+    else {
+        CCLOG("Failed to create static Pig instance.");
+        return;
+    }
+}
 
+void GameScene::initPig()
+{
+    isPigCreated = true; // 设置标志为已创建
+    // 创建第一只猪
+    Vec2 movePig1Path1_tilePos = Vec2(11, 14);
+    Vec2 movePig1Path2_tilePos = Vec2(11, 18);
+
+    Vec2 movePig1Path1_worldPos = _gameMap->convertToWorldCoord(movePig1Path1_tilePos);
+    Vec2 movePig1Path2_worldPos = _gameMap->convertToWorldCoord(movePig1Path2_tilePos);
+    std::vector<Vec2> pig1Path = { movePig1Path1_worldPos,movePig1Path2_worldPos };
+    createPig(Vec2(11, 16), pig1Path); // 第一只猪的位置和路径
+
+    // 创建第二只猪
+    Vec2 movePig2Path1_tilePos = Vec2(6, 14);
+    Vec2 movePig2Path2_tilePos = Vec2(10, 14);
+
+    Vec2 movePig2Path1_worldPos = _gameMap->convertToWorldCoord(movePig2Path1_tilePos);
+    Vec2 movePig2Path2_worldPos = _gameMap->convertToWorldCoord(movePig2Path2_tilePos);
+    std::vector<Vec2> pig2Path = { movePig2Path1_worldPos,movePig2Path2_worldPos };
+    createPig(Vec2(9, 14), pig2Path); // 第二只猪的位置和路径
+
+    // 创建第三只猪
+    Vec2 movePig3Path1_tilePos = Vec2(14, 19);
+    Vec2 movePig3Path2_tilePos = Vec2(14, 17);
+
+    Vec2 movePig3Path1_worldPos = _gameMap->convertToWorldCoord(movePig3Path1_tilePos);
+    Vec2 movePig3Path2_worldPos = _gameMap->convertToWorldCoord(movePig3Path2_tilePos);
+    std::vector<Vec2> pig3Path = { movePig3Path1_worldPos,movePig3Path2_worldPos };
+    createPig(Vec2(14, 18), pig3Path); // 第三只猪的位置和路径
+
+    // 创建第四只猪，保持静止
+    createPig(Vec2(13, 13)); // 第四只猪的位置
+}
+
+void GameScene::createChicken(const Vec2& initialPosition, const std::vector<Vec2>& path)
+{
+    Chicken* newChicken = Chicken::create(); // 创建新的鸡实例
+    if (newChicken) {
+        newChicken->setPosition(initialPosition); // 设置初始位置
+        // 设置鸡初始位置
+        Vec2 newChicken_tilePos = Vec2(initialPosition);
+        Vec2 newChicken_worldPos = _gameMap->convertToWorldCoord(newChicken_tilePos);
+        newChicken->setPosition(newChicken_worldPos);
+        newChicken->setPath(path); // 设置路径
+        this->addChild(newChicken, 1); // 将鸡添加到场景中
+        chickens.push_back(newChicken); // 将新鸡添加到向量中
+        CCLOG("Chicken created successfully at position: (%.1f, %.1f)", newChicken->getPosition().x, newChicken->getPosition().y);
+    }
+    else {
+        CCLOG("Failed to create Chicken instance.");
+        return;
+    }
+}
+// 重载 createPig 方法，用于创建静止鸡
+void GameScene::createChicken(const Vec2& initialPosition)
+{
+    Chicken* staticChicken = Chicken::create(); // 创建新的鸡实例
+    if (staticChicken) {
+        staticChicken->setPosition(initialPosition); // 设置初始位置
+        // 设置鸡初始位置
+        Vec2 staticChicken_tilePos = Vec2(initialPosition);
+        Vec2 staticChicken_worldPos = _gameMap->convertToWorldCoord(staticChicken_tilePos);
+        staticChicken->setPosition(staticChicken_worldPos);
+        this->addChild(staticChicken, 1); // 将静止猪\鸡添加到场景中
+        chickens.push_back(staticChicken); // 将静止猪添加到向量中
+        staticChicken->staticAnimation(); // 播放静止动画
+        CCLOG("Static chicken created at position: (%.1f, %.1f)", staticChicken->getPosition().x, staticChicken->getPosition().y);
+    }
+    else {
+        CCLOG("Failed to create static Chicken instance.");
+        return;
+    }
+}
+
+void GameScene::initChicken()
+{
+    isChickenCreated = true; // 设置标志为已创建
+    // 创建第一只鸡
+    Vec2 moveChicken1Path1_tilePos = Vec2(26, 16);
+    Vec2 moveChicken1Path2_tilePos = Vec2(30, 16);
+
+    Vec2 moveChicken1Path1_worldPos = _gameMap->convertToWorldCoord(moveChicken1Path1_tilePos);
+    Vec2 moveChicken1Path2_worldPos = _gameMap->convertToWorldCoord(moveChicken1Path2_tilePos);
+    std::vector<Vec2> Chicken1Path = { moveChicken1Path1_worldPos,moveChicken1Path2_worldPos };
+    createChicken(Vec2(28, 16), Chicken1Path); // 第一只鸡的位置和路径
+
+    // 创建第二只鸡，保持静止
+    createChicken(Vec2(30, 13)); // 第二只鸡的位置
+}
+
+void GameScene::createSheep(const Vec2& initialPosition, const std::vector<Vec2>& path)
+{
+    Sheep* newSheep = Sheep::create(); // 创建新的羊实例
+    if (newSheep) {
+        newSheep->setPosition(initialPosition); // 设置初始位置
+        // 设置羊初始位置
+        Vec2 newSheep_tilePos = Vec2(initialPosition);
+        Vec2 newSheep_worldPos = _gameMap->convertToWorldCoord(newSheep_tilePos);
+        newSheep->setPosition(newSheep_worldPos);
+        newSheep->setPath(path); // 设置路径
+        this->addChild(newSheep, 1); // 将羊添加到场景中
+        sheeps.push_back(newSheep); // 将新羊添加到向量中
+        CCLOG("Sheep created successfully at position: (%.1f, %.1f)", newSheep->getPosition().x, newSheep->getPosition().y);
+    }
+    else {
+        CCLOG("Failed to create Sheep instance.");
+        return;
+    }
+}
+// 重载 createSheep 方法，用于创建静止羊
+void GameScene::createSheep(const Vec2& initialPosition)
+{
+    Sheep* staticSheep = Sheep::create(); // 创建新的羊实例
+    if (staticSheep) {
+        staticSheep->setPosition(initialPosition); // 设置初始位置
+        // 设置羊初始位置
+        Vec2 staticSheep_tilePos = Vec2(initialPosition);
+        Vec2 staticSheep_worldPos = _gameMap->convertToWorldCoord(staticSheep_tilePos);
+        staticSheep->setPosition(staticSheep_worldPos);
+        this->addChild(staticSheep, 1); // 将静止羊添加到场景中
+        sheeps.push_back(staticSheep); // 将静止羊添加到向量中
+        staticSheep->staticAnimation(); // 播放静止动画
+        CCLOG("Static sheep created at position: (%.1f, %.1f)", staticSheep->getPosition().x, staticSheep->getPosition().y);
+    }
+    else {
+        CCLOG("Failed to create static Sheep instance.");
+        return;
+    }
+}
+
+void GameScene::initSheep()
+{
+    isSheepCreated = true; // 设置标志为已创建
+    // 创建第一只羊
+    Vec2 moveSheep1Path1_tilePos = Vec2(28, 17);
+    Vec2 moveSheep1Path2_tilePos = Vec2(28, 22);
+
+    Vec2 moveSheep1Path1_worldPos = _gameMap->convertToWorldCoord(moveSheep1Path1_tilePos);
+    Vec2 moveSheep1Path2_worldPos = _gameMap->convertToWorldCoord(moveSheep1Path2_tilePos);
+    std::vector<Vec2> sheep1Path = { moveSheep1Path1_worldPos,moveSheep1Path2_worldPos };
+    createSheep(Vec2(28, 20), sheep1Path); // 第一只羊的位置和路径
+
+    // 创建第二只羊
+    Vec2 moveSheep2Path1_tilePos = Vec2(23, 19);
+    Vec2 moveSheep2Path2_tilePos = Vec2(27, 19);
+
+    Vec2 moveSheep2Path1_worldPos = _gameMap->convertToWorldCoord(moveSheep2Path1_tilePos);
+    Vec2 moveSheep2Path2_worldPos = _gameMap->convertToWorldCoord(moveSheep2Path2_tilePos);
+    std::vector<Vec2> sheep2Path = { moveSheep2Path1_worldPos,moveSheep2Path2_worldPos };
+    createSheep(Vec2(26, 19), sheep2Path); // 第二只羊的位置和路径
+
+    // 创建第三只羊，保持静止
+    createSheep(Vec2(26, 23)); // 第三只羊的位置
+}
 /*
  * 初始化宝箱
  * 功能：在地图上创建宝箱
