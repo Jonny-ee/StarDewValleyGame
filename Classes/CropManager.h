@@ -90,10 +90,12 @@ private:
         int plantDay;           // 种植时的游戏天数
         int plantMonth;         // 种植时的游戏月份
         int plantYear;          // 种植时的游戏年份
+        int waterLevel = 2;     // 水分状态: 2-充足, 1-略缺, 0-严重缺水
+        bool isWatered = false; // 今天是否浇过水
     };
 
     std::vector<CropInfo> _cropInfos;   // 存储所有作物信息
-    std::vector<Crop*> _crops;          // 当前显示的作物精灵
+    std::vector<Node*> _crops;          // 当前显示的作物精灵
     void updateCrops();                 // 更新作物状态，实现生长（在GameScene里调用）
 
     /*

@@ -95,6 +95,27 @@ bool CropManager::waterSoil(const Vec2& tilePos)
     // 显示浇水提示
     showWateringPopup();
 
+     // 更新作物的水分状态
+    for (size_t i = 0; i < _cropInfos.size(); ++i)
+    {
+        if (_cropInfos[i].tilePos == tilePos)
+        {
+            CCLOG("Watering crop at position (%f, %f)", tilePos.x, tilePos.y);
+            _cropInfos[i].isWatered = true;
+            _cropInfos[i].waterLevel = 2;  // 恢复到充足状态
+
+            if (i < _crops.size() && _crops[i])
+            {
+                if (auto corn = dynamic_cast<Corn*>(_crops[i]))
+                {
+                    CCLOG("Updating water status for corn");
+                    corn->updateWaterStatus(2);
+                }
+            }
+            break;
+        }
+    }
+
     return true;
 }
 
@@ -115,7 +136,8 @@ void CropManager::createWaterEffect(Sprite* tile)
 /*
  * 显示浇水提示
  */
-void CropManager::showWateringPopup() {
+void CropManager::showWateringPopup()
+{
     if (!_gameScene || !_gameMap) return;
 
     // 获取玩家位置
@@ -163,6 +185,7 @@ void CropManager::showWateringPopup() {
         };
     Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, popupBg);
 }
+
 /*
  * 处理鼠标按下事件，执行开垦操作
  * @param mousePos 鼠标位置
@@ -278,6 +301,8 @@ bool CropManager::plantCorn(const Vec2& tilePos)
         info.plantDay = gameTime->getDay();
         info.plantMonth = gameTime->getMonth();
         info.plantYear = gameTime->getYear();
+        info.waterLevel = 2;    // 初始水分充足
+        info.isWatered = false;  // 种植时视为已浇水
 
         _cropInfos.push_back(info);
 
@@ -337,44 +362,53 @@ void CropManager::initKeyboardListener()
  */
 void CropManager::updateCrops()
 {
-    // 即使不在农场地图，也要更新作物信息
-    auto gameTime = GameTime::getInstance();
-    int currentDay = gameTime->getDay();
-    int currentMonth = gameTime->getMonth();
-    int currentYear = gameTime->getYear();
-
-    CCLOG("Updating crops: Current time %d/%d/%d, Total crops: %d",
-        currentDay, currentMonth, currentYear, (int)_cropInfos.size());
-
     for (size_t i = 0; i < _cropInfos.size(); ++i)
     {
         auto& info = _cropInfos[i];
 
-        // 计算经过的天数
-        int daysElapsed = (currentYear - info.plantYear) * 365 +
-            (currentMonth - info.plantMonth) * 30 +
-            (currentDay - info.plantDay);
-
-        // 计算新的生长阶段
-        int newStage = daysElapsed;
-        if (newStage > 4) newStage = 4;
-
-        // 更新生长阶段
-        if (newStage != info.growthStage)
+        // 先检查水分状态
+        if (info.waterLevel <= 0)
         {
-            CCLOG("Updating crop %zu from stage %d to %d",
-                i, info.growthStage, newStage);
-            info.growthStage = newStage;
+            if (i < _crops.size() && _crops[i])
+            {
+                _crops[i]->removeFromParent();
+                _crops.erase(_crops.begin() + i);
+            }
+            _cropInfos.erase(_cropInfos.begin() + i);
+            i--;
+            continue;
+        }
 
-            // 只有在农场地图时才更新显示
-            if (_gameMap && _gameMap->getMapName() == "Farm" && i < _crops.size())
+        // 如果浇了水，增加生长阶段
+        if (info.isWatered && info.growthStage < 3)  // 最大生长阶段是4
+        {
+            int oldStage = info.growthStage;
+            info.growthStage++;
+
+            if (i < _crops.size() && _crops[i])
             {
                 if (auto corn = dynamic_cast<Corn*>(_crops[i]))
                 {
-                    corn->updateGrowthStage(newStage);
+                    corn->updateGrowthStage(info.growthStage);
                 }
             }
         }
+
+        // 降低水分状态
+        int oldWaterLevel = info.waterLevel;
+        info.waterLevel--;
+
+        // 更新水分状态显示
+        if (i < _crops.size() && _crops[i])
+        {
+            if (auto corn = dynamic_cast<Corn*>(_crops[i]))
+            {
+                corn->updateWaterStatus(info.waterLevel);
+            }
+        }
+
+        // 重置浇水状态
+        info.isWatered = false;
     }
 }
 
@@ -383,7 +417,7 @@ void CropManager::updateCrops()
  */
 void CropManager::saveCrops()
 {
-    std::vector<CropInfo> newCropInfos;  // 创建新的临时容器
+    std::vector<CropInfo> newCropInfos;
 
     for (auto crop : _crops)
     {
@@ -406,6 +440,8 @@ void CropManager::saveCrops()
                 info.plantDay = it->plantDay;
                 info.plantMonth = it->plantMonth;
                 info.plantYear = it->plantYear;
+                info.waterLevel = it->waterLevel;
+                info.isWatered = it->isWatered;
             }
             else
             {
@@ -415,6 +451,8 @@ void CropManager::saveCrops()
                 info.plantDay = gameTime->getDay();
                 info.plantMonth = gameTime->getMonth();
                 info.plantYear = gameTime->getYear();
+                info.waterLevel = 2;
+                info.isWatered = false;
             }
 
             info.type = "corn";
@@ -422,7 +460,6 @@ void CropManager::saveCrops()
         }
     }
 
-    // 用新的信息替换旧的
     _cropInfos = std::move(newCropInfos);
 }
 
@@ -450,8 +487,9 @@ void CropManager::loadCrops()
                 _gameScene->addChild(corn, 0);
                 _crops.push_back(corn);
                 corn->updateGrowthStage(info.growthStage);
-                CCLOG("Loaded corn at (%.1f, %.1f) with growth stage %d", 
-                      info.position.x, info.position.y, info.growthStage);
+                corn->updateWaterStatus(info.waterLevel);  // 添加这行
+                CCLOG("Loaded corn at (%.1f, %.1f) with growth stage %d and water level %d",
+                    info.position.x, info.position.y, info.growthStage, info.waterLevel);
             }
         }
     }

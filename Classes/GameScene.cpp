@@ -238,7 +238,8 @@ void GameScene::update(float dt)
     // 检查传送点
     Vec2 playerTilePos = _gameMap->convertToTileCoord(player->getPosition());
     TransitionInfo transition;
-    if (_gameMap->checkForTransition(playerTilePos, transition)) {
+    if (_gameMap->checkForTransition(playerTilePos, transition))
+    {
         switchToMap(transition.targetMap, transition.targetTilePos);
     }
 

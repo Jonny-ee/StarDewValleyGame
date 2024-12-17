@@ -18,7 +18,7 @@ Corn* Corn::create(const Vec2& position)
     {
         corn->autorelease();
         corn->setPosition(position);
-        CCLOG("Created corn at position: (%.1f, %.1f)", position.x, position.y);
+        corn->updateWaterStatus(2);  // 设置初始水分状态
         return corn;
     }
     CC_SAFE_DELETE(corn);
@@ -37,10 +37,24 @@ bool Corn::init()
         return false;
     }
 
-    // 设置初始纹理（种子状态，第一行第二个格子）
+    // 保持原有的作物初始化
     this->setTexture("Plants.png");
     this->setTextureRect(Rect(16, 0, 16, 16));  // 种子状态
     this->setScale(2.0f);
+
+    // 添加水分状态精灵
+    _waterStatusSprite = Sprite::create("TileSheets/emotes.png");
+    if (!_waterStatusSprite) {
+        CCLOG("Failed to create water status sprite!");
+        return false;
+    }
+    _waterStatusSprite->setScale(1.0f);
+    this->addChild(_waterStatusSprite, 2);
+    _waterStatusSprite->setPosition(Vec2(8, 20));
+
+    // 设置初始水分状态（充足）
+    Rect rect(0, 16, 16, 16);
+    _waterStatusSprite->setTextureRect(rect);
 
     CCLOG("Corn initialized with seed texture");
     return true;
@@ -58,4 +72,33 @@ void Corn::updateGrowthStage(int stage)
         this->setTextureRect(Rect(16 * (stage + 1), 0, 16, 16));
         CCLOG("Updated corn growth stage to: %d, texture rect: x=%d", stage, 16 * (stage + 1));
     }
+}
+
+/*
+ *  更新庄稼水分状态
+ *  @param waterLevel 水分状态(0-2：严重缺水、缺水、水分充足)
+ */
+void Corn::updateWaterStatus(int waterLevel)
+{
+    if (!_waterStatusSprite)
+        return;
+
+    Rect rect;
+    switch (waterLevel)
+    {
+        case 2:  // 水分充足
+            rect = Rect(0, 16, 16, 16);
+            break;
+        case 1:  // 缺水
+            rect = Rect(16, 16, 16, 16);
+            break;
+        case 0:  // 严重缺水
+            rect = Rect(32, 16, 16, 16);
+            break;
+        default:
+            CCLOG("Invalid water level: %d", waterLevel);
+            return;
+    }
+
+    _waterStatusSprite->setTextureRect(rect);
 }
