@@ -498,7 +498,7 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
 
     // 如果是矿洞地图，检查是否需要刷新宝箱
     if (mapName == "Mine") {
-        CCLOG("切换到矿洞地图...");
+        CCLOG("Switch to the mine map...");
 
         auto gameTime = GameTime::getInstance();
         int currentDay = gameTime->getDay();
@@ -521,7 +521,7 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
 
         // 如果需要刷新宝箱
         if (shouldRefreshChests) {
-            CCLOG("刷新矿洞宝箱...");
+            CCLOG("Refresh the mine treasure chest...");
             initChests();
             // 更新进入时间
             lastMineEnterDay = currentDay;
@@ -529,7 +529,7 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
             lastMineEnterYear = currentYear;
         }
         else {
-            CCLOG("今天已经刷新过宝箱，不再刷新");
+            CCLOG("The treasure chest has been refreshed today and will not be refreshed again");
         }
 
         // 初始化马龙NPC
@@ -1087,5 +1087,5 @@ void GameScene::clearChests()
         }
     }
     _chests.clear();
-    CCLOG("所有宝箱已清理");
+    CCLOG("All treasure chests have been cleared");
 }

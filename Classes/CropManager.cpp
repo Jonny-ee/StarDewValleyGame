@@ -37,6 +37,30 @@ bool CropManager::canTill(const Vec2& tilePos) const
     return std::find(TILLABLE_TILES.begin(), TILLABLE_TILES.end(), tileGID) != TILLABLE_TILES.end();  // 检查是否是可开垦图块
 }
 
+/*
+ * 开垦指定位置的土地
+ * @param tilePos 要开垦的图片坐标
+ * @return 开垦成功返回true，失败返回false
+ */
+bool CropManager::tillSoil(const Vec2& tilePos)
+{
+    if (!canTill(tilePos))  // 检查是否可以开垦
+        return false;
+
+    auto backLayer = _gameMap->getTileMap()->getLayer("Back");  // 获取背景图层
+    if (!backLayer)  // 检查图层是否存在
+        return false;
+
+    backLayer->setTileGID(TILLED_TILE_ID, tilePos);  // 将图块设置为已开垦状态
+
+    return true;
+}
+
+/*
+ * 检查指定位置是否可以移除资源
+ * @param tilePos 要检查的图块坐标
+ * @return 如果可以移除资源返回true，否则返回false
+ */
 bool CropManager::resourceCanRemove(const Vec2& tilePos) const
 {
     if (!_gameMap)  // 检查地图是否存在
@@ -54,6 +78,12 @@ bool CropManager::resourceCanRemove(const Vec2& tilePos) const
     return std::find(RESOURCE_TILES.begin(), RESOURCE_TILES.end(), tileGID) != RESOURCE_TILES.end();  // 检查是否是可移除的资源图块
 }
 
+
+/*
+ * 移除指定位置的资源
+ * @param tilePos 要移除资源的图块坐标
+ * @return 如果成功移除返回true，否则返回false
+ */
 bool CropManager::removeResource(const Vec2& tilePos)
 {
     if (!resourceCanRemove(tilePos))  // 检查是否可以移除资源
@@ -65,32 +95,6 @@ bool CropManager::removeResource(const Vec2& tilePos)
 
     // 更新资源图层，将资源图块替换为已移除的图块
     backLayer->setTileGID(RESOURCE_REMOVED_TILE_ID, tilePos);
-
-    // 更新碰撞图层，移除对应位置的碰撞图块
-    auto collisionLayer = _gameMap->getTileMap()->getLayer("Collision");
-    if (collisionLayer) {
-        collisionLayer->setTileGID(0, tilePos);  // 设置为0表示移除碰撞图块
-    }
-
-    return true;
-}
-
-
-/*
- * 开垦指定位置的土地
- * @param tilePos 要开垦的图片坐标
- * @return 开垦成功返回true，失败返回false
- */
-bool CropManager::tillSoil(const Vec2& tilePos)
-{
-    if (!canTill(tilePos))  // 检查是否可以开垦
-        return false;
-
-    auto backLayer = _gameMap->getTileMap()->getLayer("Back");  // 获取背景图层
-    if (!backLayer)  // 检查图层是否存在
-        return false;
-
-    backLayer->setTileGID(TILLED_TILE_ID, tilePos);  // 将图块设置为已开垦状态
 
     return true;
 }

@@ -87,6 +87,9 @@ private:
         "BrokenBridge2",
         "Buildings-Broken"
     };
+    // 定义资源图块ID
+    const std::vector<int> RESOURCE_TILES = { 258, 182, 162 };  // 可移除的资源图块ID
+    const int RESOURCE_REMOVED_TILE_ID = 473;  // 资源被移除后的图块ID
 };
 
 #endif // __GAMEMAP_H__
