@@ -37,6 +37,45 @@ bool CropManager::canTill(const Vec2& tilePos) const
     return std::find(TILLABLE_TILES.begin(), TILLABLE_TILES.end(), tileGID) != TILLABLE_TILES.end();  // 检查是否是可开垦图块
 }
 
+bool CropManager::resourceCanRemove(const Vec2& tilePos) const
+{
+    if (!_gameMap)  // 检查地图是否存在
+        return false;
+
+    if (_gameMap->getMapName() != "Farm")  // 只在在Farm地图除草碎石
+        return false;
+
+    auto backLayer = _gameMap->getTileMap()->getLayer("Back");  // 获取resource图层
+    if (!backLayer)  // 检查图层是否存在
+        return false;
+
+    int tileGID = backLayer->getTileGIDAt(tilePos);  // 获取指定位置的图块ID
+
+    return std::find(RESOURCE_TILES.begin(), RESOURCE_TILES.end(), tileGID) != RESOURCE_TILES.end();  // 检查是否是可移除的资源图块
+}
+
+bool CropManager::removeResource(const Vec2& tilePos)
+{
+    if (!resourceCanRemove(tilePos))  // 检查是否可以移除资源
+        return false;
+
+    auto backLayer = _gameMap->getTileMap()->getLayer("Back");  // 获取背景图层
+    if (!backLayer)  // 检查图层是否存在
+        return false;
+
+    // 更新资源图层，将资源图块替换为已移除的图块
+    backLayer->setTileGID(RESOURCE_REMOVED_TILE_ID, tilePos);
+
+    // 更新碰撞图层，移除对应位置的碰撞图块
+    auto collisionLayer = _gameMap->getTileMap()->getLayer("Collision");
+    if (collisionLayer) {
+        collisionLayer->setTileGID(0, tilePos);  // 设置为0表示移除碰撞图块
+    }
+
+    return true;
+}
+
+
 /*
  * 开垦指定位置的土地
  * @param tilePos 要开垦的图片坐标
@@ -224,6 +263,16 @@ void CropManager::onMouseDown(const Vec2& mousePos, Player* player)
             if (waterSoil(playerTilePos))           // 尝试浇水
             {
                 player->performAction(mousePos);    // 执行浇水动作
+            }
+        }
+    }
+    else if (player->getCurrentTool() == Player::ToolType::AXE)
+    {
+        if (resourceCanRemove(playerTilePos))                // 检查是否可以移除资源
+        {
+            if (removeResource(playerTilePos))           // 尝试移除
+            {
+                player->performAction(mousePos);    // 执行动作
             }
         }
     }

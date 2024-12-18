@@ -4,7 +4,7 @@
 #include "Chest.h" 
 #include "Sleep.h"
 #include "BridgeEvent.h"
-
+#include "CropManager.h"
 USING_NS_CC;
 
 Scene* GameScene::createScene()
@@ -210,6 +210,9 @@ void GameScene::onDayChanged()
 {
     // 更新作物生长
     CropManager::getInstance()->updateCrops();
+
+    // 刷新资源
+    _gameMap->refreshResources();
 
     // 这里可以添加其他每日更新的内容
     CCLOG("A new day has started!");
@@ -614,6 +617,12 @@ void GameScene::initMouseListener()
             {
                 CropManager::getInstance()->onMouseDown(clickPos, player);
             }
+            // 鼠标点击时触发资源移除
+            if (player && player->getCurrentTool() == Player::ToolType::AXE)
+            {
+                CropManager::getInstance()->onMouseDown(clickPos, player);
+            }
+
 
             // 检查是否靠近并点击了刘易斯
             if (lewis) {
@@ -1063,6 +1072,7 @@ void GameScene::initChests()
             // 添加到场景
             this->addChild(chest, 1);
             _chests.push_back(chest);
+            
 
             CCLOG("Placed chest at world position (%.1f, %.1f)", worldPos.x, worldPos.y);
         }

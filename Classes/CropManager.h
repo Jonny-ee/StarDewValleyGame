@@ -30,6 +30,9 @@ public:
     bool canHarvest(const Vec2& tilePos) const;             // 检查指定位置是否可以收获
     bool harvestCrop(const Vec2& tilePos);                  // 收获指定位置的作物
 
+    bool resourceCanRemove(const Vec2& tilePos) const;      // 检查指定位置资源是否可以移除
+    bool removeResource(const Vec2& tilePos);               // 移除指定位置的资源
+
     void setGameMap(GameMap* map)                           // 设置当前游戏地图引用
     {
         // 如果已经有监听器，先移除
@@ -54,6 +57,9 @@ public:
     void saveCrops();
     void loadCrops();
     void clearCrops();                  // 切换地图时清理作物精灵
+
+    const std::vector<int> RESOURCE_TILES = { 258,182,162 };    // 可除草或碎石（资源）的图块ID列表
+    const int RESOURCE_REMOVED_TILE_ID = 473;            // 移除资源后的图块ID
 
 private:
     friend class GameScene;
@@ -109,9 +115,10 @@ private:
      * 2. 因为Tiled中0表示空图块，所以实际图块ID = Tiled中开垦后ID + 1
      * 3. 下面使用的都是ID都为实际使用的ID（已加1）
      */
-    const std::vector<int> TILLABLE_TILES = { 207, 227, 228, 232, 464 };    // 可开垦的图块ID列表
+    const std::vector<int> TILLABLE_TILES = { 207, 227, 228, 232, 464,473 };    // 可开垦的图块ID列表
     const int TILLED_TILE_ID = 681;                                         // 开垦后的图块ID（已开垦的农田图块）
 
     void createWaterEffect(Sprite* tile);   // 创建浇水效果
     void showWateringPopup();               // 显示浇水提示
-};
+
+}; 

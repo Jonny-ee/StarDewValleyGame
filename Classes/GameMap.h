@@ -4,6 +4,7 @@
 #include "cocos2d.h"
 #include <string>
 
+
 // 定义传送点信息的结构体
 struct TransitionInfo {
     std::string targetMap;       // 目标地图名称
@@ -50,14 +51,14 @@ public:
     // 检查宝箱碰撞的方法
     bool isChestCollision(const cocos2d::Vec2& worldPos) const;
 
-    // 资源碰撞检测方法
-    bool isResourceCollision(const cocos2d::Vec2& worldPos) const;
-
     void repairBridge();
     bool isBridgeRepaired() const { return _bridgeRepaired; }
 
     void updateFrontTileVisibility(const cocos2d::Vec2& playerPos);
     void restoreAllFrontTiles();  // 恢复所有前景瓦片
+
+    void refreshResources();//每日更新地图资源点
+
     ~GameMap();
 private:
 

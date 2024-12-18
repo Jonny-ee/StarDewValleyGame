@@ -1,6 +1,8 @@
 #include "GameMap.h"
 #include"GameTime.h"
 #include"LightManager.h"
+#include "CropManager.h"
+
 USING_NS_CC;
 GameMap* GameMap::_instance = nullptr;
 
@@ -216,12 +218,6 @@ bool GameMap::isWalkable(const Vec2& worldPos) const {
         return false;
     }
 
-    // 检查资源碰撞
-    if (isResourceCollision(worldPos)) {
-        return false;
-    }
-
-
     // 检查所有Buildings层
     const auto& allLayers = _tileMap->getChildren();
     for (const auto& child : allLayers) {
@@ -243,6 +239,22 @@ bool GameMap::isWalkable(const Vec2& worldPos) const {
         tilePos.y < 0 || tilePos.y >= mapSize.height) {
         //CCLOG("碰撞检测：位置 (%.0f, %.0f) 超出地图范围", tilePos.x, tilePos.y);
         return false;
+    }
+    // 检查碰撞层
+    auto collisionLayer = _tileMap->getLayer("Collision");
+    if (collisionLayer) {
+        int tileGID = collisionLayer->getTileGIDAt(tilePos);
+        if (tileGID > 0) {
+            // 获取图块属性
+            auto properties = _tileMap->getPropertiesForGID(tileGID);
+            if (!properties.isNull()) {
+                // 检查是否有collision属性
+                Value collisionProperty = properties.asValueMap()["collision"];
+                if (!collisionProperty.isNull() && collisionProperty.asBool()) {
+                    return false;  // 有碰撞属性且为true时，不可通行
+                }
+            }
+        }
     }
 
     //CCLOG("碰撞检测：位置 (%.0f, %.0f) 可以通行", tilePos.x, tilePos.y);
@@ -274,26 +286,6 @@ bool GameMap::isChestCollision(const Vec2& worldPos) const
     return false;  // 无碰撞
 }
 
-bool GameMap::isResourceCollision(const Vec2& worldPos) const {
-    if (!_tileMap) {
-        return false;
-    }
-
-    // 转换为瓦片坐标
-    Vec2 tilePos = convertToTileCoord(worldPos);
-
-    // 获取资源层
-    auto resourceLayer = _tileMap->getLayer("resource");
-    if (resourceLayer) {
-        // 检查该位置是否有资源图块
-        int tileGID = resourceLayer->getTileGIDAt(tilePos);
-        if (tileGID > 0) {
-            return true;  // 有资源，发生碰撞
-        }
-    }
-
-    return false;  // 无碰撞
-}
 
 void GameMap::repairBridge() {
 
@@ -384,4 +376,34 @@ GameMap::~GameMap() {
         layer->release();
     }
     _frontLayers.clear();
+}
+
+void GameMap::refreshResources()
+{
+    // 定义资源图块ID
+    const std::vector<int> RESOURCE_TILES = { 258, 182, 162 };  // 可移除的资源图块ID
+    const int RESOURCE_REMOVED_TILE_ID = 473;  // 资源被移除后的图块ID
+
+    if (_mapName != "Farm") return;
+
+    auto backLayer = _tileMap->getLayer("Back");
+    if (!backLayer) return;
+
+    auto collisionLayer = _tileMap->getLayer("Collision");
+    if (!collisionLayer) return;
+
+    Size mapSize = _tileMap->getMapSize();
+    for (int x = 0; x < mapSize.width; x++) {
+        for (int y = 0; y < mapSize.height; y++) {
+            int tileGID = backLayer->getTileGIDAt(Vec2(x, y));
+            if (tileGID == 473) {  // 检查是否是已移除的资源
+                // 随机选择一个资源ID
+                int newResourceID = RESOURCE_TILES[rand() % RESOURCE_TILES.size()];
+                backLayer->setTileGID(newResourceID, Vec2(x, y));
+
+                // 更新碰撞层，设置新的资源图块位置为不可通行
+                collisionLayer->setTileGID(newResourceID, Vec2(x, y));
+            }
+        }
+    }
 }
