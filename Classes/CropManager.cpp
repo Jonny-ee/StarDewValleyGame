@@ -1,6 +1,7 @@
 #include "CropManager.h"
 
-CropManager* CropManager::_instance = nullptr;  // 初始化静态成员变量
+// 初始化静态成员变量
+CropManager* CropManager::_instance = nullptr;      // 实例
 
 /*
  * 获取农作物管理系统单例实例
@@ -283,6 +284,99 @@ void CropManager::onMouseDown(const Vec2& mousePos, Player* player)
 }
 
 /*
+ * 显示提示文本
+ * @param text 要显示的文本
+ * @param tilePos 瓦片坐标
+ * @param duration 显示持续时间（0表示持续显示）
+ */
+void CropManager::showTip(const std::string& text, const Vec2& tilePos, float duration) const
+{
+    if (!tipLabel)
+    {
+        tipLabel = Label::createWithSystemFont(text, "Arial", 24);
+        if (tipLabel)
+        {
+            tipLabel->setTextColor(Color4B::WHITE);
+            Director::getInstance()->getRunningScene()->addChild(tipLabel, 10);
+        }
+    }
+
+    tipLabel->setString(text);
+    tipLabel->setVisible(true);
+
+    // 设置位置在耕地上方
+    if (_gameMap)
+    {
+        // 获取瓦片地图
+        auto tileMap = _gameMap->getTileMap();
+        if (tileMap)
+        {
+            // 获取瓦片大小
+            auto tileSize = tileMap->getTileSize();
+            // 计算世界坐标
+            float worldX = (tilePos.x + 0.5f) * tileSize.width;   // 瓦片中心
+            float worldY = (tilePos.y + 1.0f) * tileSize.height;  // 瓦片上方
+
+            tipLabel->setPosition(Vec2(worldX, worldY + 20));  // 再往上偏移一点
+
+            CCLOG("Tip position set to: %f, %f", worldX, worldY + 20);  // 添加日志
+        }
+    }
+
+    if (duration > 0)
+    {
+        tipLabel->stopAllActions();  // 停止之前的动作
+        auto sequence = Sequence::create(
+            DelayTime::create(duration),
+            CallFunc::create([this]() {
+                hideTip();
+                }),
+            nullptr
+        );
+        tipLabel->runAction(sequence);
+    }
+}
+
+/*
+ * 隐藏提示文本
+ */
+void CropManager::hideTip() const
+{
+    if (tipLabel)
+    {
+        tipLabel->setVisible(false);
+    }
+}
+
+/*
+ * 检查指定瓦片位置是否已有作物
+ * @param tilePos 要检查的瓦片坐标
+ * @return 如果该位置已有作物返回true，否则返回false
+ */
+bool CropManager::hasCropAt(const Vec2& tilePos) const
+{
+    // 转换并输出世界坐标
+    if (_gameMap && _gameMap->getTileMap())
+    {
+        auto tileMap = _gameMap->getTileMap();
+        auto tileSize = tileMap->getTileSize();
+        float worldX = (tilePos.x + 0.5f) * tileSize.width;
+        float worldY = (tilePos.y + 1.0f) * tileSize.height;
+        CCLOG("Checking crop at world position: (%f, %f)", worldX, worldY);
+    }
+
+    // 检查该位置是否已有作物
+    for (const auto& info : _cropInfos)
+    {
+        if (info.tilePos == tilePos)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+/*
  * 检查指定位置是否可以种植
  * @param tilePos 要检查的瓦片坐标
  * @return 如果可以种植返回true，否则返回false
@@ -290,16 +384,20 @@ void CropManager::onMouseDown(const Vec2& mousePos, Player* player)
 bool CropManager::canPlant(const Vec2& tilePos) const
 {
     if (!_gameMap || _gameMap->getMapName() != "Farm")
-    {
         return false;
-    }
 
     auto backLayer = _gameMap->getTileMap()->getLayer("Back");
     if (!backLayer)
+        return false;
+
+    // 检查是否已有作物
+    if (hasCropAt(tilePos))
     {
+        showTip("Cannot plant here again!", tilePos);
         return false;
     }
 
+    // 检查是否是已耕地或已浇水的耕地
     int tileGID = backLayer->getTileGIDAt(tilePos);
     return tileGID == TILLED_TILE_ID;
 }
@@ -603,8 +701,24 @@ bool CropManager::harvestCrop(const Vec2& tilePos)
     {
         if (_cropInfos[i].tilePos == tilePos && _cropInfos[i].growthStage == FINAL_GROWTH_STAGE)
         {
-            // 创建收获掉落物
+            // 创建收获掉落
             createHarvestDrop(_cropInfos[i].position);
+
+            // 获取当前种植等级
+            auto skillSystem = SkillSystem::getInstance();
+            int currentLevel = skillSystem->getSkillLevel(SkillType::FARMING);
+
+            // 增加种植经验
+            skillSystem->gainExp(SkillType::FARMING, 10);
+
+            // 检查是否刚刚升到3级
+            if (currentLevel < 3 && skillSystem->getSkillLevel(SkillType::FARMING) >= 3)
+            {
+                // 达到3级后给予番茄种子
+                auto itemSystem = ItemSystem::getInstance();
+                itemSystem->addItem("tomato seed", 1);
+                CCLOG("Unlocked tomato seed at farming level 3");
+            }
 
             // 移除作物
             if (i < _crops.size() && _crops[i])
