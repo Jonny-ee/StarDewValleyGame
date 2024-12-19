@@ -93,7 +93,7 @@ bool GameScene::init()
     lastMineEnterYear = 0;
 
     // 创建并加载地图
-    _gameMap = GameMap::create("House");
+    _gameMap = GameMap::create("First");
     if (_gameMap == nullptr)
     {
         return false;
@@ -108,7 +108,7 @@ bool GameScene::init()
 
    
     // 设置玩家初始位置
-    Vec2 tilePos = Vec2(9, 7);
+    Vec2 tilePos = Vec2(14.5, 15);
     Vec2 worldPos = _gameMap->convertToWorldCoord(tilePos);
     player->setPosition(worldPos);
     player->setScale(3.0f);
