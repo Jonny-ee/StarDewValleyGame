@@ -24,7 +24,8 @@ void GameScene::initToolIcon()
     {
         toolIcon->setScale(3.0f);
         this->addChild(toolIcon, 10);
-        updateToolIcon();  // 设置初始工具图标
+        toolIcon->setPosition(Player::TOOL_ICON_POSITION);
+        updateToolIcon();
     }
 }
 
@@ -73,6 +74,43 @@ void GameScene::updateToolIcon()
     }
 }
 
+void GameScene::initSeedIcon()
+{
+    seedIcon = Sprite::create("Plants.png");
+    if (seedIcon)
+    {
+        seedIcon->setScale(3.0f);
+        this->addChild(seedIcon, 10);
+        seedIcon->setPosition(Player::SEED_ICON_POSITION);
+
+        // 初始化时根据当前地图设置可见性
+        seedIcon->setVisible(_gameMap && _gameMap->getMapName() == "Farm");
+
+        updateSeedIcon();
+    }
+}
+
+void GameScene::updateSeedIcon()
+{
+    if (!seedIcon || !player)
+        return;
+
+    // 只在农场地图显示种子图标
+    if (_gameMap)
+    {
+        seedIcon->setVisible(_gameMap->getMapName() == "Farm");
+    }
+    // 根据当前选择的种子类型设置贴图区域
+    switch (player->getCurrentSeed())
+    {
+        case Player::SeedType::CORN:
+            seedIcon->setTextureRect(Rect(0, 0, 16, 16));  // 第一行第一个
+            break;
+        case Player::SeedType::TOMATO:
+            seedIcon->setTextureRect(Rect(0, 16, 16, 16)); // 第二行第一个
+            break;
+    }
+}
 
 bool GameScene::init()
 {
@@ -85,10 +123,10 @@ bool GameScene::init()
     player = nullptr;
     _gameMap = nullptr;
     _pressedKeys.clear();
-    isLewisCreated = false; // 初始化标志
-    isMarlonCreated = false; // 初始化标志
-    isMaruCreated = false; // 初始化标志
-    isAlexCreated = false; // 初始化标志
+    isLewisCreated = false;     // 初始化标志
+    isMarlonCreated = false;    // 初始化标志
+    isMaruCreated = false;      // 初始化标志
+    isAlexCreated = false;      // 初始化标志
 
     // 初始化矿洞进入时间记录
     lastMineEnterDay = 0;
@@ -102,6 +140,7 @@ bool GameScene::init()
         return false;
     }
     this->addChild(_gameMap);
+
     // 创建玩家
     player = Player::create();
     if (player == nullptr)
@@ -109,7 +148,6 @@ bool GameScene::init()
         return false;
     }
 
-   
     // 设置玩家初始位置
     Vec2 tilePos = Vec2(14.5, 15);
     Vec2 worldPos = _gameMap->convertToWorldCoord(tilePos);
@@ -171,6 +209,9 @@ bool GameScene::init()
     // 初始化工具图标
     initToolIcon();
 
+    // 初始化种子图标
+    initSeedIcon();
+
     // 初始化鼠标监听器
     initMouseListener();
 
@@ -228,7 +269,8 @@ void GameScene::onDayChanged()
 
 void GameScene::update(float dt)
 {
-    if (!player || !_gameMap) {
+    if (!player || !_gameMap)
+    {
         return;
     }
 
@@ -260,32 +302,40 @@ void GameScene::update(float dt)
     {
         switchToMap(transition.targetMap, transition.targetTilePos);
     }
-    updateToolIcon();  // 每帧更新工具图标
+
+    updateToolIcon();   // 每帧更新工具图标
+    updateSeedIcon();   // 每帧更新种子图标
 
     // 更新Lewis的状态
-    if (lewis) {
-
+    if (lewis)
+    {
         //lewis->updateSchedule(dt);
         lewis->moveAlongPath(dt); // 移动沿路径
     }
 
     // 更新所有猪的状态
-    for (auto pig : pigs) {
-        if (pig) {
+    for (auto pig : pigs)
+    {
+        if (pig)
+        {
             pig->moveAlongPath(dt); // 移动沿路径
         }
     }
 
     // 更新所有鸡的状态
-    for (auto chicken : chickens) {
-        if (chicken) {
+    for (auto chicken : chickens)
+    {
+        if (chicken)
+        {
             chicken->moveAlongPath(dt); // 移动沿路径
         }
     }
 
     // 更新所有羊的状态
-    for (auto sheep : sheeps) {
-        if (sheep) {
+    for (auto sheep : sheeps)
+    {
+        if (sheep)
+        {
             sheep->moveAlongPath(dt); // 移动沿路径
         }
     }
@@ -294,8 +344,10 @@ void GameScene::update(float dt)
     auto fishingSystem = FishingSystem::getInstance();
     fishingSystem->canFish(player->getPosition(), player);
     // 更新提示标签位置
-    if (auto tipLabel = fishingSystem->getTipLabel()) {
-        if (tipLabel->isVisible()) {
+    if (auto tipLabel = fishingSystem->getTipLabel())
+    {
+        if (tipLabel->isVisible())
+        {
             Vec2 playerPos = player->getPosition();
             // 设置在玩家头顶上方50像素
             tipLabel->setPosition(playerPos + Vec2(0, 50));
@@ -306,12 +358,14 @@ void GameScene::update(float dt)
     CropManager::getInstance()->updateTips(playerTilePos, player->getCurrentTool());
 
     // 检查所有事件
-    for (auto event : _events) {
+    for (auto event : _events)
+    {
         event->update(dt);
     }
 
     // 更新前景瓦片可见性
-    if (_gameMap && player) {
+    if (_gameMap && player)
+    {
         _gameMap->updateFrontTileVisibility(player->getPosition());
     }
 
@@ -321,8 +375,10 @@ void GameScene::update(float dt)
 
 void GameScene::updateCamera()
 {
-    if (!player || !_gameMap) return;
-    if (_gameMap->getMapName() == "First")return;
+    if (!player || !_gameMap)
+        return;
+    if (_gameMap->getMapName() == "First")
+        return;
 
     Size visibleSize = Director::getInstance()->getVisibleSize();
     Size mapSize = _gameMap->getTileMap()->getMapSize();
@@ -339,18 +395,22 @@ void GameScene::updateCamera()
     float x, y;
 
     // 如果地图小于屏幕，则居中显示
-    if (mapWidth < visibleSize.width) {
+    if (mapWidth < visibleSize.width)
+    {
         x = visibleSize.width / 2;
     }
-    else {
+    else
+    {
         x = std::max(playerPos.x, visibleSize.width / 2);
         x = std::min(x, mapWidth - visibleSize.width / 2);
     }
 
-    if (mapHeight < visibleSize.height) {
+    if (mapHeight < visibleSize.height)
+    {
         y = visibleSize.height / 2;
     }
-    else {
+    else
+    {
         y = std::max(playerPos.y, visibleSize.height / 2);
         y = std::min(y, mapHeight - visibleSize.height / 2);
     }
@@ -361,10 +421,12 @@ void GameScene::updateCamera()
 
 
     // 如果地图小于屏幕，调整偏移量使地图居中
-    if (mapWidth < visibleSize.width) {
+    if (mapWidth < visibleSize.width)
+    {
         offset.x = (visibleSize.width - mapWidth) / 2;
     }
-    if (mapHeight < visibleSize.height) {
+    if (mapHeight < visibleSize.height)
+    {
         offset.y = (visibleSize.height - mapHeight) / 2;
     }
 
@@ -379,6 +441,10 @@ void GameScene::updateCamera()
     if (toolIcon)
     {
         toolIcon->setPosition(-offset + Vec2(50, 50));  // 左下角偏移50像素
+    }
+    if (seedIcon)
+    {
+        seedIcon->setPosition(-offset + Vec2(100, 50)); // 工具图标右侧50像素
     }
     // 更新对话框位置
     if (dialogueBox)
@@ -486,15 +552,27 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
     // 更新CropManager的地图引用
     CropManager::getInstance()->setGameMap(_gameMap);
 
-    // 如果切换到农场地图，加载作物，初始化刘易斯和动物
+    // 如果切换到农场地图，加载作物，显示当前种子，初始化刘易斯和动物
     if (mapName == "Farm")
     {
+        if (seedIcon)
+        {
+            seedIcon->setVisible(true);
+        }
         CropManager::getInstance()->loadCrops();
         CCLOG("Switching to Farm map, loading crops...");
         initLewis();
         initPig();
         initChicken();
         initSheep();
+    }
+    // 在其他地图隐藏种子图标
+    else
+    {
+        if (seedIcon)
+        {
+            seedIcon->setVisible(false);
+        }
     }
 
     // 如果是医院地图，初始化玛鲁
@@ -508,7 +586,6 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         CCLOG("Switching to Town map, initializing alex...");
         initAlex();
     }
-
 
     // 如果是矿洞地图，检查是否需要刷新宝箱
     if (mapName == "Mine") {

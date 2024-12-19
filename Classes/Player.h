@@ -29,9 +29,16 @@ public:
         CARROT      // 胡萝卜(喂养动物)
     };
     ToolType getCurrentTool() const { return currentTool; }
-    void switchTool();                                  // 切换工具的方法
+    void switchTool();  // 切换工具的方法
 
-
+    // 种子类型枚举
+    enum class SeedType {
+        CORN = 0,
+        TOMATO = 1,
+        NONE = 2
+    };
+    SeedType getCurrentSeed() const { return currentSeed; }
+    void switchSeed();  // 切换种子类型
 
     // 基础功能
     static Player* create();                            // 创建玩家对象
@@ -60,6 +67,7 @@ public:
     void setCanPerformAction(bool select) { canPerformAction = select; }
   
 private:
+    friend class GameScene;
     GameMap* gameMap = nullptr;                             // GameMap 引用                  
     static Player* _instance;
     // 基础属性
@@ -87,10 +95,17 @@ private:
     void updateAction(float dt);                // 动作动画
 
     // 工具相关
-    ToolType currentTool = ToolType::NONE;      // 当前装备的工具
+    ToolType currentTool = ToolType::NONE;          // 当前装备的工具
     cocos2d::Sprite* rodSprite = nullptr;           // 鱼竿精灵
     cocos2d::Sprite* gift = nullptr;                // 礼物精灵
     cocos2d::Sprite* carrot = nullptr;              // 胡萝卜精灵
+
+    // 种子相关
+    SeedType currentSeed = SeedType::CORN;          // 当前选择的种子类型
+
+    // UI位置常量
+    static const cocos2d::Vec2 TOOL_ICON_POSITION;  // 工具图标位置
+    static const cocos2d::Vec2 SEED_ICON_POSITION;  // 种子图标位置
 
     //技能等级系统相关
     bool isSkillUIVisible{ false };  // 技能界面显示状态

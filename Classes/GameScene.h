@@ -71,9 +71,14 @@ private:
     cocos2d::TMXObjectGroup* collisionsGroup = nullptr;   // 碰撞组
     InventoryUI* _inventoryUI = nullptr;                  // 背包UI成员变量
     StatusUI* _statusUI;
-    cocos2d::Sprite* toolIcon = nullptr;  // 工具图标
-    void initToolIcon();                  // 初始化工具图标
-    void updateToolIcon();                // 更新工具图标
+
+    cocos2d::Sprite* toolIcon = nullptr;    // 工具图标
+    void initToolIcon();                    // 初始化工具图标
+    void updateToolIcon();                  // 更新工具图标
+    Sprite* seedIcon = nullptr;             // 种子图标
+    void initSeedIcon();                    // 初始化种子图标
+    void updateSeedIcon();                  // 更新种子图标
+
     void initLewis();                //初始化Lewis
     void initMarlon();            // 初始化马龙
     void initMaru();            // 初始化玛鲁

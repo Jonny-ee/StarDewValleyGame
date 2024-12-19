@@ -5,6 +5,8 @@
 USING_NS_CC;
 
 Player* Player::_instance = nullptr;
+const cocos2d::Vec2 Player::TOOL_ICON_POSITION = cocos2d::Vec2(100, 100);   // 工具图标位置
+const cocos2d::Vec2 Player::SEED_ICON_POSITION = cocos2d::Vec2(150, 100);   // 种子图标位置
 
 Player* Player::create()
 {
@@ -166,6 +168,22 @@ void Player::setCurrentTool(ToolType tool)
     currentTool = tool;
 }
 
+void Player::switchSeed()
+{
+    switch (currentSeed)
+    {
+        case SeedType::CORN:
+            currentSeed = SeedType::TOMATO;
+            break;
+        case SeedType::TOMATO:
+            currentSeed = SeedType::CORN;
+            break;
+        default:
+            currentSeed = SeedType::CORN;
+            break;
+    }
+}
+
 void Player::initKeyboardListener()
 {
     auto keyboardListener = EventListenerKeyboard::create();
@@ -174,22 +192,29 @@ void Player::initKeyboardListener()
         {
             keys[keyCode] = true;
 
-            // 对Q键的处理
+            // 对Q键的处理（切换工具）
             if (keyCode == EventKeyboard::KeyCode::KEY_Q)
             {
                 switchTool();
             }
-            // 添加对回车键的处理
+            // 对回车键的处理（显示和隐藏背包）
             if (keyCode == EventKeyboard::KeyCode::KEY_ENTER)
             {
                 auto scene = dynamic_cast<GameScene*>(Director::getInstance()->getRunningScene());
-                if (scene && scene->getInventoryUI()) {
+                if (scene && scene->getInventoryUI())
+                {
                     scene->getInventoryUI()->toggleVisibility();
                 }
             }
             // 对K键的处理（切换技能界面）
-            if (keyCode == EventKeyboard::KeyCode::KEY_K) {
+            if (keyCode == EventKeyboard::KeyCode::KEY_K)
+            {
                 toggleSkillUI();
+            }
+            // 对E键的处理（切换种子）
+            if (keyCode == EventKeyboard::KeyCode::KEY_E)
+            {
+                switchSeed();
             }
         };
 
