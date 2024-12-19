@@ -12,8 +12,8 @@
  */
 
 class GameScene;    // 前向声明
-class GameMap;  // 前向声明
-class SkillUI;  // 前向声明
+class GameMap;      // 前向声明
+class SkillUI;      // 前向声明
 class Player : public cocos2d::Sprite
 {
 
@@ -29,7 +29,8 @@ public:
         CARROT      // 胡萝卜(喂养动物)
     };
     ToolType getCurrentTool() const { return currentTool; }
-    void switchTool();  // 切换工具的方法
+    void switchTool();                                          // 切换工具的方法
+    void setCurrentTool(ToolType tool) { currentTool = tool; }; // 设置当前工具
 
     // 种子类型枚举
     enum class SeedType {
@@ -38,7 +39,8 @@ public:
         NONE = 2
     };
     SeedType getCurrentSeed() const { return currentSeed; }
-    void switchSeed();  // 切换种子类型
+    void switchSeed();                                          // 切换种子类型
+    void setCurrentSeed(SeedType type) { currentSeed = type; }  // 设置当前种子
 
     // 基础功能
     static Player* create();                            // 创建玩家对象
@@ -58,7 +60,7 @@ public:
 
     // 动作相关
     void performAction(const cocos2d::Vec2& clickPos);      // 执行动作
-    void setCurrentTool(ToolType tool);                     // 设置当前工具
+
 
     // 技能等级系统相关
     void toggleSkillUI();  // 切换技能界面显示状态

@@ -1,7 +1,7 @@
 #include "CropManager.h"
 
 // 初始化静态成员变量
-CropManager* CropManager::_instance = nullptr;      // 实例
+CropManager* CropManager::_instance = nullptr;  // 实例
 
 /*
  * 获取农作物管理系统单例实例
@@ -123,23 +123,18 @@ bool CropManager::waterSoil(const Vec2& tilePos)
 {
     if (!canWater(tilePos))
         return false;
-
     auto backLayer = _gameMap->getTileMap()->getLayer("Back");
     if (!backLayer)
         return false;
-
     // 获取目标瓦片精灵
     Sprite* tile = backLayer->getTileAt(tilePos);
     if (!tile)
         return false;
-
     // 创建浇水效果
     createWaterEffect(tile);
-
     // 显示浇水提示
     showWateringPopup();
-
-     // 更新作物的水分状态
+    // 更新作物的水分状态
     for (size_t i = 0; i < _cropInfos.size(); i++)
     {
         if (_cropInfos[i].tilePos == tilePos)
@@ -147,7 +142,6 @@ bool CropManager::waterSoil(const Vec2& tilePos)
             CCLOG("Watering crop at position (%f, %f)", tilePos.x, tilePos.y);
             _cropInfos[i].isWatered = true;
             _cropInfos[i].waterLevel = 2;  // 恢复到充足状态
-
             if (i < _crops.size() && _crops[i])
             {
                 if (auto corn = dynamic_cast<Corn*>(_crops[i]))
@@ -155,11 +149,15 @@ bool CropManager::waterSoil(const Vec2& tilePos)
                     CCLOG("Updating water status for corn");
                     corn->updateWaterStatus(2);
                 }
+                else if (auto tomato = dynamic_cast<Tomato*>(_crops[i]))
+                {
+                    CCLOG("Updating water status for tomato");
+                    tomato->updateWaterStatus(2);
+                }
             }
             break;
         }
     }
-
     return true;
 }
 
@@ -485,6 +483,84 @@ bool CropManager::plantCorn(const Vec2& tilePos)
 }
 
 /*
+ * 在指定位置种植番茄
+ * @param tilePos 要种植的瓦片坐标
+ * @return 种植成功返回true，否则返回false
+ */
+bool CropManager::plantTomato(const Vec2& tilePos)
+{
+    if (!canPlant(tilePos))
+    {
+        return false;
+    }
+    // 检查玩家背包中是否有番茄种子
+    auto itemSystem = ItemSystem::getInstance();
+    if (!itemSystem->hasEnoughItems("tomato seed", 1))
+    {
+        CCLOG("No tomato seeds available");
+        return false;
+    }
+    // 扣除一个番茄种子
+    if (!itemSystem->removeItem("tomato seed", 1))
+    {
+        return false;
+    }
+    // 获取世界坐标并应用偏移
+    Vec2 worldPos = _gameMap->convertToWorldCoord(tilePos);
+    worldPos.x += CROP_OFFSET_X;
+    worldPos.y += CROP_OFFSET_Y;
+    // 创建番茄作物
+    auto tomato = Tomato::create(worldPos);
+    if (tomato)
+    {
+        _gameScene->addChild(tomato, 0);
+        _crops.push_back(tomato);
+        // 记录作物信息
+        CropInfo info;
+        info.position = worldPos;
+        info.tilePos = tilePos;
+        info.growthStage = 0;
+        info.type = "tomato";
+        // 记录种植时间
+        auto gameTime = GameTime::getInstance();
+        info.plantDay = gameTime->getDay();
+        info.plantMonth = gameTime->getMonth();
+        info.plantYear = gameTime->getYear();
+        info.waterLevel = 1;        // 初始视为较为缺水
+        info.isWatered = false;     // 种植时视为未浇水
+        info.growthCounter = 0;     // 成长计数器初始化为0
+        _cropInfos.push_back(info);
+        CCLOG("Tomato planted on day %d, month %d, year %d",
+            info.plantDay, info.plantMonth, info.plantYear);
+        return true;
+    }
+    return false;
+}
+
+/*
+ * 根据当前的种子类型判断种植作物
+ * @param tilePos 要种植的瓦片坐标
+ * @return 装备有效种子返回true，否则返回false
+ */
+bool CropManager::plantCrop(const Vec2& tilePos)
+{
+    auto player = Player::getInstance();
+    if (!player)
+        return false;
+    // 根据当前选择的种子类型来种植
+    switch (player->getCurrentSeed())
+    {
+        case Player::SeedType::CORN:
+            return plantCorn(tilePos);
+        case Player::SeedType::TOMATO:
+            return plantTomato(tilePos);
+        case Player::SeedType::NONE:
+        default:
+            return false;
+    }
+}
+
+/*
  * 初始化键盘监听器
  * 监听P键用于种植操作
  */
@@ -492,25 +568,23 @@ void CropManager::initKeyboardListener()
 {
     if (_keyboardListener)
         return;
-
     _keyboardListener = EventListenerKeyboard::create();
-
     _keyboardListener->onKeyPressed = [this](EventKeyboard::KeyCode keyCode, Event* event)
         {
             auto player = Player::getInstance();
-            if (!player) return;
+            if (!player)
+                return;
 
             // 获取玩家位置
             Vec2 playerPos = player->getPosition();
             Vec2 playerTilePos = _gameMap->convertToTileCoord(playerPos);
-
             if (keyCode == EventKeyboard::KeyCode::KEY_P)  // P键种植
             {
                 if (player->getCurrentTool() == Player::ToolType::NONE)
                 {
-                    if (plantCorn(playerTilePos))
+                    if (plantCrop(playerTilePos))
                     {
-                        CCLOG("Successfully planted corn");
+                        CCLOG("Successfully planted crop");
                     }
                 }
             }
@@ -533,7 +607,6 @@ void CropManager::initKeyboardListener()
                 }
             }
         };
-
     Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(
         _keyboardListener, _gameMap->getTileMap());
 }
@@ -560,9 +633,10 @@ void CropManager::updateCrops()
             continue;
         }
         // 根据作物类型判断是否可以生长
+        // 玉米的生长逻辑
         if (info.type == "corn")
         {
-            // 如果浇了水且未达到最大生长阶段，则生长
+            // 玉米只需要浇水就能生长
             if (info.isWatered &&
                 info.growthStage < Corn::getTotalGrowthStages() - 1)
             {
@@ -576,8 +650,41 @@ void CropManager::updateCrops()
                 }
             }
         }
-        // 这里可以添加其他作物类型的判断
-        // else if (info.type == "tomato") { ... }
+        // 番茄的生长逻辑
+        else if (info.type == "tomato")
+        {
+            // 确保 growthCounter 不会出现负数
+            if (info.growthCounter > 1000000) {  // 如果出现异常大的数字
+                info.growthCounter = 0;  // 重置为0
+            }
+            if (info.isWatered)  // 今天浇了水
+            {
+                info.growthCounter++;
+                CCLOG("Tomato at position (%.1f, %.1f) - Growth counter increased to: %u",
+                    info.position.x, info.position.y, info.growthCounter);
+                // 只有当计数器达到2时才生长
+                if (info.growthCounter == 2 &&
+                    info.growthStage < Tomato::getTotalGrowthStages() - 1)
+                {
+                    info.growthStage++;
+                    info.growthCounter = 0;  // 生长后重置计数器
+                    CCLOG("Tomato growing to stage: %d", info.growthStage);
+                    if (i < _crops.size() && _crops[i])
+                    {
+                        if (auto tomato = dynamic_cast<Tomato*>(_crops[i]))
+                        {
+                            tomato->updateGrowthStage(info.growthStage);
+                        }
+                    }
+                }
+            }
+            else if (info.waterLevel < 2)  // 只有当水分不足时才重置计数器
+            {
+                info.growthCounter = 0;
+                CCLOG("Tomato growth counter reset due to insufficient water level");
+            }
+        }
+
         // 降低水分状态
         info.waterLevel--;
         // 更新水分状态显示
@@ -586,6 +693,10 @@ void CropManager::updateCrops()
             if (auto corn = dynamic_cast<Corn*>(_crops[i]))
             {
                 corn->updateWaterStatus(info.waterLevel);
+            }
+            else if (auto tomato = dynamic_cast<Tomato*>(_crops[i]))
+            {
+                tomato->updateWaterStatus(info.waterLevel);
             }
         }
         // 重置浇水状态
@@ -599,7 +710,6 @@ void CropManager::updateCrops()
 void CropManager::saveCrops()
 {
     std::vector<CropInfo> newCropInfos;
-
     for (auto crop : _crops)
     {
         if (crop)
@@ -613,34 +723,35 @@ void CropManager::saveCrops()
                 [&info](const CropInfo& existingInfo) {
                     return existingInfo.position == info.position;
                 });
-
             if (it != _cropInfos.end())
             {
-                // 如果找到了，使用现有的生长信息
-                info.growthStage = it->growthStage;
-                info.plantDay = it->plantDay;
-                info.plantMonth = it->plantMonth;
-                info.plantYear = it->plantYear;
-                info.waterLevel = it->waterLevel;
-                info.isWatered = it->isWatered;
+                // 如果找到了，使用现有的所有信息
+                info = *it;  // 复制所有信息，包括 growthCounter
             }
             else
             {
-                // 如果是新作物，使用默认值
                 info.growthStage = 0;
                 auto gameTime = GameTime::getInstance();
                 info.plantDay = gameTime->getDay();
                 info.plantMonth = gameTime->getMonth();
                 info.plantYear = gameTime->getYear();
-                info.waterLevel = 2;
+                info.waterLevel = 1;
                 info.isWatered = false;
-            }
+                info.growthCounter = 0;  // 初始化计数器
 
-            info.type = "corn";
+                // 根据作物类型设置
+                if (dynamic_cast<Corn*>(crop))
+                {
+                    info.type = "corn";
+                }
+                else if (dynamic_cast<Tomato*>(crop))
+                {
+                    info.type = "tomato";
+                }
+            }
             newCropInfos.push_back(info);
         }
     }
-
     _cropInfos = std::move(newCropInfos);
 }
 
@@ -655,9 +766,7 @@ void CropManager::loadCrops()
         CCLOG("Not loading crops: not in Farm map");
         return;
     }
-
     clearCrops();
-
     for (const auto& info : _cropInfos)
     {
         if (info.type == "corn")
@@ -670,6 +779,19 @@ void CropManager::loadCrops()
                 corn->updateGrowthStage(info.growthStage);
                 corn->updateWaterStatus(info.waterLevel);
                 CCLOG("Loaded corn at (%.1f, %.1f) with growth stage %d and water level %d",
+                    info.position.x, info.position.y, info.growthStage, info.waterLevel);
+            }
+        }
+        else if (info.type == "tomato")
+        {
+            auto tomato = Tomato::create(info.position);
+            if (tomato)
+            {
+                _gameScene->addChild(tomato, 0);
+                _crops.push_back(tomato);
+                tomato->updateGrowthStage(info.growthStage);
+                tomato->updateWaterStatus(info.waterLevel);
+                CCLOG("Loaded tomato at (%.1f, %.1f) with growth stage %d and water level %d",
                     info.position.x, info.position.y, info.growthStage, info.waterLevel);
             }
         }
@@ -765,32 +887,56 @@ void CropManager::createHarvestDrop(const Vec2& position)
 {
     // 创建掉落物精灵
     auto drop = Sprite::create("Plants.png");
-
     if (drop)
     {
-        // 设置掉落物贴图区域（第一行最后一个格子）
-        drop->setTextureRect(Rect(80, 0, 16, 16));
-
+        // 根据作物类型设置掉落物贴图区域
+        for (const auto& info : _cropInfos)
+        {
+            if (info.position == position)
+            {
+                if (info.type == "corn")
+                {
+                    drop->setTextureRect(Rect(80, 0, 16, 16));      // 玉米收获物
+                }
+                else if (info.type == "tomato")
+                {
+                    drop->setTextureRect(Rect(80, 16, 16, 16));     // 番茄收获物
+                }
+                break;
+            }
+        }
         // 设置位置（稍微偏移一点，避免完全重叠）
         drop->setPosition(position + Vec2(30, 0));
-
         // 设置缩放比例为2.0
         drop->setScale(2.0f);
-
         // 添加到场景
         _gameScene->addChild(drop);
-
         // 创建定时器来检查距离
         auto scheduler = Director::getInstance()->getScheduler();
-        scheduler->schedule([this, drop](float dt) {
+        scheduler->schedule([this, drop, position](float dt) {
             auto player = Player::getInstance();
             if (player)
             {
                 // 检查玩家是否足够近（16像素内）
                 if (player->getPosition().distance(drop->getPosition()) < 16)
                 {
-                    // 添加到背包
-                    ItemSystem::getInstance()->addItem("corn", 1);
+                    // 根据作物类型添加对应的收获物
+                    auto itemSystem = ItemSystem::getInstance();
+                    for (const auto& info : _cropInfos)
+                    {
+                        if (info.position == position)
+                        {
+                            if (info.type == "corn")
+                            {
+                                itemSystem->addItem("corn", 1);
+                            }
+                            else if (info.type == "tomato")
+                            {
+                                itemSystem->addItem("tomato", 1);
+                            }
+                            break;
+                        }
+                    }
                     // 移除掉落物
                     drop->removeFromParent();
                     // 停止定时器

@@ -163,11 +163,6 @@ void Player::switchTool()
     }
 }
 
-void Player::setCurrentTool(ToolType tool)
-{
-    currentTool = tool;
-}
-
 void Player::switchSeed()
 {
     switch (currentSeed)

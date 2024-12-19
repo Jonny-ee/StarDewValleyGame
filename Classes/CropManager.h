@@ -5,6 +5,7 @@
 #include "GameScene.h" 
 #include "ItemSystem.h"
 #include "Corn.h"
+#include "Tomato.h"
 #include "GameTime.h"
 
 USING_NS_CC;
@@ -48,18 +49,22 @@ public:
     void onMouseDown(const cocos2d::Vec2& mousePos, Player* player);
     void setGameScene(GameScene* scene) { _gameScene = scene; } 
 
-    // 新增种植相关方法
+    // 种植相关方法
+    bool plantCrop(const Vec2& tilePos);                    // 根据当前选择的种子类型种植作物
     bool canPlant(const Vec2& tilePos) const;               // 检查指定位置是否可以种植
     bool plantCorn(const Vec2& tilePos);                    // 在指定位置种植玉米
+
+    bool plantTomato(const Vec2& tilePos);                  // 在指定位置种植番茄
+
     void initKeyboardListener();                            // 初始化键盘监听
 
     // 保存和加载相关
     void saveCrops();
     void loadCrops();
-    void clearCrops();                  // 切换地图时清理作物精灵
+    void clearCrops();   // 切换地图时清理作物精灵
 
     const std::vector<int> RESOURCE_TILES = { 258,182,162 };    // 可除草或碎石（资源）的图块ID列表
-    const int RESOURCE_REMOVED_TILE_ID = 473;            // 移除资源后的图块ID
+    const int RESOURCE_REMOVED_TILE_ID = 473;                   // 移除资源后的图块ID
 
 private:
     friend class GameScene;
@@ -68,11 +73,11 @@ private:
     bool _isInitialized = false;                // 添加初始化标志
     bool hasCropAt(const Vec2& tilePos) const;  // 检查指定位置是否已有作物
 
-    static CropManager* _instance;                              // 单例实例指针
-    GameMap* _gameMap = nullptr;                                // 当前地图引用
-    GameScene* _gameScene = nullptr;                            // 添加场景引用
+    static CropManager* _instance;              // 单例实例指针
+    GameMap* _gameMap = nullptr;                // 当前地图引用
+    GameScene* _gameScene = nullptr;            // 添加场景引用
 
-    // 提示
+    // 提示相关
     mutable Label* tipLabel = nullptr;  // 添加mutable关键字（允许在const函数里改变值）
     void updateTips(const Vec2& playerTilePos, Player::ToolType playerTool) const;
     void showTip(const std::string& text, const Vec2& tilePos, float duration = 1.5f) const;
@@ -89,7 +94,8 @@ private:
     const float CROP_OFFSET_Y = -12.0f;    // 作物垂直偏移量
     cocos2d::EventListenerKeyboard* _keyboardListener = nullptr;
     // 玉米生长阶段的图块ID
-    const std::vector<cocos2d::Rect> CORN_GROWTH_RECTS = {
+    const std::vector<cocos2d::Rect> CORN_GROWTH_RECTS =
+    {
         cocos2d::Rect(0, 0, 16, 16),    // 种子
         cocos2d::Rect(16, 0, 16, 16),   // 生长阶段1
         cocos2d::Rect(32, 0, 16, 16),   // 生长阶段2
@@ -99,15 +105,16 @@ private:
     // 作物信息结构体
     struct CropInfo
     {
-        Vec2 position;          // 种植位置
-        Vec2 tilePos;           // 瓦片坐标
-        int growthStage;        // 生长阶段
-        std::string type;       // 作物类型("corn"等)
-        int plantDay;           // 种植时的游戏天数
-        int plantMonth;         // 种植时的游戏月份
-        int plantYear;          // 种植时的游戏年份
-        int waterLevel = 2;     // 水分状态: 2-充足, 1-略缺, 0-严重缺水
-        bool isWatered = false; // 今天是否浇过水
+        Vec2 position;                  // 种植位置
+        Vec2 tilePos;                   // 瓦片坐标
+        int growthStage;                // 生长阶段
+        std::string type;               // 作物类型("corn"等)
+        int plantDay;                   // 种植时的游戏天数
+        int plantMonth;                 // 种植时的游戏月份
+        int plantYear;                  // 种植时的游戏年份
+        int waterLevel = 1;             // 水分状态: 2-充足, 1-略缺, 0-严重缺水
+        bool isWatered = false;         // 今天是否浇过水
+        unsigned int growthCounter;     // 生长计数器（用于番茄：因为其需要两天才长一次）
     };
 
     std::vector<CropInfo> _cropInfos;   // 存储所有作物信息
@@ -123,7 +130,7 @@ private:
      * 3. 下面使用的都是ID都为实际使用的ID（已加1）
      */
     const std::vector<int> TILLABLE_TILES = { 207, 227, 228, 232, 464,473 };    // 可开垦的图块ID列表
-    const int TILLED_TILE_ID = 681;                                         // 开垦后的图块ID（已开垦的农田图块）
+    const int TILLED_TILE_ID = 681;                                             // 开垦后的图块ID（已开垦的农田图块）
 
     void createWaterEffect(Sprite* tile);   // 创建浇水效果
     void showWateringPopup();               // 显示浇水提示

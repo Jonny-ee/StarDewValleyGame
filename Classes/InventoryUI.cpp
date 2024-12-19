@@ -53,7 +53,7 @@ void InventoryUI::createUI()
     this->addChild(_bgLayer);
 
     // 物品列表
-    std::vector<std::string> items = { "wood", "apple", "corn", "bread", "tomato", "fish", "mermaid's KISS(*)", "stone", "corn seed", "tomato seed", "corn"};
+    std::vector<std::string> items = { "wood", "apple", "corn", "bread", "tomato", "fish", "mermaid's KISS(*)", "stone", "corn seed", "tomato seed", "corn", "tomato"};
     
     // 计算布局参数
     float itemHeight = 45;  // 减小每个物品行的高度
