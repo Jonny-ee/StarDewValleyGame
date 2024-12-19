@@ -5,7 +5,7 @@ GameTime* GameTime::_instance = nullptr;
 
 void GameTime::updateYears()
 {
-    if (_Month == 13)
+    if (_Month >= 13)
     {
         _Year++;
         _Month = 1;
@@ -13,7 +13,7 @@ void GameTime::updateYears()
 }
 void GameTime::updateMonths()
 {
-    if (_Day == 31)
+    if (_Day >= 31)
     {
         _Month++;
         _Day = 1;
@@ -21,7 +21,7 @@ void GameTime::updateMonths()
 }
 void GameTime::updateDays()
 {
-    if (_Hour == 24)
+    if (_Hour >= 24)
     {
         _Day++;
         _Hour = 0;
@@ -29,7 +29,7 @@ void GameTime::updateDays()
 }
 void GameTime::updateHours()
 {
-    if (_Minute == 60)
+    if (_Minute >= 60)
     {
         _Hour++;
         _Minute = 0;
@@ -62,8 +62,6 @@ void GameTime::update()
         // 更新分钟（每个单位是10分钟）
         _Minute += increment * 10;
     }
-   // CCLOG("现在绝对时间为%d分", absoluteTimeInTenMinutes);
-   // CCLOG("现在%d点%d分",_Hour, _Minute);
     updateHours();
     updateDays();
     updateMonths();

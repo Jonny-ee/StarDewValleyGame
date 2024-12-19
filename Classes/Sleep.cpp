@@ -23,7 +23,7 @@ bool SleepEvent::checkTriggerCondition() {
 }
 
 void SleepEvent::executeEvent() {
-    if (_isExecuting) return;
+    if (!checkTriggerCondition()) return;
     _isExecuting = true;
     _player->setCanPerformAction(false);
 
@@ -39,10 +39,9 @@ void SleepEvent::executeEvent() {
         CallFunc::create([this]() {
             GameTime::getInstance()->modifyGameTime(6);
 
-            // 获取当前场景并调用onDayChanged
             if (auto scene = dynamic_cast<GameScene*>(Director::getInstance()->getRunningScene()))
             {
-                scene->onDayChanged();  // 添加这一行
+                scene->onDayChanged(); 
             }
 
             Vec2 wakeupPos = _gameMap->convertToWorldCoord(WAKEUP_POS);

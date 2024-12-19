@@ -1,6 +1,21 @@
 #include "BridgeEvent.h"
-// BridgeEvent.cpp
 
+void BridgeEvent::update(float dt) {
+    if (_bridgeRepaired)
+        return;
+    bool inTriggerArea = checkTriggerCondition();
+
+    // 进入/离开触发区域时更新提示
+    if (inTriggerArea != _isInTriggerArea) {
+        _isInTriggerArea = inTriggerArea;
+        if (_isInTriggerArea) {
+            showPrompt();
+        }
+        else {
+            hidePrompt();
+        }
+    }
+}
 BridgeEvent* BridgeEvent::create(GameMap* gameMap, Player* player) {
     auto event = new (std::nothrow) BridgeEvent();
     if (event && event->init()) {
@@ -26,7 +41,7 @@ bool BridgeEvent::checkTriggerCondition() {
 }
 
 void BridgeEvent::executeEvent() {
-    if (_isExecuting) return;
+    if (_isExecuting|| _bridgeRepaired) return;
     _isExecuting = true;
     _player->setCanPerformAction(false);
 
@@ -52,6 +67,7 @@ void BridgeEvent::executeEvent() {
     );
 
     this->runAction(sequence);
+    _bridgeRepaired = true;
 }
 
 void BridgeEvent::finishEvent() {
