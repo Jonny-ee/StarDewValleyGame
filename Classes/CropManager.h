@@ -64,12 +64,18 @@ public:
 private:
     friend class GameScene;
 
-    CropManager() {}                    // 私有构造函数（单例模式）              
-    bool _isInitialized = false;        // 添加初始化标志
+    CropManager() {}                            // 私有构造函数（单例模式）              
+    bool _isInitialized = false;                // 添加初始化标志
+    bool hasCropAt(const Vec2& tilePos) const;  // 检查指定位置是否已有作物
 
-    static CropManager* _instance;      // 单例实例指针
-    GameMap* _gameMap = nullptr;        // 当前地图引用
-    GameScene* _gameScene = nullptr;    // 添加场景引用
+    static CropManager* _instance;                              // 单例实例指针
+    GameMap* _gameMap = nullptr;                                // 当前地图引用
+    GameScene* _gameScene = nullptr;                            // 添加场景引用
+
+    // 提示
+    mutable Label* tipLabel = nullptr;  // 添加mutable关键字（允许在const函数里改变值）
+    void showTip(const std::string& text, const Vec2& tilePos, float duration = 1.5f) const;
+    void hideTip() const;
 
     // 浇水效果相关常量
     const Color3B WATER_COLOR = Color3B(173, 216, 230);     // 浇水后的颜色(淡蓝色)
