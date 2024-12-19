@@ -271,16 +271,6 @@ void CropManager::onMouseDown(const Vec2& mousePos, Player* player)
             }
         }
     }
-    else if (player->getCurrentTool() == Player::ToolType::AXE)
-    {
-        if (resourceCanRemove(playerTilePos))                // 检查是否可以移除资源
-        {
-            if (removeResource(playerTilePos))           // 尝试移除
-            {
-                player->performAction(mousePos);    // 执行动作
-            }
-        }
-    }
 }
 
 /*
@@ -293,7 +283,7 @@ void CropManager::showTip(const std::string& text, const Vec2& tilePos, float du
 {
     if (!tipLabel)
     {
-        tipLabel = Label::createWithSystemFont(text, "Arial", 24);
+        tipLabel = Label::createWithSystemFont(text, "Arial", 20);
         if (tipLabel)
         {
             tipLabel->setTextColor(Color4B::WHITE);
@@ -307,20 +297,10 @@ void CropManager::showTip(const std::string& text, const Vec2& tilePos, float du
     // 设置位置在耕地上方
     if (_gameMap)
     {
-        // 获取瓦片地图
-        auto tileMap = _gameMap->getTileMap();
-        if (tileMap)
-        {
-            // 获取瓦片大小
-            auto tileSize = tileMap->getTileSize();
-            // 计算世界坐标
-            float worldX = (tilePos.x + 0.5f) * tileSize.width;   // 瓦片中心
-            float worldY = (tilePos.y + 1.0f) * tileSize.height;  // 瓦片上方
-
-            tipLabel->setPosition(Vec2(worldX, worldY + 20));  // 再往上偏移一点
-
-            CCLOG("Tip position set to: %f, %f", worldX, worldY + 20);  // 添加日志
-        }
+        // 直接使用 GameMap 的坐标转换函数
+        Vec2 worldPos = _gameMap->convertToWorldCoord(tilePos);
+        // 在世界坐标的基础上适当偏移
+        tipLabel->setPosition(Vec2(worldPos.x + 20, worldPos.y + 40));
     }
 
     if (duration > 0)
@@ -355,16 +335,6 @@ void CropManager::hideTip() const
  */
 bool CropManager::hasCropAt(const Vec2& tilePos) const
 {
-    // 转换并输出世界坐标
-    if (_gameMap && _gameMap->getTileMap())
-    {
-        auto tileMap = _gameMap->getTileMap();
-        auto tileSize = tileMap->getTileSize();
-        float worldX = (tilePos.x + 0.5f) * tileSize.width;
-        float worldY = (tilePos.y + 1.0f) * tileSize.height;
-        CCLOG("Checking crop at world position: (%f, %f)", worldX, worldY);
-    }
-
     // 检查该位置是否已有作物
     for (const auto& info : _cropInfos)
     {
@@ -374,6 +344,55 @@ bool CropManager::hasCropAt(const Vec2& tilePos) const
         }
     }
     return false;
+}
+
+/*
+ * 实时更新农作物相关提示
+ * @param playerTilePos 玩家所在的瓦片坐标
+ * @param playerTool 玩家当前工具
+ */
+void CropManager::updateTips(const Vec2& playerTilePos, Player::ToolType playerTool) const
+{
+    // 如果不在农场地图，不显示提示
+    if (!_gameMap || _gameMap->getMapName() != "Farm")
+    {
+        hideTip();
+        return;
+    }
+    // 检查该位置是否是耕地
+    auto backLayer = _gameMap->getTileMap()->getLayer("Back");
+    if (!backLayer)
+    {
+        hideTip();
+        return;
+    }
+    int tileGID = backLayer->getTileGIDAt(playerTilePos);
+
+    // 空手且在耕地上
+    if (playerTool == Player::ToolType::NONE && tileGID == TILLED_TILE_ID && !hasCropAt(playerTilePos))
+    {
+        showTip("Press P to plant", playerTilePos);
+        return;
+    }
+
+    // 装备斧头且在有作物的地块上
+    if (playerTool == Player::ToolType::AXE && hasCropAt(playerTilePos))
+    {
+        // 检查作物是否成熟
+        for (const auto& crop : _cropInfos)
+        {
+            if (crop.tilePos == playerTilePos && crop.growthStage == FINAL_GROWTH_STAGE)
+            {
+                showTip("Press H to harvest", playerTilePos);
+                return;
+            }
+        }
+    }
+    // 其他情况隐藏提示（除了当前位置已有作物，即可能重复种植）
+    if (!hasCropAt(playerTilePos))
+    {
+        hideTip();
+    }
 }
 
 /*
@@ -452,8 +471,8 @@ bool CropManager::plantCorn(const Vec2& tilePos)
         info.plantDay = gameTime->getDay();
         info.plantMonth = gameTime->getMonth();
         info.plantYear = gameTime->getYear();
-        info.waterLevel = 2;        // 初始水分充足
-        info.isWatered = false;     // 种植时视为已浇水
+        info.waterLevel = 1;        // 初始视为较为缺水（需要浇水第二天才会长）
+        info.isWatered = false;     // 种植时视为未浇水
 
         _cropInfos.push_back(info);
 
@@ -528,7 +547,6 @@ void CropManager::updateCrops()
     for (size_t i = 0; i < _cropInfos.size(); i++)
     {
         auto& info = _cropInfos[i];
-
         // 先检查水分状态
         if (info.waterLevel <= 0)
         {
@@ -541,26 +559,27 @@ void CropManager::updateCrops()
             i--;
             continue;
         }
-
-        // 如果浇了水，增加生长阶段
-        if (info.isWatered && info.growthStage < 3)  // 最大生长阶段是4
+        // 根据作物类型判断是否可以生长
+        if (info.type == "corn")
         {
-            int oldStage = info.growthStage;
-            info.growthStage++;
-
-            if (i < _crops.size() && _crops[i])
+            // 如果浇了水且未达到最大生长阶段，则生长
+            if (info.isWatered &&
+                info.growthStage < Corn::getTotalGrowthStages() - 1)
             {
-                if (auto corn = dynamic_cast<Corn*>(_crops[i]))
+                info.growthStage++;
+                if (i < _crops.size() && _crops[i])
                 {
-                    corn->updateGrowthStage(info.growthStage);
+                    if (auto corn = dynamic_cast<Corn*>(_crops[i]))
+                    {
+                        corn->updateGrowthStage(info.growthStage);
+                    }
                 }
             }
         }
-
+        // 这里可以添加其他作物类型的判断
+        // else if (info.type == "tomato") { ... }
         // 降低水分状态
-        int oldWaterLevel = info.waterLevel;
         info.waterLevel--;
-
         // 更新水分状态显示
         if (i < _crops.size() && _crops[i])
         {
@@ -569,7 +588,6 @@ void CropManager::updateCrops()
                 corn->updateWaterStatus(info.waterLevel);
             }
         }
-
         // 重置浇水状态
         info.isWatered = false;
     }

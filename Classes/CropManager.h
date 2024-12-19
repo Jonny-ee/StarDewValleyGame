@@ -74,6 +74,7 @@ private:
 
     // 提示
     mutable Label* tipLabel = nullptr;  // 添加mutable关键字（允许在const函数里改变值）
+    void updateTips(const Vec2& playerTilePos, Player::ToolType playerTool) const;
     void showTip(const std::string& text, const Vec2& tilePos, float duration = 1.5f) const;
     void hideTip() const;
 

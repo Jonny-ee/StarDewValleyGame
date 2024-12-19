@@ -231,21 +231,28 @@ void GameScene::update(float dt)
     if (!player || !_gameMap) {
         return;
     }
+
     // 获取GameTime单例实例
     GameTime* gameTime = GameTime::getInstance();
+
     // 记录更新前的日期
     int oldDay = gameTime->getDay();
+
     // 更新游戏时间
     gameTime->update();
+
     // 检查是否日期发生变化
     if (gameTime->getDay() != oldDay)
     {
         onDayChanged();
     }
+
     // 更新光照效果
     LightManager::getInstance()->update();
+
     // 只保留一次update调用
     player->update(dt);
+
     // 检查传送点
     Vec2 playerTilePos = _gameMap->convertToTileCoord(player->getPosition());
     TransitionInfo transition;
@@ -254,30 +261,35 @@ void GameScene::update(float dt)
         switchToMap(transition.targetMap, transition.targetTilePos);
     }
     updateToolIcon();  // 每帧更新工具图标
+
     // 更新Lewis的状态
     if (lewis) {
 
         //lewis->updateSchedule(dt);
         lewis->moveAlongPath(dt); // 移动沿路径
     }
+
     // 更新所有猪的状态
     for (auto pig : pigs) {
         if (pig) {
             pig->moveAlongPath(dt); // 移动沿路径
         }
     }
+
     // 更新所有鸡的状态
     for (auto chicken : chickens) {
         if (chicken) {
             chicken->moveAlongPath(dt); // 移动沿路径
         }
     }
+
     // 更新所有羊的状态
     for (auto sheep : sheeps) {
         if (sheep) {
             sheep->moveAlongPath(dt); // 移动沿路径
         }
     }
+
     // 持续检查钓鱼条件
     auto fishingSystem = FishingSystem::getInstance();
     fishingSystem->canFish(player->getPosition(), player);
@@ -289,10 +301,15 @@ void GameScene::update(float dt)
             tipLabel->setPosition(playerPos + Vec2(0, 50));
         }
     }
+
+    // 更新作物提示
+    CropManager::getInstance()->updateTips(playerTilePos, player->getCurrentTool());
+
     // 检查所有事件
     for (auto event : _events) {
         event->update(dt);
     }
+
     // 更新前景瓦片可见性
     if (_gameMap && player) {
         _gameMap->updateFrontTileVisibility(player->getPosition());
