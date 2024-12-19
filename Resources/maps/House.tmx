@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="17" height="12" tilewidth="16" tileheight="16" infinite="0" nextlayerid="10" nextobjectid="274">
  <properties>
-  <property name="FloorIDs" value="Kitchen 22, LivingRoom Bedroom, Hallway_Bedroom Bedroom, Bedroom"/>
-  <property name="ViewportFollowPlayer" type="bool" value="true"/>
-  <property name="WallIDs" value="LivingRoom, Hallway_Bedroom Bedroom, Bedroom"/>
+  <property name="Outdoors" type="bool" value="false"/>
   <property name="Warp" value="9 11 Farm 29 11"/>
  </properties>
  <tileset firstgid="1" source="../AllTSX/indoor.tsx"/>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="30" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="3" nextobjectid="1">
  <properties>
+  <property name="Outdoors" type="bool" value="false"/>
   <property name="Warp" value="15 15 House 9 7 13 15 House 9 7 14 14 House 9 7 14 16 House 9 7"/>
  </properties>
  <tileset firstgid="1" source="../AllTSX/Cloudy_Ocean_BG.tsx"/>

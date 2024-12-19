@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="60" height="32" tilewidth="16" tileheight="16" infinite="0" nextlayerid="11" nextobjectid="3">
  <properties>
-  <property name="AmbientLight" value="120 65 120"/>
-  <property name="Fall_Objects" value="T"/>
-  <property name="Light" value="8 8 6 9 8 6 8 10 6 9 10 6 22 15 6 11 14 6 11 23 6 27 8 6 47 7 6 6 19 5 17 19 6 39 15 6 53 15 6 6 26 6 16 25 6 43 11 6 35 27 6 49 27 6 11 19 6 12 26 6 13 11 6 5 9 6 12 6 6 6 14 6 19 2 6 0 10 6 27 22 6 41 27 6 24 30 6 38 5 6 56 8 6 56 19 6 54 30 6"/>
-  <property name="Outdoors" value="T"/>
-  <property name="Spring_Objects" value="T"/>
-  <property name="Stumps" value="24 6 3 29 7 3 26 10 3 46 6 3 34 26 3 41 26 3"/>
-  <property name="Summer_Objects" value="T"/>
+  <property name="Outdoors" type="bool" value="true"/>
   <property name="Warp" value="59 15 Farm 16 1 59 16 Farm 17 1"/>
  </properties>
  <tileset firstgid="1" source="../AllTSX/spring_outdoorsTileSheet.tsx"/>

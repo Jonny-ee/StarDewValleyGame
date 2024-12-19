@@ -1,16 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="45" height="41" tilewidth="16" tileheight="16" infinite="0" nextlayerid="27" nextobjectid="44">
  <properties>
-  <property name="BrookSounds" value="85 7 4"/>
-  <property name="DayTiles" value="Buildings 55 4 510 Buildings 77 6 1087 Buildings 12 24 892"/>
-  <property name="Fall_Objects" value="T"/>
-  <property name="Light" value="12 24 4 55 4 4 77 6 4"/>
-  <property name="NightTiles" value="Buildings 55 4 507 Buildings 77 6 1161 Buildings 12 24 909"/>
-  <property name="Outdoors" value="T"/>
-  <property name="Spring_Objects" value="T"/>
-  <property name="Summer_Objects" value="T"/>
+  <property name="Outdoors" type="bool" value="true"/>
   <property name="Warp" value="0 26 Farm 19 38 0 27 Farm 20 38"/>
-  <property name="Winter_Objects" value="T"/>
  </properties>
  <tileset firstgid="1" source="../AllTSX/spring_outdoorsTileSheet.tsx"/>
  <layer id="1" name="Back" width="45" height="41">

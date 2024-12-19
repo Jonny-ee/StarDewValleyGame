@@ -1,11 +1,14 @@
 ﻿#include "GameScene.h"
 #include "GameTime.h"
 #include "LightManager.h"
+#include"WeatherManager.h"
 #include "Chest.h" 
 #include "Sleep.h"
 #include "BridgeEvent.h"
 #include "Cooking.h"
 #include "CropManager.h"
+#include "NormalWeather.h"
+
 USING_NS_CC;
 
 Scene* GameScene::createScene()
@@ -203,6 +206,9 @@ bool GameScene::init()
     ItemSystem* itemSystem = ItemSystem::getInstance();
     itemSystem->addItem("corn seed", 5);
 
+    auto weatherManager = WeatherManager::getInstance();
+    weatherManager->setWeather(NormalWeather::create());
+
     
     return true;
 }
@@ -211,7 +217,8 @@ void GameScene::onDayChanged()
 {
     // 更新作物生长
     CropManager::getInstance()->updateCrops();
-
+    auto weatherManager = WeatherManager::getInstance();
+    weatherManager->randomRefreshWeather();
     // 刷新资源
     _gameMap->refreshResources();
 
@@ -298,6 +305,7 @@ void GameScene::update(float dt)
 void GameScene::updateCamera()
 {
     if (!player || !_gameMap) return;
+    if (_gameMap->getMapName() == "First")return;
 
     Size visibleSize = Director::getInstance()->getVisibleSize();
     Size mapSize = _gameMap->getTileMap()->getMapSize();
