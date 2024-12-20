@@ -1,1183 +1,1735 @@
-﻿#include "GameScene.h"
-#include "GameTime.h"
-#include "LightManager.h"
-#include"WeatherManager.h"
-#include "Chest.h" 
-#include "Sleep.h"
-#include "BridgeEvent.h"
-#include "Cooking.h"
-#include "CropManager.h"
-#include "NormalWeather.h"
+/****************************************************************************
+Copyright (c) 2008-2010 Ricardo Quesada
+Copyright (c) 2010-2012 cocos2d-x.org
+Copyright (c) 2011      Zynga Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
-USING_NS_CC;
+http://www.cocos2d-x.org
 
-Scene* GameScene::createScene()
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+****************************************************************************/
+
+#include "2d/CCSprite.h"
+
+#include <algorithm>
+
+#include "2d/CCSpriteBatchNode.h"
+#include "2d/CCAnimationCache.h"
+#include "2d/CCSpriteFrame.h"
+#include "2d/CCSpriteFrameCache.h"
+#include "renderer/CCTextureCache.h"
+#include "renderer/CCTexture2D.h"
+#include "renderer/CCRenderer.h"
+#include "base/CCDirector.h"
+#include "base/ccUTF8.h"
+#include "2d/CCCamera.h"
+
+NS_CC_BEGIN
+
+// MARK: create, init, dealloc
+Sprite* Sprite::createWithTexture(Texture2D *texture)
 {
-
-    return GameScene::create();
+    Sprite *sprite = new (std::nothrow) Sprite();
+    if (sprite && sprite->initWithTexture(texture))
+    {
+        sprite->autorelease();
+        return sprite;
+    }
+    CC_SAFE_DELETE(sprite);
+    return nullptr;
 }
 
-void GameScene::initToolIcon()
+Sprite* Sprite::createWithTexture(Texture2D *texture, const Rect& rect, bool rotated)
 {
-    toolIcon = Sprite::create("tools.png");
-    if (toolIcon)
+    Sprite *sprite = new (std::nothrow) Sprite();
+    if (sprite && sprite->initWithTexture(texture, rect, rotated))
     {
-        toolIcon->setScale(3.0f);
-        this->addChild(toolIcon, 10);
-        toolIcon->setPosition(Player::TOOL_ICON_POSITION);
-        updateToolIcon();
+        sprite->autorelease();
+        return sprite;
     }
+    CC_SAFE_DELETE(sprite);
+    return nullptr;
 }
 
-void GameScene::updateToolIcon()
+Sprite* Sprite::create(const std::string& filename)
 {
-    if (!toolIcon || !player) return;
-
-    // 根据玩家当前工具设置图标
-    int toolIndex = static_cast<int>(player->getCurrentTool());
-
-    // 根据实际的枚举值设置对应的纹理区域
-    switch (toolIndex) {
-        case 0:  // NONE
-            toolIcon->setVisible(false);        // 没有工具，隐藏贴图
-            break;
-        case 1:  // SHOVEL
-            toolIcon->setTexture("tools.png");  // 使用原来的工具贴图
-            toolIcon->setVisible(true);
-            toolIcon->setTextureRect(cocos2d::Rect(32, 0, 16, 16));
-            break;
-        case 2:  // AXE
-            toolIcon->setTexture("tools.png");  // 使用原来的工具贴图
-            toolIcon->setVisible(true);
-            toolIcon->setTextureRect(cocos2d::Rect(16, 0, 16, 16));
-            break;
-        case 3:  // WATERING
-            toolIcon->setTexture("tools.png");  // 使用原来的工具贴图
-            toolIcon->setVisible(true);
-            toolIcon->setTextureRect(cocos2d::Rect(0, 0, 16, 16));
-            break;
-        case 4:  // ROD
-            toolIcon->setTexture("TileSheets/Tools.png");  // 使用新的贴图
-            toolIcon->setVisible(true);
-            toolIcon->setTextureRect(cocos2d::Rect(128, 0, 16, 16));
-            break;
-        case 5:  // GIFT
-            toolIcon->setTexture("TileSheets/Objects_2.png");  // 使用新的贴图
-            toolIcon->setVisible(true);
-            toolIcon->setTextureRect(cocos2d::Rect(96, 32, 16, 16));
-            break;
-        case 6:  // CARROT
-            toolIcon->setTexture("LooseSprites/emojis.png");  // 使用新的贴图
-            toolIcon->setVisible(true);
-            toolIcon->setTextureRect(cocos2d::Rect(18, 36, 9, 9));
-            break;
+    Sprite *sprite = new (std::nothrow) Sprite();
+    if (sprite && sprite->initWithFile(filename))
+    {
+        sprite->autorelease();
+        return sprite;
     }
+    CC_SAFE_DELETE(sprite);
+    return nullptr;
 }
 
-void GameScene::initSeedIcon()
+Sprite* Sprite::create(const PolygonInfo& info)
 {
-    seedIcon = Sprite::create("Plants.png");
-    if (seedIcon)
+    Sprite *sprite = new (std::nothrow) Sprite();
+    if(sprite && sprite->initWithPolygon(info))
     {
-        seedIcon->setScale(3.0f);
-        this->addChild(seedIcon, 10);
-        seedIcon->setPosition(Player::SEED_ICON_POSITION);
-
-        // 初始化时根据当前地图设置可见性
-        seedIcon->setVisible(_gameMap && _gameMap->getMapName() == "Farm");
-
-        updateSeedIcon();
+        sprite->autorelease();
+        return sprite;
     }
+    CC_SAFE_DELETE(sprite);
+    return nullptr;
 }
 
-void GameScene::updateSeedIcon()
+Sprite* Sprite::create(const std::string& filename, const Rect& rect)
 {
-    if (!seedIcon || !player)
-        return;
-
-    // 只在农场地图显示种子图标
-    if (_gameMap)
+    Sprite *sprite = new (std::nothrow) Sprite();
+    if (sprite && sprite->initWithFile(filename, rect))
     {
-        seedIcon->setVisible(_gameMap->getMapName() == "Farm");
+        sprite->autorelease();
+        return sprite;
     }
-    // 根据当前选择的种子类型设置贴图区域
-    switch (player->getCurrentSeed())
-    {
-        case Player::SeedType::CORN:
-            seedIcon->setTextureRect(Rect(0, 0, 16, 16));  // 第一行第一个
-            break;
-        case Player::SeedType::TOMATO:
-            seedIcon->setTextureRect(Rect(0, 16, 16, 16)); // 第二行第一个
-            break;
-    }
+    CC_SAFE_DELETE(sprite);
+    return nullptr;
 }
 
-bool GameScene::init()
+Sprite* Sprite::createWithSpriteFrame(SpriteFrame *spriteFrame)
 {
-    if (!Scene::init())
+    Sprite *sprite = new (std::nothrow) Sprite();
+    if (sprite && spriteFrame && sprite->initWithSpriteFrame(spriteFrame))
     {
-        return false;
+        sprite->autorelease();
+        return sprite;
     }
+    CC_SAFE_DELETE(sprite);
+    return nullptr;
+}
 
-    // 初始化变量
-    player = nullptr;
-    _gameMap = nullptr;
-    _pressedKeys.clear();
-    isLewisCreated = false;     // 初始化标志
-    isMarlonCreated = false;    // 初始化标志
-    isMaruCreated = false;      // 初始化标志
-    isAlexCreated = false;      // 初始化标志
+Sprite* Sprite::createWithSpriteFrameName(const std::string& spriteFrameName)
+{
+    SpriteFrame *frame = SpriteFrameCache::getInstance()->getSpriteFrameByName(spriteFrameName);
 
-    // 初始化矿洞进入时间记录
-    lastMineEnterDay = 0;
-    lastMineEnterMonth = 0;
-    lastMineEnterYear = 0;
+#if COCOS2D_DEBUG > 0
+    char msg[256] = {0};
+    sprintf(msg, "Invalid spriteFrameName: %s", spriteFrameName.c_str());
+    CCASSERT(frame != nullptr, msg);
+#endif
 
-    // 创建并加载地图
-    _gameMap = GameMap::create("First");
-    if (_gameMap == nullptr)
+    return createWithSpriteFrame(frame);
+}
+
+Sprite* Sprite::create()
+{
+    Sprite *sprite = new (std::nothrow) Sprite();
+    if (sprite && sprite->init())
     {
-        return false;
+        sprite->autorelease();
+        return sprite;
     }
-    this->addChild(_gameMap);
+    CC_SAFE_DELETE(sprite);
+    return nullptr;
+}
 
-    // 创建玩家
-    player = Player::create();
-    if (player == nullptr)
-    {
-        return false;
-    }
+bool Sprite::init()
+{
+    initWithTexture(nullptr, Rect::ZERO);
 
-    // 设置玩家初始位置
-    Vec2 tilePos = Vec2(14.5, 15);
-    Vec2 worldPos = _gameMap->convertToWorldCoord(tilePos);
-    player->setPosition(worldPos);
-    player->setScale(3.0f);
-
-    this->addChild(player, 1);
-
-    // 初始化钓鱼区域
-    FishingSystem::getInstance()->initFishingAreas(_gameMap);
-
-    // 初始化鼠标监听器
-    auto mouseListener = EventListenerMouse::create();
-    mouseListener->onMouseDown = [this](Event* event)
-        {
-            auto fishingSystem = FishingSystem::getInstance();
-
-            // 如果已经在钓鱼中,则尝试完成钓鱼
-            if (fishingSystem->isCurrentlyFishing())
-            {
-                fishingSystem->finishFishing();
-                return;
-            }
-
-            // 如果还没开始钓鱼,检查是否可以开始钓鱼
-            if (fishingSystem->canFish(player->getPosition(), player))
-            {
-                fishingSystem->startFishing();
-            }
-        };
-
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
-
-    // 设置关联和事件监听
-    player->setGameMap(_gameMap);
-    player->removeAllListeners(); // 移除可能存在的旧监听器
-    player->initKeyboardListener();
-    player->initMouseListener();
-
-    // 创建背包UI
-    _inventoryUI = InventoryUI::create();
-    if (_inventoryUI)
-    {
-        this->addChild(_inventoryUI, 10);
-        _inventoryUI->setVisible(false);
-
-        // 设置物品系统的更新回调
-        ItemSystem::getInstance()->setUpdateCallback([this]() {
-            if (_inventoryUI)
-            {
-                _inventoryUI->updateDisplay();
-            }
-            });
-    }
-
-    // 启动更新
-    this->scheduleUpdate();
-
-    // 初始化工具图标
-    initToolIcon();
-
-    // 初始化种子图标
-    initSeedIcon();
-
-    // 初始化鼠标监听器
-    initMouseListener();
-
-    // 初始化宝箱
-    initChests();
-
-    // 设置CropManager的地图引用
-    auto cropManager = CropManager::getInstance();
-    cropManager->setGameScene(this);
-    CropManager::getInstance()->setGameMap(_gameMap);
-
-    // 创建状态UI
-    _statusUI = StatusUI::create();
-    if (_statusUI) {
-        // 设置位置到右上角
-        Size visibleSize = Director::getInstance()->getVisibleSize();
-        Vec2 origin = Director::getInstance()->getVisibleOrigin();
-        _statusUI->setPosition(origin.x + visibleSize.width,
-            origin.y + visibleSize.height);
-
-        // 添加到最上层，确保不会被其他内容遮挡
-        this->addChild(_statusUI, 10);
-    }
-
-    // 创建事件
-    _events.push_back(SleepEvent::create(_gameMap, player));
-    _events.push_back(BridgeEvent::create(_gameMap, player));
-    _events.push_back(Cooking::create(_gameMap, player));
-    for (auto event : _events) {
-        this->addChild(event);
-    }
-
-    ItemSystem* itemSystem = ItemSystem::getInstance();
-    itemSystem->addItem("corn seed", 5);
-    itemSystem->addItem("tomato seed", 5);
-
-    auto weatherManager = WeatherManager::getInstance();
-    weatherManager->setWeather(NormalWeather::create());
-
-    
     return true;
 }
 
-void GameScene::onDayChanged()
+bool Sprite::initWithTexture(Texture2D *texture)
 {
-    // 更新作物生长
-    CropManager::getInstance()->updateCrops();
-    auto weatherManager = WeatherManager::getInstance();
-    weatherManager->randomRefreshWeather();
-    // 刷新资源
-    _gameMap->refreshResources();
+    CCASSERT(texture != nullptr, "Invalid texture for sprite");
 
-    // 这里可以添加其他每日更新的内容
-    CCLOG("A new day has started!");
+    Rect rect = Rect::ZERO;
+    if (texture) {
+        rect.size = texture->getContentSize();
+    }
+
+    return initWithTexture(texture, rect, false);
 }
 
-void GameScene::update(float dt)
+bool Sprite::initWithTexture(Texture2D *texture, const Rect& rect)
 {
-    if (!player || !_gameMap)
-    {
-        return;
-    }
-
-    // 获取GameTime单例实例
-    GameTime* gameTime = GameTime::getInstance();
-
-    // 记录更新前的日期
-    int oldDay = gameTime->getDay();
-
-    // 更新游戏时间
-    gameTime->update();
-
-    // 检查是否日期发生变化
-    if (gameTime->getDay() != oldDay)
-    {
-        onDayChanged();
-    }
-
-    // 更新光照效果
-    LightManager::getInstance()->update();
-
-    // 只保留一次update调用
-    player->update(dt);
-
-    // 检查传送点
-    Vec2 playerTilePos = _gameMap->convertToTileCoord(player->getPosition());
-    TransitionInfo transition;
-    if (_gameMap->checkForTransition(playerTilePos, transition))
-    {
-        switchToMap(transition.targetMap, transition.targetTilePos);
-    }
-
-    updateToolIcon();   // 每帧更新工具图标
-    updateSeedIcon();   // 每帧更新种子图标
-
-    // 更新Lewis的状态
-    if (lewis)
-    {
-        //lewis->updateSchedule(dt);
-        lewis->moveAlongPath(dt); // 移动沿路径
-    }
-
-    // 更新所有猪的状态
-    for (auto pig : pigs)
-    {
-        if (pig)
-        {
-            pig->moveAlongPath(dt); // 移动沿路径
-        }
-    }
-
-    // 更新所有鸡的状态
-    for (auto chicken : chickens)
-    {
-        if (chicken)
-        {
-            chicken->moveAlongPath(dt); // 移动沿路径
-        }
-    }
-
-    // 更新所有羊的状态
-    for (auto sheep : sheeps)
-    {
-        if (sheep)
-        {
-            sheep->moveAlongPath(dt); // 移动沿路径
-        }
-    }
-
-    // 持续检查钓鱼条件
-    auto fishingSystem = FishingSystem::getInstance();
-    fishingSystem->canFish(player->getPosition(), player);
-    // 更新提示标签位置
-    if (auto tipLabel = fishingSystem->getTipLabel())
-    {
-        if (tipLabel->isVisible())
-        {
-            Vec2 playerPos = player->getPosition();
-            // 设置在玩家头顶上方50像素
-            tipLabel->setPosition(playerPos + Vec2(0, 50));
-        }
-    }
-
-    // 更新作物提示
-    CropManager::getInstance()->updateTips(playerTilePos, player->getCurrentTool());
-
-    // 检查所有事件
-    for (auto event : _events)
-    {
-        event->update(dt);
-    }
-
-    // 更新前景瓦片可见性
-    if (_gameMap && player)
-    {
-        _gameMap->updateFrontTileVisibility(player->getPosition());
-    }
-
-    updateCamera();
-   
+    return initWithTexture(texture, rect, false);
 }
 
-void GameScene::updateCamera()
+bool Sprite::initWithFile(const std::string& filename)
 {
-    if (!player || !_gameMap)
-        return;
-    if (_gameMap->getMapName() == "First")
-        return;
-
-    Size visibleSize = Director::getInstance()->getVisibleSize();
-    Size mapSize = _gameMap->getTileMap()->getMapSize();
-    Size tileSize = _gameMap->getTileMap()->getTileSize();
-    float scale = _gameMap->getTileMap()->getScale();
-
-    // 计算地图的实际像素大小
-    float mapWidth = mapSize.width * tileSize.width * scale;
-    float mapHeight = mapSize.height * tileSize.height * scale;
-
-    // 获取玩家位置
-    Vec2 playerPos = player->getPosition();
-
-    float x, y;
-
-    // 如果地图小于屏幕，则居中显示
-    if (mapWidth < visibleSize.width)
+    if (filename.empty())
     {
-        x = visibleSize.width / 2;
-    }
-    else
-    {
-        x = std::max(playerPos.x, visibleSize.width / 2);
-        x = std::min(x, mapWidth - visibleSize.width / 2);
+        CCLOG("Call Sprite::initWithFile with blank resource filename.");
+        return false;
     }
 
-    if (mapHeight < visibleSize.height)
+    _fileName = filename;
+    _fileType = 0;
+
+    Texture2D *texture = _director->getTextureCache()->addImage(filename);
+    if (texture)
     {
-        y = visibleSize.height / 2;
-    }
-    else
-    {
-        y = std::max(playerPos.y, visibleSize.height / 2);
-        y = std::min(y, mapHeight - visibleSize.height / 2);
+        Rect rect = Rect::ZERO;
+        rect.size = texture->getContentSize();
+        return initWithTexture(texture, rect);
     }
 
-    Vec2 pointA = Vec2(visibleSize.width / 2, visibleSize.height / 2);
-    Vec2 pointB = Vec2(x, y);
-    Vec2 offset = pointA - pointB;
-
-
-    // 如果地图小于屏幕，调整偏移量使地图居中
-    if (mapWidth < visibleSize.width)
-    {
-        offset.x = (visibleSize.width - mapWidth) / 2;
-    }
-    if (mapHeight < visibleSize.height)
-    {
-        offset.y = (visibleSize.height - mapHeight) / 2;
-    }
-
-    this->setPosition(offset);
-
-    // 确保背包UI也跟随相机
-    if (_inventoryUI)
-    {
-        _inventoryUI->setPosition(-offset);
-    }
-    // 更新工具图标位置，使其保持在视图左下角
-    if (toolIcon)
-    {
-        toolIcon->setPosition(-offset + Vec2(50, 50));  // 左下角偏移50像素
-    }
-    if (seedIcon)
-    {
-        seedIcon->setPosition(-offset + Vec2(100, 50)); // 工具图标右侧50像素
-    }
-    // 更新对话框位置
-    if (dialogueBox)
-    {
-        dialogueBox->setPosition(-offset + Vec2(visibleSize.width / 2, 90));
-    }
-
-    // 更新UI位置，确保状态UI始终固定在右上角
-    if (_statusUI) {
-        _statusUI->setPosition(-offset + Vec2(visibleSize.width, visibleSize.height));
-    }
+    // don't release here.
+    // when load texture failed, it's better to get a "transparent" sprite then a crashed program
+    // this->release();
+    return false;
 }
 
-void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& targetTilePos)
+bool Sprite::initWithFile(const std::string &filename, const Rect& rect)
 {
-     // 如果当前是农场地图，保存作物信息
-    if (_gameMap && _gameMap->getMapName() == "Farm") 
+    CCASSERT(!filename.empty(), "Invalid filename");
+    if (filename.empty())
     {
-        CropManager::getInstance()->saveCrops();
-        CropManager::getInstance()->clearCrops();  // 离开农场时清理显示
+        return false;
     }
 
-    // 清理宝箱
-    clearChests();
+    _fileName = filename;
+    _fileType = 0;
 
-    // 移除当前 NPC
-    if (lewis) {
-        lewis->removeFromParent(); // 移除刘易斯
-        lewis = nullptr; // 清空指针
-    }
-    if (marlon) {
-        marlon->removeFromParent(); // 移除马龙
-        marlon = nullptr; // 清空指针
-    }
-    if (maru) {
-        maru->removeFromParent(); // 移除玛鲁
-        maru = nullptr; // 清空指针
-    }
-    if (alex) {
-        alex->removeFromParent(); // 移除艾利克斯
-        alex = nullptr; // 清空指针
-    }
-    // 移除所有猪
-    for (auto pig : pigs) {
-        if (pig) {
-            pig->removeFromParent(); // 移除猪
-        }
-    }
-    pigs.clear(); // 清空猪的向量
-    // 移除所有鸡
-    for (auto chicken : chickens) {
-        if (chicken) {
-            chicken->removeFromParent(); // 移除鸡
-        }
-    }
-    chickens.clear(); // 清空鸡的向量
-    // 移除所有羊
-    for (auto sheep : sheeps) {
-        if (sheep) {
-            sheep->removeFromParent(); // 移除羊
-        }
-    }
-    sheeps.clear(); // 清空羊的向量
-
-    // 保存当前背包UI的引用和状态
-    auto currentInventoryUI = _inventoryUI;
-    bool wasInventoryVisible = false;
-    if (currentInventoryUI) {
-        wasInventoryVisible = currentInventoryUI->isVisible();
-        currentInventoryUI->retain();
-        currentInventoryUI->removeFromParent();
-    }
-
-    // 保存当前玩家的引用
-    auto currentPlayer = player;
-    if (currentPlayer) {
-        currentPlayer->retain();
-        currentPlayer->removeFromParent();
-    }
-
-    // 移除旧地图的显示
-    if (_gameMap) {
-        _gameMap->getTileMap()->removeFromParent();  // 从显示层级中移除旧地图
-    }
-
-    // 加载新地图
-    _gameMap->loadMap(mapName);
-
-    // 重用现有玩家，而不是创建新的（修复原来多重玩家的bug）
-    if (currentPlayer) {
-        Vec2 worldPos = _gameMap->convertToWorldCoord(targetTilePos);
-        currentPlayer->setPosition(worldPos);
-        currentPlayer->setGameMap(_gameMap);
-        this->addChild(currentPlayer, 1);
-        currentPlayer->release();
-    }
-
-    // 重新添加背包UI
-    if (currentInventoryUI) {
-        this->addChild(currentInventoryUI, 10);
-        currentInventoryUI->setVisible(wasInventoryVisible);
-        currentInventoryUI->release();
-    }
-
-    // 更新CropManager的地图引用
-    CropManager::getInstance()->setGameMap(_gameMap);
-
-    // 如果切换到农场地图，加载作物，显示当前种子，初始化刘易斯和动物
-    if (mapName == "Farm")
+    Texture2D *texture = _director->getTextureCache()->addImage(filename);
+    if (texture)
     {
-        if (seedIcon)
-        {
-            seedIcon->setVisible(true);
-        }
-        CropManager::getInstance()->loadCrops();
-        CCLOG("Switching to Farm map, loading crops...");
-        initLewis();
-        initPig();
-        initChicken();
-        initSheep();
+        return initWithTexture(texture, rect);
     }
-    // 在其他地图隐藏种子图标
-    else
+
+    // don't release here.
+    // when load texture failed, it's better to get a "transparent" sprite then a crashed program
+    // this->release();
+    return false;
+}
+
+bool Sprite::initWithSpriteFrameName(const std::string& spriteFrameName)
+{
+    CCASSERT(!spriteFrameName.empty(), "Invalid spriteFrameName");
+    if (spriteFrameName.empty())
     {
-        if (seedIcon)
-        {
-            seedIcon->setVisible(false);
-        }
+        return false;
     }
 
-    // 如果是医院地图，初始化玛鲁
-    if (mapName == "Hospital") {
-        CCLOG("Switching to Hospital map, initializing maru...");
-        initMaru();
-    }
+    _fileName = spriteFrameName;
+    _fileType = 1;
 
-    // 如果是小镇地图，初始化艾利克斯
-    if (mapName == "Town") {
-        CCLOG("Switching to Town map, initializing alex...");
-        initAlex();
-    }
-
-    // 如果是矿洞地图，检查是否需要刷新宝箱
-    if (mapName == "Mine") {
-        CCLOG("Switch to the mine map...");
-
-        auto gameTime = GameTime::getInstance();
-        int currentDay = gameTime->getDay();
-        int currentMonth = gameTime->getMonth();
-        int currentYear = gameTime->getYear();
-
-        // 检查是否需要刷新宝箱
-        bool shouldRefreshChests = false;
-
-        // 如果是第一次进入矿洞
-        if (lastMineEnterDay == 0) {
-            shouldRefreshChests = true;
-        }
-        // 或者已经过了至少一天
-        else if (currentYear > lastMineEnterYear ||
-            (currentYear == lastMineEnterYear && currentMonth > lastMineEnterMonth) ||
-            (currentYear == lastMineEnterYear && currentMonth == lastMineEnterMonth && currentDay > lastMineEnterDay)) {
-            shouldRefreshChests = true;
-        }
-
-        // 如果需要刷新宝箱
-        if (shouldRefreshChests) {
-            CCLOG("Refresh the mine treasure chest...");
-            initChests();
-            // 更新进入时间
-            lastMineEnterDay = currentDay;
-            lastMineEnterMonth = currentMonth;
-            lastMineEnterYear = currentYear;
-        }
-        else {
-            CCLOG("The treasure chest has been refreshed today and will not be refreshed again");
-        }
-
-        // 初始化马龙NPC
-        initMarlon();
-    }
-
-    // 重新初始化钓鱼系统
-    FishingSystem::getInstance()->initFishingAreas(_gameMap);
+    SpriteFrame *frame = SpriteFrameCache::getInstance()->getSpriteFrameByName(spriteFrameName);
+    return initWithSpriteFrame(frame);
 }
 
-void GameScene::initMouseListener()
+bool Sprite::initWithSpriteFrame(SpriteFrame *spriteFrame)
 {
-    auto mouseListener = EventListenerMouse::create();
-
-    // 设置默认光标
-    Director::getInstance()->getOpenGLView()->setCursor("cursor_default.png");
-
-    mouseListener->onMouseMove = [=](Event* event)
-        {
-            EventMouse* e = (EventMouse*)event;
-            Vec2 mousePos = e->getLocation();
-
-            if (lewis) {
-                float distance = player->getPosition().distance(lewis->getPosition());
-
-                if (distance < 50.0f) {
-                    // 鼠标靠近Lewis，手上有礼物，变成礼物光标
-                    if (player->getCurrentTool() == Player::ToolType::GIFT) {
-                        Director::getInstance()->getOpenGLView()->setCursor("cursor_gift.png");
-                    }
-                    // 鼠标靠近Lewis，变成交互光标
-                    else {
-                        Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
-                    }
-                }
-                else {
-                    // 鼠标远离Lewis，恢复默认光标
-                    Director::getInstance()->getOpenGLView()->setCursor("cursor_default.png");
-                }
-            }
-            if (marlon) {
-                float distance = player->getPosition().distance(marlon->getPosition());
-
-                if (distance < 50.0f) {
-                    Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
-                }
-                else {
-                    Director::getInstance()->getOpenGLView()->setCursor("cursor_default.png");
-                }
-            }
-            if (maru) {
-                float distance = player->getPosition().distance(maru->getPosition());
-
-                if (distance < 120.0f) {
-                    Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
-                }
-                else {
-                    Director::getInstance()->getOpenGLView()->setCursor("cursor_default.png");
-                }
-            }
-            if (alex) {
-                float distance = player->getPosition().distance(alex->getPosition());
-
-                if (distance < 50.0f) {
-                    Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
-                }
-                else {
-                    Director::getInstance()->getOpenGLView()->setCursor("cursor_default.png");
-                }
-            }
-        };
-
-    mouseListener->onMouseDown = [=](Event* event)
-        {
-            EventMouse* e = (EventMouse*)event;
-            Vec2 clickPos = e->getLocation(); // 获取点击位置
-
-            // 鼠标点击时触发开垦
-            if (player && player->getCurrentTool() == Player::ToolType::SHOVEL)
-            {
-                CropManager::getInstance()->onMouseDown(clickPos, player);
-            }
-            // 鼠标点击时触发浇水
-            if (player && player->getCurrentTool() == Player::ToolType::WATERING)
-            {
-                CropManager::getInstance()->onMouseDown(clickPos, player);
-            }
-            // 鼠标点击时触发资源移除
-            if (player && player->getCurrentTool() == Player::ToolType::AXE)
-            {
-                CropManager::getInstance()->onMouseDown(clickPos, player);
-            }
-
-
-            // 检查是否靠近并点击了刘易斯
-            if (lewis) {
-                float distance = player->getPosition().distance(lewis->getPosition());
-
-                if (distance < 50.0f) {
-                    player->setCanPerformAction(false); // 禁止玩家动作
-                    std::srand(static_cast<unsigned int>(std::time(nullptr)));
-
-                    dialogueBox = DialogueBox::create(lewis->getRandomDialogue(), "Portraits/Lewis.png", "Lewis");
-                    this->addChild(dialogueBox, 10);
-
-                    if (player->getCurrentTool() == Player::ToolType::GIFT) {
-                        // 如果玩家手持礼物，触发感谢动画
-                        lewis->stopAllActions();
-                        lewis->showThanks();
-                        dialogueBox = DialogueBox::create("I love this! Thank you! Mmmmmmm......", "Portraits/Lewis.png", "Lewis");
-                        this->addChild(dialogueBox, 10);
-
-                        //lewis->receiveGift("gift_item"); // 传递礼物项
-                       //player->setCurrentTool(Player::ToolType::SHOVEL); // 切换工具
-                    }
-                    else {
-                        lewis->staticAnimation(); // 静止状态
-                    }
-                }
-                else {
-                    player->setCanPerformAction(true);  // 允许玩家动作
-                }
-            }
-            // 检查是否靠近并点击了马龙
-            if (marlon) {
-                float distance = player->getPosition().distance(marlon->getPosition());
-
-                if (distance < 50.0f) {
-                    player->setCanPerformAction(false); // 禁止玩家动作
-                    std::srand(static_cast<unsigned int>(std::time(nullptr)));
-
-                    dialogueBox = DialogueBox::create(marlon->getRandomDialogue(), "Portraits/Marlon.png", "Marlon");
-                    this->addChild(dialogueBox, 10);
-                }
-                else {
-                    player->setCanPerformAction(true);  // 允许玩家动作
-                }
-            }
-            // 检查是否靠近并点击了玛鲁
-            if (maru) {
-                float distance = player->getPosition().distance(maru->getPosition());
-
-                if (distance < 150.0f) {
-                    player->setCanPerformAction(false); // 禁止玩家动作
-                    std::srand(static_cast<unsigned int>(std::time(nullptr)));
-
-                    dialogueBox = DialogueBox::create(maru->getRandomDialogue(), "Portraits/Maru_Hospital.png", "Maru");
-                    this->addChild(dialogueBox, 10);
-                }
-                else {
-                    player->setCanPerformAction(true);  // 允许玩家动作
-                }
-            }
-            // 检查是否靠近并点击了艾利克斯
-            if (alex) {
-                float distance = player->getPosition().distance(alex->getPosition());
-
-                if (distance < 50.0f) {
-                    player->setCanPerformAction(false); // 禁止玩家动作
-                    std::srand(static_cast<unsigned int>(std::time(nullptr)));
-
-                    dialogueBox = DialogueBox::create(alex->getRandomDialogue(), "Portraits/Alex.png", "Alex");
-                    this->addChild(dialogueBox, 10);
-                }
-                else {
-                    player->setCanPerformAction(true);  // 允许玩家动作
-                }
-            }
-            // 检查是否靠近并点击了猪
-            if (!pigs.empty()) {  // 确保vector不为空
-                for (auto pig : pigs) {  // 遍历所有的pig
-                    float distance = player->getPosition().distance(pig->getPosition());
-                    if (distance < 50.0f) {
-                        if (player->getCurrentTool() == Player::ToolType::CARROT) {
-                            // 如果玩家手持胡萝卜，触发吃饱了动画
-                            pig->showFull();
-                        }
-                        break; 
-                    }
-                }
-            }
-            // 检查是否靠近并点击了鸡
-            if (!chickens.empty()) {  // 确保vector不为空
-                for (auto chicken : chickens) {  
-                    float distance = player->getPosition().distance(chicken->getPosition());
-                    if (distance < 50.0f) {
-                        if (player->getCurrentTool() == Player::ToolType::CARROT) {
-                            // 如果玩家手持胡萝卜，触发吃饱了动画
-                            chicken->showFull();
-                        }
-                        break;  
-                    }
-                }
-            }
-            // 检查是否靠近并点击了羊
-            if (!sheeps.empty()) {  // 确保vector不为空
-                for (auto sheep : sheeps) {
-                    float distance = player->getPosition().distance(sheep->getPosition());
-                    if (distance < 50.0f) {
-                        if (player->getCurrentTool() == Player::ToolType::CARROT) {
-                            // 如果玩家手持胡萝卜，触发吃饱了动画
-                            sheep->showFull();
-                        }
-                        break;
-                    }
-                }
-            }
-        };
-
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
-}
-
-void GameScene::initLewis()
-{
-    // 创建刘易斯
-    lewis = Lewis::create();
-
-    if (lewis == nullptr)
+    CCASSERT(spriteFrame != nullptr, "spriteFrame can't be nullptr!");
+    if (spriteFrame == nullptr)
     {
-        return;
+        return false;
     }
 
-    // 设置刘易斯初始位置
-    Vec2 lewis_tilePos = Vec2(15, 16);
-    Vec2 lewis_worldPos = _gameMap->convertToWorldCoord(lewis_tilePos);
-    lewis->setPosition(lewis_worldPos);
+    bool ret = initWithTexture(spriteFrame->getTexture(), spriteFrame->getRect(), spriteFrame->isRotated());
+    setSpriteFrame(spriteFrame);
 
-    this->addChild(lewis, 1);
-    //设置刘易斯默认移动路径
-    Vec2 movePath1_tilePos = Vec2(13, 16);
-    Vec2 movePath2_tilePos = Vec2(18, 16);
-
-    Vec2 movePath1_worldPos = _gameMap->convertToWorldCoord(movePath1_tilePos);
-    Vec2 movePath2_worldPos = _gameMap->convertToWorldCoord(movePath2_tilePos);
-    lewis->path.push_back(movePath1_worldPos);
-    lewis->path.push_back(movePath2_worldPos);
-    isLewisCreated = true; // 设置标志为已创建
+    return ret;
 }
 
-void GameScene::initMarlon()
+bool Sprite::initWithPolygon(const cocos2d::PolygonInfo &info)
 {
-    // 创建马龙
-    marlon = Marlon::create();
+    bool ret = false;
 
-    if (marlon == nullptr)
+    Texture2D *texture = _director->getTextureCache()->addImage(info.getFilename());
+    if(texture && initWithTexture(texture))
     {
-        return;
+        _polyInfo = info;
+        _renderMode = RenderMode::POLYGON;
+        Node::setContentSize(_polyInfo.getRect().size / _director->getContentScaleFactor());
+        ret = true;
     }
 
-    // 设置马龙初始位置
-    Vec2 marlon_tilePos = Vec2(12, 10);
-    Vec2 marlon_worldPos = _gameMap->convertToWorldCoord(marlon_tilePos);
-    marlon->setPosition(marlon_worldPos);
-
-    this->addChild(marlon, 1);
-    isMarlonCreated = true; // 设置标志为已创建
+    return ret;
 }
 
-void GameScene::initMaru()
+// designated initializer
+bool Sprite::initWithTexture(Texture2D *texture, const Rect& rect, bool rotated)
 {
-    // 创建玛鲁
-    maru = Maru::create();
-
-    if (maru == nullptr)
+    bool result = false;
+    if (Node::init())
     {
-        return;
+        _batchNode = nullptr;
+
+        _recursiveDirty = false;
+        setDirty(false);
+
+        _opacityModifyRGB = true;
+
+        _blendFunc = BlendFunc::ALPHA_PREMULTIPLIED;
+
+        _flippedX = _flippedY = false;
+
+        // default transform anchor: center
+        setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+
+        // zwoptex default values
+        _offsetPosition.setZero();
+
+        // clean the Quad
+        memset(&_quad, 0, sizeof(_quad));
+
+        // Atlas: Color
+        _quad.bl.colors = Color4B::WHITE;
+        _quad.br.colors = Color4B::WHITE;
+        _quad.tl.colors = Color4B::WHITE;
+        _quad.tr.colors = Color4B::WHITE;
+
+        // update texture (calls updateBlendFunc)
+        setTexture(texture);
+        setTextureRect(rect, rotated, rect.size);
+
+        // by default use "Self Render".
+        // if the sprite is added to a batchnode, then it will automatically switch to "batchnode Render"
+        setBatchNode(nullptr);
+        result = true;
     }
 
-    // 设置玛鲁初始位置
-    Vec2 maru_tilePos = Vec2(7, 14);
-    Vec2 maru_worldPos = _gameMap->convertToWorldCoord(maru_tilePos);
-    maru->setPosition(maru_worldPos);
+    _recursiveDirty = true;
+    setDirty(true);
 
-    this->addChild(maru, 1);
-    isMaruCreated = true; // 设置标志为已创建
+    return result;
 }
 
-void GameScene::initAlex()
+Sprite::Sprite()
+: _textureAtlas(nullptr)
+, _batchNode(nullptr)
+, _shouldBeHidden(false)
+, _texture(nullptr)
+, _spriteFrame(nullptr)
+, _centerRectNormalized(0,0,1,1)
+, _renderMode(Sprite::RenderMode::QUAD)
+, _stretchFactor(Vec2::ONE)
+, _originalContentSize(Size::ZERO)
+, _trianglesVertex(nullptr)
+, _trianglesIndex(nullptr)
+, _insideBounds(true)
+, _stretchEnabled(true)
 {
-    // 创建艾利克斯
-    alex = Alex::create();
-
-    if (alex == nullptr)
-    {
-        return;
-    }
-
-    // 设置艾利克斯初始位置
-    Vec2 alex_tilePos = Vec2(21, 20);
-    Vec2 alex_worldPos = _gameMap->convertToWorldCoord(alex_tilePos);
-    alex->setPosition(alex_worldPos);
-
-    this->addChild(alex, 1);
-    alex->initializeAnimations();
-    isAlexCreated = true; // 设置标志为已创建
+#if CC_SPRITE_DEBUG_DRAW
+    _debugDrawNode = DrawNode::create();
+    addChild(_debugDrawNode);
+#endif //CC_SPRITE_DEBUG_DRAW
 }
-void GameScene::createPig(const Vec2& initialPosition, const std::vector<Vec2>& path)
+
+Sprite::~Sprite()
 {
-    Pig* newPig = Pig::create(); // 创建新的猪实例
-    if (newPig) {
-        newPig->setPosition(initialPosition); // 设置初始位置
-        // 设置猪初始位置
-        Vec2 newpig_tilePos = Vec2(initialPosition);
-        Vec2 newpig_worldPos = _gameMap->convertToWorldCoord(newpig_tilePos);
-        newPig->setPosition(newpig_worldPos);
-        newPig->setPath(path); // 设置路径
-        this->addChild(newPig, 1); // 将猪添加到场景中
-        pigs.push_back(newPig); // 将新猪添加到向量中
-        CCLOG("Pig created successfully at position: (%.1f, %.1f)", newPig->getPosition().x, newPig->getPosition().y);
-    }
-    else {
-        CCLOG("Failed to create Pig instance.");
-        return;
-    }
-}
-// 重载 createPig 方法，用于创建静止猪
-void GameScene::createPig(const Vec2& initialPosition)
-{
-    Pig* staticPig = Pig::create(); // 创建新的猪实例
-    if (staticPig) {
-        staticPig->setPosition(initialPosition); // 设置初始位置
-        // 设置猪初始位置
-        Vec2 staticpig_tilePos = Vec2(initialPosition);
-        Vec2 staticpig_worldPos = _gameMap->convertToWorldCoord(staticpig_tilePos);
-        staticPig->setPosition(staticpig_worldPos);
-        this->addChild(staticPig, 1); // 将静止猪添加到场景中
-        pigs.push_back(staticPig); // 将静止猪添加到向量中
-        staticPig->staticAnimation(); // 播放静止动画
-        CCLOG("Static pig created at position: (%.1f, %.1f)", staticPig->getPosition().x, staticPig->getPosition().y);
-    }
-    else {
-        CCLOG("Failed to create static Pig instance.");
-        return;
-    }
+    CC_SAFE_FREE(_trianglesVertex);
+    CC_SAFE_FREE(_trianglesIndex);
+    CC_SAFE_RELEASE(_spriteFrame);
+    CC_SAFE_RELEASE(_texture);
 }
 
-void GameScene::initPig()
-{
-    isPigCreated = true; // 设置标志为已创建
-    // 创建第一只猪
-    Vec2 movePig1Path1_tilePos = Vec2(11, 14);
-    Vec2 movePig1Path2_tilePos = Vec2(11, 18);
-
-    Vec2 movePig1Path1_worldPos = _gameMap->convertToWorldCoord(movePig1Path1_tilePos);
-    Vec2 movePig1Path2_worldPos = _gameMap->convertToWorldCoord(movePig1Path2_tilePos);
-    std::vector<Vec2> pig1Path = { movePig1Path1_worldPos,movePig1Path2_worldPos };
-    createPig(Vec2(11, 16), pig1Path); // 第一只猪的位置和路径
-
-    // 创建第二只猪
-    Vec2 movePig2Path1_tilePos = Vec2(6, 14);
-    Vec2 movePig2Path2_tilePos = Vec2(10, 14);
-
-    Vec2 movePig2Path1_worldPos = _gameMap->convertToWorldCoord(movePig2Path1_tilePos);
-    Vec2 movePig2Path2_worldPos = _gameMap->convertToWorldCoord(movePig2Path2_tilePos);
-    std::vector<Vec2> pig2Path = { movePig2Path1_worldPos,movePig2Path2_worldPos };
-    createPig(Vec2(9, 14), pig2Path); // 第二只猪的位置和路径
-
-    // 创建第三只猪
-    Vec2 movePig3Path1_tilePos = Vec2(14, 19);
-    Vec2 movePig3Path2_tilePos = Vec2(14, 17);
-
-    Vec2 movePig3Path1_worldPos = _gameMap->convertToWorldCoord(movePig3Path1_tilePos);
-    Vec2 movePig3Path2_worldPos = _gameMap->convertToWorldCoord(movePig3Path2_tilePos);
-    std::vector<Vec2> pig3Path = { movePig3Path1_worldPos,movePig3Path2_worldPos };
-    createPig(Vec2(14, 18), pig3Path); // 第三只猪的位置和路径
-
-    // 创建第四只猪，保持静止
-    createPig(Vec2(13, 13)); // 第四只猪的位置
-}
-
-void GameScene::createChicken(const Vec2& initialPosition, const std::vector<Vec2>& path)
-{
-    Chicken* newChicken = Chicken::create(); // 创建新的鸡实例
-    if (newChicken) {
-        newChicken->setPosition(initialPosition); // 设置初始位置
-        // 设置鸡初始位置
-        Vec2 newChicken_tilePos = Vec2(initialPosition);
-        Vec2 newChicken_worldPos = _gameMap->convertToWorldCoord(newChicken_tilePos);
-        newChicken->setPosition(newChicken_worldPos);
-        newChicken->setPath(path); // 设置路径
-        this->addChild(newChicken, 1); // 将鸡添加到场景中
-        chickens.push_back(newChicken); // 将新鸡添加到向量中
-        CCLOG("Chicken created successfully at position: (%.1f, %.1f)", newChicken->getPosition().x, newChicken->getPosition().y);
-    }
-    else {
-        CCLOG("Failed to create Chicken instance.");
-        return;
-    }
-}
-// 重载 createPig 方法，用于创建静止鸡
-void GameScene::createChicken(const Vec2& initialPosition)
-{
-    Chicken* staticChicken = Chicken::create(); // 创建新的鸡实例
-    if (staticChicken) {
-        staticChicken->setPosition(initialPosition); // 设置初始位置
-        // 设置鸡初始位置
-        Vec2 staticChicken_tilePos = Vec2(initialPosition);
-        Vec2 staticChicken_worldPos = _gameMap->convertToWorldCoord(staticChicken_tilePos);
-        staticChicken->setPosition(staticChicken_worldPos);
-        this->addChild(staticChicken, 1); // 将静止猪\鸡添加到场景中
-        chickens.push_back(staticChicken); // 将静止猪添加到向量中
-        staticChicken->staticAnimation(); // 播放静止动画
-        CCLOG("Static chicken created at position: (%.1f, %.1f)", staticChicken->getPosition().x, staticChicken->getPosition().y);
-    }
-    else {
-        CCLOG("Failed to create static Chicken instance.");
-        return;
-    }
-}
-
-void GameScene::initChicken()
-{
-    isChickenCreated = true; // 设置标志为已创建
-    // 创建第一只鸡
-    Vec2 moveChicken1Path1_tilePos = Vec2(26, 16);
-    Vec2 moveChicken1Path2_tilePos = Vec2(30, 16);
-
-    Vec2 moveChicken1Path1_worldPos = _gameMap->convertToWorldCoord(moveChicken1Path1_tilePos);
-    Vec2 moveChicken1Path2_worldPos = _gameMap->convertToWorldCoord(moveChicken1Path2_tilePos);
-    std::vector<Vec2> Chicken1Path = { moveChicken1Path1_worldPos,moveChicken1Path2_worldPos };
-    createChicken(Vec2(28, 16), Chicken1Path); // 第一只鸡的位置和路径
-
-    // 创建第二只鸡，保持静止
-    createChicken(Vec2(30, 13)); // 第二只鸡的位置
-}
-
-void GameScene::createSheep(const Vec2& initialPosition, const std::vector<Vec2>& path)
-{
-    Sheep* newSheep = Sheep::create(); // 创建新的羊实例
-    if (newSheep) {
-        newSheep->setPosition(initialPosition); // 设置初始位置
-        // 设置羊初始位置
-        Vec2 newSheep_tilePos = Vec2(initialPosition);
-        Vec2 newSheep_worldPos = _gameMap->convertToWorldCoord(newSheep_tilePos);
-        newSheep->setPosition(newSheep_worldPos);
-        newSheep->setPath(path); // 设置路径
-        this->addChild(newSheep, 1); // 将羊添加到场景中
-        sheeps.push_back(newSheep); // 将新羊添加到向量中
-        CCLOG("Sheep created successfully at position: (%.1f, %.1f)", newSheep->getPosition().x, newSheep->getPosition().y);
-    }
-    else {
-        CCLOG("Failed to create Sheep instance.");
-        return;
-    }
-}
-// 重载 createSheep 方法，用于创建静止羊
-void GameScene::createSheep(const Vec2& initialPosition)
-{
-    Sheep* staticSheep = Sheep::create(); // 创建新的羊实例
-    if (staticSheep) {
-        staticSheep->setPosition(initialPosition); // 设置初始位置
-        // 设置羊初始位置
-        Vec2 staticSheep_tilePos = Vec2(initialPosition);
-        Vec2 staticSheep_worldPos = _gameMap->convertToWorldCoord(staticSheep_tilePos);
-        staticSheep->setPosition(staticSheep_worldPos);
-        this->addChild(staticSheep, 1); // 将静止羊添加到场景中
-        sheeps.push_back(staticSheep); // 将静止羊添加到向量中
-        staticSheep->staticAnimation(); // 播放静止动画
-        CCLOG("Static sheep created at position: (%.1f, %.1f)", staticSheep->getPosition().x, staticSheep->getPosition().y);
-    }
-    else {
-        CCLOG("Failed to create static Sheep instance.");
-        return;
-    }
-}
-
-void GameScene::initSheep()
-{
-    isSheepCreated = true; // 设置标志为已创建
-    // 创建第一只羊
-    Vec2 moveSheep1Path1_tilePos = Vec2(28, 17);
-    Vec2 moveSheep1Path2_tilePos = Vec2(28, 22);
-
-    Vec2 moveSheep1Path1_worldPos = _gameMap->convertToWorldCoord(moveSheep1Path1_tilePos);
-    Vec2 moveSheep1Path2_worldPos = _gameMap->convertToWorldCoord(moveSheep1Path2_tilePos);
-    std::vector<Vec2> sheep1Path = { moveSheep1Path1_worldPos,moveSheep1Path2_worldPos };
-    createSheep(Vec2(28, 20), sheep1Path); // 第一只羊的位置和路径
-
-    // 创建第二只羊
-    Vec2 moveSheep2Path1_tilePos = Vec2(23, 19);
-    Vec2 moveSheep2Path2_tilePos = Vec2(27, 19);
-
-    Vec2 moveSheep2Path1_worldPos = _gameMap->convertToWorldCoord(moveSheep2Path1_tilePos);
-    Vec2 moveSheep2Path2_worldPos = _gameMap->convertToWorldCoord(moveSheep2Path2_tilePos);
-    std::vector<Vec2> sheep2Path = { moveSheep2Path1_worldPos,moveSheep2Path2_worldPos };
-    createSheep(Vec2(26, 19), sheep2Path); // 第二只羊的位置和路径
-
-    // 创建第三只羊，保持静止
-    createSheep(Vec2(26, 23)); // 第三只羊的位置
-}
 /*
- * 初始化宝箱
- * 功能：在地图上创建宝箱
+ * Texture methods
  */
-void GameScene::initChests()
+
+/*
+ * This array is the data of a white image with 2 by 2 dimension.
+ * It's used for creating a default texture when sprite's texture is set to nullptr.
+ * Supposing codes as follows:
+ *
+ *   auto sp = new (std::nothrow) Sprite();
+ *   sp->init();  // Texture was set to nullptr, in order to make opacity and color to work correctly, we need to create a 2x2 white texture.
+ *
+ * The test is in "TestCpp/SpriteTest/Sprite without texture".
+ */
+static unsigned char cc_2x2_white_image[] = {
+    // RGBA8888
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF
+};
+
+#define CC_2x2_WHITE_IMAGE_KEY  "/cc_2x2_white_image"
+
+// MARK: texture
+void Sprite::setTexture(const std::string &filename)
 {
-    if (!_gameMap) {
-        CCLOG("GameMap is null");
-        return;
-    }
+    Texture2D *texture = Director::getInstance()->getTextureCache()->addImage(filename);
+    setTexture(texture);
+    _unflippedOffsetPositionFromCenter = Vec2::ZERO;
+    Rect rect = Rect::ZERO;
+    if (texture)
+        rect.size = texture->getContentSize();
+    setTextureRect(rect);
+}
 
-    auto objectGroup = _gameMap->getTileMap()->getObjectGroup("Chest");
-    if (!objectGroup) {
-        CCLOG("Failed to get Chest object group in map: %s", _gameMap->getMapName().c_str());
-        return;
-    }
-
-    // 获取所有宝箱对象
-    auto& objects = objectGroup->getObjects();
-    CCLOG("Found %d chest objects in map: %s", (int)objects.size(), _gameMap->getMapName().c_str());
-
-    for (auto& obj : objects)
+void Sprite::setTexture(Texture2D *texture)
+{
+    if(_glProgramState == nullptr)
     {
-        auto& dict = obj.asValueMap();
-        float x = dict["x"].asFloat();
-        float y = dict["y"].asFloat();
+        setGLProgramState(GLProgramState::getOrCreateWithGLProgramName(GLProgram::SHADER_NAME_POSITION_TEXTURE_COLOR_NO_MVP, texture));
+    }
+    // If batchnode, then texture id should be the same
+    CCASSERT(! _batchNode || (texture &&  texture->getName() == _batchNode->getTexture()->getName()), "CCSprite: Batched sprites should use the same texture as the batchnode");
+    // accept texture==nil as argument
+    CCASSERT( !texture || dynamic_cast<Texture2D*>(texture), "setTexture expects a Texture2D. Invalid argument");
 
-        // 创建宝箱
-        auto chest = Chest::create();
-        if (chest)
+    if (texture == nullptr)
+    {
+        // Gets the texture by key firstly.
+        texture = _director->getTextureCache()->getTextureForKey(CC_2x2_WHITE_IMAGE_KEY);
+
+        // If texture wasn't in cache, create it from RAW data.
+        if (texture == nullptr)
         {
-            // 获取地图的瓦片大小和缩放比例
-            Size tileSize = _gameMap->getTileMap()->getTileSize();
-            float scale = _gameMap->getTileMap()->getScale();
+            Image* image = new (std::nothrow) Image();
+            bool CC_UNUSED isOK = image->initWithRawData(cc_2x2_white_image, sizeof(cc_2x2_white_image), 2, 2, 8);
+            CCASSERT(isOK, "The 2x2 empty texture was created unsuccessfully.");
 
-            // 将 Tiled 对象坐标转换为瓦片坐标
-            float tileX = x / tileSize.width;
-            float tileY = y / tileSize.height;
-
-            CCLOG("Converting chest position: Tiled(%.1f, %.1f) -> Tile(%.1f, %.1f)",
-                x, y, tileX, tileY);
-
-            // 使用 GameMap 的转换方法获取世界坐标
-            Vec2 worldPos = _gameMap->convertToWorldCoord(Vec2(tileX, tileY));
-
-            chest->setPosition(worldPos);
-            chest->setScale(2.0f);
-            chest->initTouchEvents();
-
-            // 添加到场景
-            this->addChild(chest, 1);
-            _chests.push_back(chest);
-            
-
-            CCLOG("Placed chest at world position (%.1f, %.1f)", worldPos.x, worldPos.y);
+            texture = _director->getTextureCache()->addImage(image, CC_2x2_WHITE_IMAGE_KEY);
+            CC_SAFE_RELEASE(image);
         }
+    }
+
+    if (_renderMode != RenderMode::QUAD_BATCHNODE)
+    {
+        if (_texture != texture)
+        {
+            CC_SAFE_RETAIN(texture);
+            CC_SAFE_RELEASE(_texture);
+            _texture = texture;
+        }
+        updateBlendFunc();
     }
 }
 
-void GameScene::clearChests()
+Texture2D* Sprite::getTexture() const
 {
-    for (auto chest : _chests) {
-        if (chest) {
-            chest->removeFromParent();
+    return _texture;
+}
+
+void Sprite::setTextureRect(const Rect& rect)
+{
+    setTextureRect(rect, false, rect.size);
+}
+
+void Sprite::setTextureRect(const Rect& rect, bool rotated, const Size& untrimmedSize)
+{
+    _rectRotated = rotated;
+
+    Node::setContentSize(untrimmedSize);
+    _originalContentSize = untrimmedSize;
+
+    setVertexRect(rect);
+    updateStretchFactor();
+    updatePoly();
+}
+
+void Sprite::updatePoly()
+{
+    // There are 3 cases:
+    //
+    // A) a non 9-sliced, non stretched
+    //    contentsize doesn't not affect the stretching, since there is no stretching
+    //    this was the original behavior, and we keep it for backwards compatibility reasons
+    //    When non-stretching is enabled, we have to change the offset in order to "fill the empty" space at the
+    //    left-top of the texture
+    // B) non 9-sliced, stretched
+    //    the texture is stretched to the content size
+    // C) 9-sliced, stretched
+    //    the sprite is 9-sliced and stretched.
+    if (_renderMode == RenderMode::QUAD || _renderMode == RenderMode::QUAD_BATCHNODE) {
+        Rect copyRect;
+        if (_stretchEnabled) {
+            // case B)
+            copyRect = Rect(0, 0, _rect.size.width * _stretchFactor.x, _rect.size.height * _stretchFactor.y);
+        } else {
+            // case A)
+            // modify origin to put the sprite in the correct offset
+            copyRect = Rect((_contentSize.width - _originalContentSize.width) / 2.0f,
+                            (_contentSize.height - _originalContentSize.height) / 2.0f,
+                            _rect.size.width,
+                            _rect.size.height);
+        }
+        setTextureCoords(_rect, &_quad);
+        setVertexCoords(copyRect, &_quad);
+        _polyInfo.setQuad(&_quad);
+
+    } else if (_renderMode == RenderMode::SLICE9) {
+        // case C)
+
+        // How the texture is split
+        //
+        //  u,v: are the texture coordinates
+        //  w,h: are the width and heights
+        //
+        //      w0    w1   w2
+        // v2 +----+------+--+
+        //    |    |      |  |
+        //    |    |      |  |
+        //    | 6  |   7  | 8|  h2
+        //    |    |      |  |
+        // v1 +----+------+--|
+        //    |    |      |  |
+        //    | 3  |   4  | 5|  h1
+        // v0 +----+------+--|
+        //    |    |      |  |
+        //    | 0  |   1  | 2|  h0
+        //    |    |      |  |
+        //    +----+------+--+
+        //    u0   u1    u2
+        //
+        //
+        //  and when the texture is rotated, it will get transformed.
+        //  not only the rects have a different position, but also u,v
+        //  points to the bottom-left and not top-right of the texture
+        //  so some swaping/origin/reordering needs to be done in order
+        //  to support rotated slice-9 correctly
+        //
+        //       w0    w1     w2
+        // v2 +------+----+--------+
+        //    |      |    |        |
+        //    |   0  |  3 |    6   | h2
+        // v1 +------+----+--------+
+        //    |      |    |        |
+        //    |   1  |  4 |    7   | h1
+        //    |      |    |        |
+        // v0 +------+----+--------+
+        //    |   2  |  5 |    8   | h0
+        //    +------+----+--------+
+        //    u0      u1     u2
+
+
+        // center rect
+        float cx1 = _centerRectNormalized.origin.x;
+        float cy1 = _centerRectNormalized.origin.y;
+        float cx2 = _centerRectNormalized.origin.x + _centerRectNormalized.size.width;
+        float cy2 = _centerRectNormalized.origin.y + _centerRectNormalized.size.height;
+
+        // "O"riginal rect
+        const float oox = _rect.origin.x;
+        const float ooy = _rect.origin.y;
+        float osw = _rect.size.width;
+        float osh = _rect.size.height;
+
+        if (_rectRotated) {
+            std::swap(cx1, cy1);
+            std::swap(cx2, cy2);
+
+            // when the texture is rotated, then the centerRect starts from the "bottom" (left)
+            // but when it is not rotated, it starts from the top, so invert it
+            cy2 = 1 - cy2;
+            cy1 = 1 - cy1;
+            std::swap(cy1, cy2);
+            std::swap(osw, osh);
+        }
+
+        //
+        // textCoords Data: Y must be inverted.
+        //
+        const float w0 = osw * cx1;
+        const float w1 = osw * (cx2-cx1);
+        const float w2 = osw * (1-cx2);
+        const float h0 = osh * cy1;
+        const float h1 = osh * (cy2-cy1);
+        const float h2 = osh * (1-cy2);
+
+        const float u0 = oox;
+        const float u1 = u0 + w0;
+        const float u2 = u1 + w1;
+        const float v2 = ooy;
+        const float v1 = v2 + h2;
+        const float v0 = v1 + h1;
+
+
+        const Rect texRects_normal[9] = {
+            Rect(u0, v0,    w0, h0),   // bottom-left
+            Rect(u1, v0,    w1, h0),   // bottom
+            Rect(u2, v0,    w2, h0),   // bottom-right
+
+            Rect(u0, v1,    w0, h1),   // left
+            Rect(u1, v1,    w1, h1),   // center
+            Rect(u2, v1,    w2, h1),   // right
+
+            Rect(u0, v2,    w0, h2),   // top-left
+            Rect(u1, v2,    w1, h2),   // top
+            Rect(u2, v2,    w2, h2),   // top-right
+        };
+
+        // swap width and height because setTextureCoords()
+        // will expects the hight and width to be swapped
+        const Rect texRects_rotated[9] = {
+            Rect(u0, v2,    h2, w0),        // top-left
+            Rect(u0, v1,    h1, w0),        // left
+            Rect(u0, v0,    h0, w0),        // bottom-left
+
+            Rect(u1, v2,    h2, w1),        // top
+            Rect(u1, v1,    h1, w1),        // center
+            Rect(u1, v0,    h0, w1),        // bottom
+
+            Rect(u2, v2,    h2, w2),        // top-right
+            Rect(u2, v1,    h1, w2),        // right
+            Rect(u2, v0,    h0, w2),        // bottom-right
+        };
+
+        const Rect* texRects = _rectRotated ? texRects_rotated : texRects_normal;
+
+        //
+        // vertex Data.
+        //
+
+        // reset center rect since it is altered when when the texture
+        // is rotated
+        cx1 = _centerRectNormalized.origin.x;
+        cy1 = _centerRectNormalized.origin.y;
+        cx2 = _centerRectNormalized.origin.x + _centerRectNormalized.size.width;
+        cy2 = _centerRectNormalized.origin.y + _centerRectNormalized.size.height;
+        if (_rectRotated)
+            std::swap(osw, osh);
+
+        // sizes
+        float x0_s = osw * cx1;
+        float x1_s = osw * (cx2-cx1) * _stretchFactor.x;
+        float x2_s = osw * (1-cx2);
+        float y0_s = osh * cy1;
+        float y1_s = osh * (cy2-cy1) * _stretchFactor.y;
+        float y2_s = osh * (1-cy2);
+
+
+        // avoid negative size:
+        if (_contentSize.width < x0_s + x2_s) {
+            x2_s = x0_s = _contentSize.width / 2;
+        }
+
+        if  (_contentSize.height < y0_s + y2_s) {
+            y2_s = y0_s = _contentSize.height / 2;
+        }
+
+
+        // is it flipped?
+        // swap sizes to calculate offset correctly
+        if (_flippedX)
+            std::swap(x0_s, x2_s);
+        if (_flippedY)
+            std::swap(y0_s, y2_s);
+
+        // origins
+        float x0 = 0;
+        float x1 = x0 + x0_s;
+        float x2 = x1 + x1_s;
+        float y0 = 0;
+        float y1 = y0 + y0_s;
+        float y2 = y1 + y1_s;
+
+        // swap origin, but restore size to its original value
+        if (_flippedX) {
+            std::swap(x0, x2);
+            std::swap(x0_s, x2_s);
+        }
+        if (_flippedY) {
+            std::swap(y0, y2);
+            std::swap(y0_s, y2_s);
+        }
+
+        const Rect verticesRects[9] = {
+            Rect(x0, y0,  x0_s, y0_s),      // bottom-left
+            Rect(x1, y0,  x1_s, y0_s),      // bottom
+            Rect(x2, y0,  x2_s, y0_s),      // bottom-right
+
+            Rect(x0, y1,  x0_s, y1_s),      // left
+            Rect(x1, y1,  x1_s, y1_s),      // center
+            Rect(x2, y1,  x2_s, y1_s),      // right
+
+            Rect(x0, y2,  x0_s, y2_s),      // top-left
+            Rect(x1, y2,  x1_s, y2_s),      // top
+            Rect(x2, y2,  x2_s, y2_s),      // top-right
+        };
+
+        // needed in order to get color from "_quad"
+        V3F_C4B_T2F_Quad tmpQuad = _quad;
+
+        for (int i=0; i<9; ++i) {
+            setTextureCoords(texRects[i], &tmpQuad);
+            setVertexCoords(verticesRects[i], &tmpQuad);
+            populateTriangle(i, tmpQuad);
+        }
+        TrianglesCommand::Triangles triangles;
+        triangles.verts = _trianglesVertex;
+        triangles.vertCount = 16;
+        triangles.indices = _trianglesIndex;
+        triangles.indexCount = 6 * 9;   // 9 quads, each needs 6 vertices
+
+        // probably we can update the _trianglesCommand directly
+        // to avoid memcpy'ing stuff
+        _polyInfo.setTriangles(triangles);
+    }
+}
+
+void Sprite::setCenterRectNormalized(const cocos2d::Rect &rectTopLeft)
+{
+    if (_renderMode != RenderMode::QUAD && _renderMode != RenderMode::SLICE9) {
+        CCLOGWARN("Warning: Sprite::setCenterRectNormalized() only works with QUAD and SLICE9 render modes");
+        return;
+    }
+
+    // FIMXE: Rect is has origin on top-left (like text coordinate).
+    // but all the logic has been done using bottom-left as origin. So it is easier to invert Y
+    // here, than in the rest of the places... but it is not as clean.
+    Rect rect(rectTopLeft.origin.x, 1 - rectTopLeft.origin.y - rectTopLeft.size.height, rectTopLeft.size.width, rectTopLeft.size.height);
+    if (!_centerRectNormalized.equals(rect)) {
+        _centerRectNormalized = rect;
+
+        // convert it to 1-slice when the centerRect is not present.
+        if (rect.equals(Rect(0,0,1,1))) {
+            _renderMode = RenderMode::QUAD;
+            free(_trianglesVertex);
+            free(_trianglesIndex);
+            _trianglesVertex = nullptr;
+            _trianglesIndex = nullptr;
+        }
+        else
+        {
+            // convert it to 9-slice if it isn't already
+            if (_renderMode != RenderMode::SLICE9) {
+                _renderMode = RenderMode::SLICE9;
+                // 9 quads + 7 exterior points = 16
+                _trianglesVertex = (V3F_C4B_T2F*) malloc(sizeof(*_trianglesVertex) * (9 + 3 + 4));
+                // 9 quads, each needs 6 vertices = 54
+                _trianglesIndex = (unsigned short*) malloc(sizeof(*_trianglesIndex) * 6 * 9);
+
+                // populate indices in CCW direction
+                for (int i=0; i<9; ++i) {
+                    _trianglesIndex[i * 6 + 0] = (i * 4 / 3) + 4;
+                    _trianglesIndex[i * 6 + 1] = (i * 4 / 3) + 0;
+                    _trianglesIndex[i * 6 + 2] = (i * 4 / 3) + 5;
+                    _trianglesIndex[i * 6 + 3] = (i * 4 / 3) + 1;
+                    _trianglesIndex[i * 6 + 4] = (i * 4 / 3) + 5;
+                    _trianglesIndex[i * 6 + 5] = (i * 4 / 3) + 0;
+                }
+            }
+        }
+
+        updateStretchFactor();
+        updatePoly();
+        updateColor();
+    }
+}
+
+void Sprite::setCenterRect(const cocos2d::Rect &rectInPoints)
+{
+    if (_renderMode != RenderMode::QUAD && _renderMode != RenderMode::SLICE9) {
+        CCLOGWARN("Warning: Sprite::setCenterRect() only works with QUAD and SLICE9 render modes");
+        return;
+    }
+
+    if (!_originalContentSize.equals(Size::ZERO))
+    {
+        Rect rect = rectInPoints;
+
+        const float x = rect.origin.x / _rect.size.width;
+        const float y = rect.origin.y / _rect.size.height;
+        const float w = rect.size.width / _rect.size.width;
+        const float h = rect.size.height / _rect.size.height;
+        setCenterRectNormalized(Rect(x,y,w,h));
+    }
+}
+
+Rect Sprite::getCenterRectNormalized() const
+{
+    // FIXME: _centerRectNormalized is in bottom-left coords, but should converted to top-left
+    Rect ret(_centerRectNormalized.origin.x,
+             1 - _centerRectNormalized.origin.y - _centerRectNormalized.size.height,
+             _centerRectNormalized.size.width,
+             _centerRectNormalized.size.height);
+    return ret;
+}
+
+Rect Sprite::getCenterRect() const
+{
+    Rect rect = getCenterRectNormalized();
+    rect.origin.x *= _rect.size.width;
+    rect.origin.y *= _rect.size.height;
+    rect.size.width *= _rect.size.width;
+    rect.size.height *= _rect.size.height;
+    return rect;
+}
+
+// override this method to generate "double scale" sprites
+void Sprite::setVertexRect(const Rect& rect)
+{
+    _rect = rect;
+}
+
+void Sprite::setTextureCoords(const Rect& rectInPoints)
+{
+    setTextureCoords(rectInPoints, &_quad);
+}
+
+void Sprite::setTextureCoords(const Rect& rectInPoints, V3F_C4B_T2F_Quad* outQuad)
+{
+    Texture2D *tex = (_renderMode == RenderMode::QUAD_BATCHNODE) ? _textureAtlas->getTexture() : _texture;
+    if (tex == nullptr)
+    {
+        return;
+    }
+
+    const auto rectInPixels = CC_RECT_POINTS_TO_PIXELS(rectInPoints);
+
+    const float atlasWidth = (float)tex->getPixelsWide();
+    const float atlasHeight = (float)tex->getPixelsHigh();
+
+    float rw = rectInPixels.size.width;
+    float rh = rectInPixels.size.height;
+
+    // if the rect is rotated, it means that the frame is rotated 90 degrees (clockwise) and:
+    //  - rectInpoints: origin will be the bottom-left of the frame (and not the top-right)
+    //  - size: represents the unrotated texture size
+    //
+    // so what we have to do is:
+    //  - swap texture width and height
+    //  - take into account the origin
+    //  - flip X instead of Y when flipY is enabled
+    //  - flip Y instead of X when flipX is enabled
+
+    if (_rectRotated)
+        std::swap(rw, rh);
+
+#if CC_FIX_ARTIFACTS_BY_STRECHING_TEXEL
+    float left    = (2*rectInPixels.origin.x+1) / (2*atlasWidth);
+    float right   = left+(rw*2-2) / (2*atlasWidth);
+    float top     = (2*rectInPixels.origin.y+1) / (2*atlasHeight);
+    float bottom  = top+(rh*2-2) / (2*atlasHeight);
+#else
+    float left    = rectInPixels.origin.x / atlasWidth;
+    float right   = (rectInPixels.origin.x + rw) / atlasWidth;
+    float top     = rectInPixels.origin.y / atlasHeight;
+    float bottom  = (rectInPixels.origin.y + rh) / atlasHeight;
+#endif // CC_FIX_ARTIFACTS_BY_STRECHING_TEXEL
+
+
+    if ((!_rectRotated && _flippedX) || (_rectRotated && _flippedY))
+    {
+        std::swap(left, right);
+    }
+
+    if ((!_rectRotated && _flippedY) || (_rectRotated && _flippedX))
+    {
+        std::swap(top, bottom);
+    }
+
+    if (_rectRotated)
+    {
+        outQuad->bl.texCoords.u = left;
+        outQuad->bl.texCoords.v = top;
+        outQuad->br.texCoords.u = left;
+        outQuad->br.texCoords.v = bottom;
+        outQuad->tl.texCoords.u = right;
+        outQuad->tl.texCoords.v = top;
+        outQuad->tr.texCoords.u = right;
+        outQuad->tr.texCoords.v = bottom;
+    }
+    else
+    {
+        outQuad->bl.texCoords.u = left;
+        outQuad->bl.texCoords.v = bottom;
+        outQuad->br.texCoords.u = right;
+        outQuad->br.texCoords.v = bottom;
+        outQuad->tl.texCoords.u = left;
+        outQuad->tl.texCoords.v = top;
+        outQuad->tr.texCoords.u = right;
+        outQuad->tr.texCoords.v = top;
+    }
+}
+
+void Sprite::setVertexCoords(const Rect& rect, V3F_C4B_T2F_Quad* outQuad)
+{
+    float relativeOffsetX = _unflippedOffsetPositionFromCenter.x;
+    float relativeOffsetY = _unflippedOffsetPositionFromCenter.y;
+
+    // issue #732
+    if (_flippedX)
+    {
+        relativeOffsetX = -relativeOffsetX;
+    }
+    if (_flippedY)
+    {
+        relativeOffsetY = -relativeOffsetY;
+    }
+
+    _offsetPosition.x = relativeOffsetX + (_originalContentSize.width - _rect.size.width) / 2;
+    _offsetPosition.y = relativeOffsetY + (_originalContentSize.height - _rect.size.height) / 2;
+
+    // FIXME: Stretching should be applied to the "offset" as well
+    // but probably it should be calculated in the caller function. It will be tidier
+    if (_renderMode == RenderMode::QUAD) {
+        _offsetPosition.x *= _stretchFactor.x;
+        _offsetPosition.y *= _stretchFactor.y;
+    }
+
+    // rendering using batch node
+    if (_renderMode == RenderMode::QUAD_BATCHNODE)
+    {
+        // update dirty_, don't update recursiveDirty_
+        setDirty(true);
+    }
+    else
+    {
+        // self rendering
+
+        // Atlas: Vertex
+        const float x1 = 0.0f + _offsetPosition.x + rect.origin.x;
+        const float y1 = 0.0f + _offsetPosition.y + rect.origin.y;
+        const float x2 = x1 + rect.size.width;
+        const float y2 = y1 + rect.size.height;
+
+        // Don't update Z.
+        outQuad->bl.vertices.set(x1, y1, 0.0f);
+        outQuad->br.vertices.set(x2, y1, 0.0f);
+        outQuad->tl.vertices.set(x1, y2, 0.0f);
+        outQuad->tr.vertices.set(x2, y2, 0.0f);
+    }
+}
+
+void Sprite::populateTriangle(int quadIndex, const V3F_C4B_T2F_Quad& quad)
+{
+    CCASSERT(quadIndex < 9, "Invalid quadIndex");
+    // convert Quad intro Triangle since it takes less memory
+
+    // Triangles are ordered like the following:
+    //   Numbers: Quad Index
+    //   Letters: triangles' vertices
+    //
+    //  M-----N-----O-----P
+    //  |     |     |     |
+    //  |  6  |  7  |  8  |
+    //  |     |     |     |
+    //  I-----J-----K-----L
+    //  |     |     |     |
+    //  |  3  |  4  |  5  |
+    //  |     |     |     |
+    //  E-----F-----G-----H
+    //  |     |     |     |
+    //  |  0  |  1  |  2  |
+    //  |     |     |     |
+    //  A-----B-----C-----D
+    //
+    // So, if QuadIndex == 4, then it should update vertices J,K,F,G
+
+    // Optimization: I don't need to copy all the vertices all the time. just the 4 "quads" from the corners.
+    if (quadIndex == 0 || quadIndex == 2 || quadIndex == 6 || quadIndex == 8)
+    {
+        if (_flippedX) {
+            if (quadIndex % 3 == 0)
+                quadIndex += 2;
+            else
+                quadIndex -= 2;
+        }
+
+        if (_flippedY) {
+            if (quadIndex <= 2)
+                quadIndex += 6;
+            else
+                quadIndex -= 6;
+        }
+
+        const int index_bl = quadIndex * 4 / 3;
+        const int index_br = index_bl + 1;
+        const int index_tl = index_bl + 4;
+        const int index_tr = index_bl + 5;
+        
+
+        _trianglesVertex[index_tr] = quad.tr;
+        _trianglesVertex[index_br] = quad.br;
+        _trianglesVertex[index_tl] = quad.tl;
+        _trianglesVertex[index_bl] = quad.bl;
+    }
+}
+
+
+// MARK: visit, draw, transform
+
+void Sprite::updateTransform(void)
+{
+    CCASSERT(_renderMode == RenderMode::QUAD_BATCHNODE, "updateTransform is only valid when Sprite is being rendered using an SpriteBatchNode");
+
+    // recalculate matrix only if it is dirty
+    if( isDirty() ) {
+
+        // If it is not visible, or one of its ancestors is not visible, then do nothing:
+        if( !_visible || ( _parent && _parent != _batchNode && static_cast<Sprite*>(_parent)->_shouldBeHidden) )
+        {
+            _quad.br.vertices.setZero();
+            _quad.tl.vertices.setZero();
+            _quad.tr.vertices.setZero();
+            _quad.bl.vertices.setZero();
+            _shouldBeHidden = true;
+        }
+        else
+        {
+            _shouldBeHidden = false;
+
+            if( ! _parent || _parent == _batchNode )
+            {
+                _transformToBatch = getNodeToParentTransform();
+            }
+            else
+            {
+                CCASSERT( dynamic_cast<Sprite*>(_parent), "Logic error in Sprite. Parent must be a Sprite");
+                const Mat4 &nodeToParent = getNodeToParentTransform();
+                Mat4 &parentTransform = static_cast<Sprite*>(_parent)->_transformToBatch;
+                _transformToBatch = parentTransform * nodeToParent;
+            }
+
+            //
+            // calculate the Quad based on the Affine Matrix
+            //
+
+            Size &size = _rect.size;
+
+            float x1 = _offsetPosition.x;
+            float y1 = _offsetPosition.y;
+
+            float x2 = x1 + size.width;
+            float y2 = y1 + size.height;
+
+            float x = _transformToBatch.m[12];
+            float y = _transformToBatch.m[13];
+
+            float cr = _transformToBatch.m[0];
+            float sr = _transformToBatch.m[1];
+            float cr2 = _transformToBatch.m[5];
+            float sr2 = -_transformToBatch.m[4];
+            float ax = x1 * cr - y1 * sr2 + x;
+            float ay = x1 * sr + y1 * cr2 + y;
+
+            float bx = x2 * cr - y1 * sr2 + x;
+            float by = x2 * sr + y1 * cr2 + y;
+
+            float cx = x2 * cr - y2 * sr2 + x;
+            float cy = x2 * sr + y2 * cr2 + y;
+
+            float dx = x1 * cr - y2 * sr2 + x;
+            float dy = x1 * sr + y2 * cr2 + y;
+
+            _quad.bl.vertices.set(SPRITE_RENDER_IN_SUBPIXEL(ax), SPRITE_RENDER_IN_SUBPIXEL(ay), _positionZ);
+            _quad.br.vertices.set(SPRITE_RENDER_IN_SUBPIXEL(bx), SPRITE_RENDER_IN_SUBPIXEL(by), _positionZ);
+            _quad.tl.vertices.set(SPRITE_RENDER_IN_SUBPIXEL(dx), SPRITE_RENDER_IN_SUBPIXEL(dy), _positionZ);
+            _quad.tr.vertices.set(SPRITE_RENDER_IN_SUBPIXEL(cx), SPRITE_RENDER_IN_SUBPIXEL(cy), _positionZ);
+            setTextureCoords(_rect);
+        }
+
+        // MARMALADE CHANGE: ADDED CHECK FOR nullptr, TO PERMIT SPRITES WITH NO BATCH NODE / TEXTURE ATLAS
+        if (_textureAtlas)
+        {
+            _textureAtlas->updateQuad(&_quad, _atlasIndex);
+        }
+
+        _recursiveDirty = false;
+        setDirty(false);
+    }
+
+    // MARMALADE CHANGED
+    // recursively iterate over children
+/*    if( _hasChildren )
+    {
+        // MARMALADE: CHANGED TO USE Node*
+        // NOTE THAT WE HAVE ALSO DEFINED virtual Node::updateTransform()
+        arrayMakeObjectsPerformSelector(_children, updateTransform, Sprite*);
+    }*/
+    Node::updateTransform();
+}
+
+// draw
+
+void Sprite::draw(Renderer *renderer, const Mat4 &transform, uint32_t flags)
+{
+    if (_texture == nullptr)
+    {
+        return;
+    }
+
+#if CC_USE_CULLING
+    // Don't calculate the culling if the transform was not updated
+    auto visitingCamera = Camera::getVisitingCamera();
+    auto defaultCamera = Camera::getDefaultCamera();
+    if (visitingCamera == nullptr) {
+        _insideBounds = true;
+    }
+    else if (visitingCamera == defaultCamera) {
+        _insideBounds = ((flags & FLAGS_TRANSFORM_DIRTY) || visitingCamera->isViewProjectionUpdated()) ? renderer->checkVisibility(transform, _contentSize) : _insideBounds;
+    }
+    else
+    {
+        // XXX: this always return true since
+        _insideBounds = renderer->checkVisibility(transform, _contentSize);
+    }
+
+    if(_insideBounds)
+#endif
+    {
+        _trianglesCommand.init(_globalZOrder,
+                               _texture,
+                               getGLProgramState(),
+                               _blendFunc,
+                               _polyInfo.triangles,
+                               transform,
+                               flags);
+
+        renderer->addCommand(&_trianglesCommand);
+
+#if CC_SPRITE_DEBUG_DRAW
+        _debugDrawNode->clear();
+        auto count = _polyInfo.triangles.indexCount/3;
+        auto indices = _polyInfo.triangles.indices;
+        auto verts = _polyInfo.triangles.verts;
+        for(ssize_t i = 0; i < count; i++)
+        {
+            //draw 3 lines
+            Vec3 from =verts[indices[i*3]].vertices;
+            Vec3 to = verts[indices[i*3+1]].vertices;
+            _debugDrawNode->drawLine(Vec2(from.x, from.y), Vec2(to.x,to.y), Color4F::WHITE);
+
+            from =verts[indices[i*3+1]].vertices;
+            to = verts[indices[i*3+2]].vertices;
+            _debugDrawNode->drawLine(Vec2(from.x, from.y), Vec2(to.x,to.y), Color4F::WHITE);
+
+            from =verts[indices[i*3+2]].vertices;
+            to = verts[indices[i*3]].vertices;
+            _debugDrawNode->drawLine(Vec2(from.x, from.y), Vec2(to.x,to.y), Color4F::WHITE);
+        }
+#endif //CC_SPRITE_DEBUG_DRAW
+    }
+}
+
+// MARK: visit, draw, transform
+
+void Sprite::addChild(Node *child, int zOrder, int tag)
+{
+    CCASSERT(child != nullptr, "Argument must be non-nullptr");
+    if (child == nullptr)
+    {
+        return;
+    }
+
+    if (_renderMode == RenderMode::QUAD_BATCHNODE)
+    {
+        Sprite* childSprite = dynamic_cast<Sprite*>(child);
+        CCASSERT( childSprite, "CCSprite only supports Sprites as children when using SpriteBatchNode");
+        CCASSERT(childSprite->getTexture()->getName() == _textureAtlas->getTexture()->getName(), "childSprite's texture name should be equal to _textureAtlas's texture name!");
+        //put it in descendants array of batch node
+        _batchNode->appendChild(childSprite);
+
+        if (!_reorderChildDirty)
+        {
+            setReorderChildDirtyRecursively();
         }
     }
-    _chests.clear();
-    CCLOG("All treasure chests have been cleared");
+    //CCNode already sets isReorderChildDirty_ so this needs to be after batchNode check
+    Node::addChild(child, zOrder, tag);
 }
+
+void Sprite::addChild(Node *child, int zOrder, const std::string &name)
+{
+    CCASSERT(child != nullptr, "Argument must be non-nullptr");
+    if (child == nullptr)
+    {
+        return;
+    }
+
+    if (_renderMode == RenderMode::QUAD_BATCHNODE)
+    {
+        Sprite* childSprite = dynamic_cast<Sprite*>(child);
+        CCASSERT( childSprite, "CCSprite only supports Sprites as children when using SpriteBatchNode");
+        CCASSERT(childSprite->getTexture()->getName() == _textureAtlas->getTexture()->getName(),
+                 "childSprite's texture name should be equal to _textureAtlas's texture name.");
+        //put it in descendants array of batch node
+        _batchNode->appendChild(childSprite);
+
+        if (!_reorderChildDirty)
+        {
+            setReorderChildDirtyRecursively();
+        }
+    }
+    //CCNode already sets isReorderChildDirty_ so this needs to be after batchNode check
+    Node::addChild(child, zOrder, name);
+}
+
+void Sprite::reorderChild(Node *child, int zOrder)
+{
+    CCASSERT(child != nullptr, "child must be non null");
+    CCASSERT(_children.contains(child), "child does not belong to this");
+
+    if ((_renderMode == RenderMode::QUAD_BATCHNODE) && ! _reorderChildDirty)
+    {
+        setReorderChildDirtyRecursively();
+        _batchNode->reorderBatch(true);
+    }
+
+    Node::reorderChild(child, zOrder);
+}
+
+void Sprite::removeChild(Node *child, bool cleanup)
+{
+    if (_renderMode == RenderMode::QUAD_BATCHNODE)
+    {
+        _batchNode->removeSpriteFromAtlas((Sprite*)(child));
+    }
+
+    Node::removeChild(child, cleanup);
+}
+
+void Sprite::removeAllChildrenWithCleanup(bool cleanup)
+{
+    if (_renderMode == RenderMode::QUAD_BATCHNODE)
+    {
+        for(const auto &child : _children) {
+            Sprite* sprite = dynamic_cast<Sprite*>(child);
+            if (sprite)
+            {
+                _batchNode->removeSpriteFromAtlas(sprite);
+            }
+        }
+    }
+
+    Node::removeAllChildrenWithCleanup(cleanup);
+}
+
+void Sprite::sortAllChildren()
+{
+    if (_reorderChildDirty)
+    {
+        sortNodes(_children);
+
+        if (_renderMode == RenderMode::QUAD_BATCHNODE)
+        {
+            for(const auto &child : _children)
+                child->sortAllChildren();
+        }
+
+        _reorderChildDirty = false;
+    }
+}
+
+//
+// Node property overloads
+// used only when parent is SpriteBatchNode
+//
+
+void Sprite::setReorderChildDirtyRecursively(void)
+{
+    //only set parents flag the first time
+    if ( ! _reorderChildDirty )
+    {
+        _reorderChildDirty = true;
+        Node* node = static_cast<Node*>(_parent);
+        while (node && node != _batchNode)
+        {
+            static_cast<Sprite*>(node)->setReorderChildDirtyRecursively();
+            node=node->getParent();
+        }
+    }
+}
+
+void Sprite::setDirtyRecursively(bool bValue)
+{
+    _recursiveDirty = bValue;
+    setDirty(bValue);
+
+    for(const auto &child: _children) {
+        Sprite* sp = dynamic_cast<Sprite*>(child);
+        if (sp)
+        {
+            sp->setDirtyRecursively(true);
+        }
+    }
+}
+
+// FIXME: HACK: optimization
+#define SET_DIRTY_RECURSIVELY() {                       \
+                    if (! _recursiveDirty) {            \
+                        _recursiveDirty = true;         \
+                        setDirty(true);                 \
+                        if (!_children.empty())         \
+                            setDirtyRecursively(true);  \
+                        }                               \
+                    }
+
+void Sprite::setPosition(const Vec2& pos)
+{
+    Node::setPosition(pos);
+    SET_DIRTY_RECURSIVELY();
+}
+
+void Sprite::setPosition(float x, float y)
+{
+    Node::setPosition(x, y);
+    SET_DIRTY_RECURSIVELY();
+}
+
+void Sprite::setRotation(float rotation)
+{
+    Node::setRotation(rotation);
+
+    SET_DIRTY_RECURSIVELY();
+}
+
+void Sprite::setRotationSkewX(float fRotationX)
+{
+    Node::setRotationSkewX(fRotationX);
+    SET_DIRTY_RECURSIVELY();
+}
+
+void Sprite::setRotationSkewY(float fRotationY)
+{
+    Node::setRotationSkewY(fRotationY);
+    SET_DIRTY_RECURSIVELY();
+}
+
+void Sprite::setSkewX(float sx)
+{
+    Node::setSkewX(sx);
+    SET_DIRTY_RECURSIVELY();
+}
+
+void Sprite::setSkewY(float sy)
+{
+    Node::setSkewY(sy);
+    SET_DIRTY_RECURSIVELY();
+}
+
+void Sprite::setScaleX(float scaleX)
+{
+    Node::setScaleX(scaleX);
+    SET_DIRTY_RECURSIVELY();
+}
+
+void Sprite::setScaleY(float scaleY)
+{
+    Node::setScaleY(scaleY);
+    SET_DIRTY_RECURSIVELY();
+}
+
+void Sprite::setScale(float fScale)
+{
+    Node::setScale(fScale);
+    SET_DIRTY_RECURSIVELY();
+}
+
+void Sprite::setScale(float scaleX, float scaleY)
+{
+    Node::setScale(scaleX, scaleY);
+    SET_DIRTY_RECURSIVELY();
+}
+
+void Sprite::setPositionZ(float fVertexZ)
+{
+    Node::setPositionZ(fVertexZ);
+    SET_DIRTY_RECURSIVELY();
+}
+
+void Sprite::setAnchorPoint(const Vec2& anchor)
+{
+    Node::setAnchorPoint(anchor);
+    SET_DIRTY_RECURSIVELY();
+}
+
+void Sprite::setIgnoreAnchorPointForPosition(bool value)
+{
+    CCASSERT(_renderMode != RenderMode::QUAD_BATCHNODE, "setIgnoreAnchorPointForPosition is invalid in Sprite");
+    Node::setIgnoreAnchorPointForPosition(value);
+}
+
+void Sprite::setVisible(bool bVisible)
+{
+    Node::setVisible(bVisible);
+    SET_DIRTY_RECURSIVELY();
+}
+
+void Sprite::setContentSize(const Size& size)
+{
+    if (_renderMode == RenderMode::QUAD_BATCHNODE || _renderMode == RenderMode::POLYGON)
+        CCLOGWARN("Sprite::setContentSize() doesn't stretch the sprite when using QUAD_BATCHNODE or POLYGON render modes");
+
+    Node::setContentSize(size);
+
+    updateStretchFactor();
+    updatePoly();
+}
+
+void Sprite::setStretchEnabled(bool enabled)
+{
+    if (_stretchEnabled != enabled) {
+        _stretchEnabled = enabled;
+
+        // disabled centerrect / number of slices if disabled
+        if (!enabled)
+            setCenterRectNormalized(Rect(0,0,1,1));
+
+        updateStretchFactor();
+        updatePoly();
+    }
+}
+
+void Sprite::setStrechEnabled(bool enabled)
+{
+    setStretchEnabled(enabled);
+}
+
+bool Sprite::isStretchEnabled() const
+{
+    return _stretchEnabled;
+}
+
+bool Sprite::isStrechEnabled() const
+{
+    return isStretchEnabled();
+}
+
+void Sprite::updateStretchFactor()
+{
+    const Size size = getContentSize();
+
+    if (_renderMode == RenderMode::QUAD)
+    {
+        // If stretch is disabled, calculate the stretch anyway
+        // since it is needed to calculate the offset
+        const float x_factor = size.width / _originalContentSize.width;
+        const float y_factor = size.height / _originalContentSize.height;
+
+        _stretchFactor = Vec2(std::max(0.0f, x_factor),
+                              std::max(0.0f, y_factor));
+    }
+    else if (_renderMode == RenderMode::SLICE9)
+    {
+        const float x1 = _rect.size.width * _centerRectNormalized.origin.x;
+        const float x2 = _rect.size.width * _centerRectNormalized.size.width;
+        const float x3 = _rect.size.width * (1 - _centerRectNormalized.origin.x - _centerRectNormalized.size.width);
+
+        const float y1 = _rect.size.height * _centerRectNormalized.origin.y;
+        const float y2 = _rect.size.height * _centerRectNormalized.size.height;
+        const float y3 = _rect.size.height * (1 - _centerRectNormalized.origin.y - _centerRectNormalized.size.height);
+
+        // adjustedSize = the new _rect size
+        const float adjustedWidth = size.width - (_originalContentSize.width - _rect.size.width);
+        const float adjustedHeight = size.height - (_originalContentSize.height - _rect.size.height);
+
+        const float x_factor = (adjustedWidth - x1 - x3) / x2;
+        const float y_factor = (adjustedHeight - y1 - y3) / y2;
+
+        _stretchFactor = Vec2(std::max(0.0f, x_factor),
+                              std::max(0.0f, y_factor));
+    }
+
+    // else:
+    // Do nothing if renderMode is Polygon
+}
+
+void Sprite::setFlippedX(bool flippedX)
+{
+    if (_flippedX != flippedX)
+    {
+        _flippedX = flippedX;
+        flipX();
+    }
+}
+
+bool Sprite::isFlippedX(void) const
+{
+    return _flippedX;
+}
+
+void Sprite::setFlippedY(bool flippedY)
+{
+    if (_flippedY != flippedY)
+    {
+        _flippedY = flippedY;
+        flipY();
+    }
+}
+
+bool Sprite::isFlippedY(void) const
+{
+    return _flippedY;
+}
+
+void Sprite::flipX() {
+    if (_renderMode == RenderMode::QUAD_BATCHNODE)
+    {
+        setDirty(true);
+    }
+    else if (_renderMode == RenderMode::POLYGON)
+    {
+        for (ssize_t i = 0; i < _polyInfo.triangles.vertCount; i++) {
+            auto& v = _polyInfo.triangles.verts[i].vertices;
+            v.x = _contentSize.width -v.x;
+        }
+    }
+    else
+    {
+        // RenderMode:: Quad or Slice9
+        updatePoly();
+    }
+}
+
+void Sprite::flipY() {
+    if (_renderMode == RenderMode::QUAD_BATCHNODE)
+    {
+        setDirty(true);
+    }
+    else if (_renderMode == RenderMode::POLYGON)
+    {
+        for (ssize_t i = 0; i < _polyInfo.triangles.vertCount; i++) {
+            auto& v = _polyInfo.triangles.verts[i].vertices;
+            v.y = _contentSize.height -v.y;
+        }
+    }
+    else
+    {
+        // RenderMode:: Quad or Slice9
+        updatePoly();
+    }
+}
+
+//
+// MARK: RGBA protocol
+//
+
+void Sprite::updateColor(void)
+{
+    Color4B color4( _displayedColor.r, _displayedColor.g, _displayedColor.b, _displayedOpacity );
+
+    // special opacity for premultiplied textures
+    if (_opacityModifyRGB)
+    {
+        color4.r *= _displayedOpacity/255.0f;
+        color4.g *= _displayedOpacity/255.0f;
+        color4.b *= _displayedOpacity/255.0f;
+    }
+
+    for (ssize_t i = 0; i < _polyInfo.triangles.vertCount; i++) {
+        _polyInfo.triangles.verts[i].colors = color4;
+    }
+
+    // related to issue #17116
+    // when switching from Quad to Slice9, the color will be obtained from _quad
+    // so it is important to update _quad colors as well.
+    _quad.bl.colors = _quad.tl.colors = _quad.br.colors = _quad.tr.colors = color4;
+
+    // renders using batch node
+    if (_renderMode == RenderMode::QUAD_BATCHNODE)
+    {
+        if (_atlasIndex != INDEX_NOT_INITIALIZED)
+        {
+            _textureAtlas->updateQuad(&_quad, _atlasIndex);
+        }
+        else
+        {
+            // no need to set it recursively
+            // update dirty_, don't update recursiveDirty_
+            setDirty(true);
+        }
+    }
+
+    // self render
+    // do nothing
+}
+
+void Sprite::setOpacityModifyRGB(bool modify)
+{
+    if (_opacityModifyRGB != modify)
+    {
+        _opacityModifyRGB = modify;
+        updateColor();
+    }
+}
+
+bool Sprite::isOpacityModifyRGB(void) const
+{
+    return _opacityModifyRGB;
+}
+
+// MARK: Frames
+
+void Sprite::setSpriteFrame(const std::string &spriteFrameName)
+{
+    CCASSERT(!spriteFrameName.empty(), "spriteFrameName must not be empty");
+    if (spriteFrameName.empty())
+    {
+        return;
+    }
+
+    SpriteFrameCache *cache = SpriteFrameCache::getInstance();
+    SpriteFrame *spriteFrame = cache->getSpriteFrameByName(spriteFrameName);
+
+    CCASSERT(spriteFrame, std::string("Invalid spriteFrameName :").append(spriteFrameName).c_str());
+
+    setSpriteFrame(spriteFrame);
+}
+
+void Sprite::setSpriteFrame(SpriteFrame *spriteFrame)
+{
+    // retain the sprite frame
+    // do not removed by SpriteFrameCache::removeUnusedSpriteFrames
+    if (_spriteFrame != spriteFrame)
+    {
+        CC_SAFE_RELEASE(_spriteFrame);
+        _spriteFrame = spriteFrame;
+        spriteFrame->retain();
+    }
+    _unflippedOffsetPositionFromCenter = spriteFrame->getOffset();
+
+    Texture2D *texture = spriteFrame->getTexture();
+    // update texture before updating texture rect
+    if (texture != _texture)
+    {
+        setTexture(texture);
+    }
+
+    // update rect
+    _rectRotated = spriteFrame->isRotated();
+    setTextureRect(spriteFrame->getRect(), _rectRotated, spriteFrame->getOriginalSize());
+
+    if (spriteFrame->hasPolygonInfo())
+    {
+        _polyInfo = spriteFrame->getPolygonInfo();
+        _renderMode = RenderMode::POLYGON;
+        if (_flippedX) flipX();
+        if (_flippedY) flipY();
+        updateColor();
+    }
+    if (spriteFrame->hasAnchorPoint())
+    {
+        setAnchorPoint(spriteFrame->getAnchorPoint());
+    }
+    if (spriteFrame->hasCenterRect())
+    {
+        setCenterRect(spriteFrame->getCenterRect());
+    }
+}
+
+void Sprite::setDisplayFrameWithAnimationName(const std::string& animationName, ssize_t frameIndex)
+{
+    CCASSERT(!animationName.empty(), "CCSprite#setDisplayFrameWithAnimationName. animationName must not be nullptr");
+    if (animationName.empty())
+    {
+        return;
+    }
+
+    Animation *a = AnimationCache::getInstance()->getAnimation(animationName);
+
+    CCASSERT(a, "CCSprite#setDisplayFrameWithAnimationName: Frame not found");
+
+    AnimationFrame* frame = a->getFrames().at(frameIndex);
+
+    CCASSERT(frame, "CCSprite#setDisplayFrame. Invalid frame");
+
+    setSpriteFrame(frame->getSpriteFrame());
+}
+
+bool Sprite::isFrameDisplayed(SpriteFrame *frame) const
+{
+    Rect r = frame->getRect();
+
+    return (r.equals(_rect) &&
+            frame->getTexture()->getName() == _texture->getName() &&
+            frame->getOffset().equals(_unflippedOffsetPositionFromCenter));
+}
+
+SpriteFrame* Sprite::getSpriteFrame() const
+{
+    if(nullptr != this->_spriteFrame)
+    {
+        return this->_spriteFrame;
+    }
+    return SpriteFrame::createWithTexture(_texture,
+                                          CC_RECT_POINTS_TO_PIXELS(_rect),
+                                          _rectRotated,
+                                          CC_POINT_POINTS_TO_PIXELS(_unflippedOffsetPositionFromCenter),
+                                          CC_SIZE_POINTS_TO_PIXELS(_originalContentSize));
+}
+
+SpriteBatchNode* Sprite::getBatchNode() const
+{
+    return _batchNode;
+}
+
+void Sprite::setBatchNode(SpriteBatchNode *spriteBatchNode)
+{
+    _batchNode = spriteBatchNode; // weak reference
+
+    // self render
+    if( ! _batchNode ) {
+        if (_renderMode != RenderMode::SLICE9) {
+            _renderMode = RenderMode::QUAD;
+        }
+        _atlasIndex = INDEX_NOT_INITIALIZED;
+        setTextureAtlas(nullptr);
+        _recursiveDirty = false;
+        setDirty(false);
+
+        float x1 = _offsetPosition.x;
+        float y1 = _offsetPosition.y;
+        float x2 = x1 + _rect.size.width;
+        float y2 = y1 + _rect.size.height;
+        _quad.bl.vertices.set( x1, y1, 0 );
+        _quad.br.vertices.set(x2, y1, 0);
+        _quad.tl.vertices.set(x1, y2, 0);
+        _quad.tr.vertices.set(x2, y2, 0);
+
+    } else {
+        // using batch
+        _renderMode = RenderMode::QUAD_BATCHNODE;
+        _transformToBatch = Mat4::IDENTITY;
+        setTextureAtlas(_batchNode->getTextureAtlas()); // weak ref
+    }
+}
+
+// MARK: Texture protocol
+
+void Sprite::updateBlendFunc(void)
+{
+    CCASSERT(_renderMode != RenderMode::QUAD_BATCHNODE, "CCSprite: updateBlendFunc doesn't work when the sprite is rendered using a SpriteBatchNode");
+
+    // it is possible to have an untextured sprite
+    if (! _texture || ! _texture->hasPremultipliedAlpha())
+    {
+        _blendFunc = BlendFunc::ALPHA_NON_PREMULTIPLIED;
+        setOpacityModifyRGB(false);
+    }
+    else
+    {
+        _blendFunc = BlendFunc::ALPHA_PREMULTIPLIED;
+        setOpacityModifyRGB(true);
+    }
+}
+
+std::string Sprite::getDescription() const
+{
+    int texture_id = -1;
+    if (_renderMode == RenderMode::QUAD_BATCHNODE)
+        texture_id = _batchNode->getTextureAtlas()->getTexture()->getName();
+    else
+        texture_id = _texture->getName();
+    return StringUtils::format("<Sprite | Tag = %d, TextureID = %d>", _tag, texture_id );
+}
+
+const PolygonInfo& Sprite::getPolygonInfo() const
+{
+    return _polyInfo;
+}
+
+void Sprite::setPolygonInfo(const PolygonInfo& info)
+{
+    _polyInfo = info;
+    _renderMode = RenderMode::POLYGON;
+}
+
+NS_CC_END
