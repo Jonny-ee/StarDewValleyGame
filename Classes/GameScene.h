@@ -9,6 +9,7 @@
 #include "Pig.h"
 #include "Chicken.h"
 #include "Sheep.h"
+#include "Tree.h"
 #include "InventoryUI.h"
 #include "FishingSystem.h"
 #include "StatusUI.h"
@@ -44,10 +45,12 @@ public:
 
     // 相机控制
     void updateCamera();                    // 更新相机位置
+    // 更新任务UI位置
+    void updateQuestUIPosition();
 
     // 时间更新相关
     void onDayChanged();                    // 每日更新函数声明
-
+    std::vector<Tree*> trees;                           // 存储所有树的指针
 private:
     // 场景对象
     Player* player = nullptr;                             // 玩家对象指针
@@ -66,6 +69,8 @@ private:
     bool isChickenCreated = false;                         // 添加标志以跟踪鸡是否已经创建
     std::vector<Sheep*> sheeps;                        // 存储所有羊的指针
     bool isSheepCreated = false;                         // 添加标志以跟踪羊是否已经创建
+
+    bool isTreeCreated = false;                         // 添加标志以跟踪树是否已经创建
     DialogueBox* dialogueBox = nullptr;                   // 对话框指针
     cocos2d::TMXTiledMap* tileMap = nullptr;              // Tiled 地图系统
     cocos2d::TMXObjectGroup* collisionsGroup = nullptr;   // 碰撞组
@@ -86,12 +91,14 @@ private:
     void initPig();                 // 初始化猪
     void initChicken();                 // 初始化鸡
     void initSheep();                   // 初始化羊
+    void initTree();                    // 初始化树
     void createPig(const Vec2& initialPosition, const std::vector<Vec2>& path);
     void createPig(const Vec2& initialPosition);
     void createChicken(const Vec2& initialPosition, const std::vector<Vec2>& path);
     void createChicken(const Vec2& initialPosition);
     void createSheep(const Vec2& initialPosition, const std::vector<Vec2>& path);
     void createSheep(const Vec2& initialPosition);
+    void createTree(const Vec2& initialPosition);
     std::vector<Chest*> _chests;     // 存储所有宝箱
     void initChests();               // 初始化宝箱
     void clearChests();              // 清理宝箱
@@ -103,5 +110,15 @@ private:
     std::set<char> _pressedKeys;                                    // 已按下的按键集合
     cocos2d::EventListenerKeyboard* _keyboardListener = nullptr;    // 键盘监听器
     void initMouseListener();                                       // 声明鼠标监听器初始化方法(NPC使用)
+    // 任务相关
+    Label* _questTipLabel = nullptr;
+    Sprite* _questMark = nullptr;
 
+    void updateQuestUI();
+    void showQuestMark(Node* target);
+    void hideQuestMark(Node* target);
+    void handleQuestDialogue(Lewis* lewis);  // 处理任务对话
+    void handleWoodQuest(Lewis* lewis, QuestState questState);
+    void handleBridgeQuest(Lewis* lewis, QuestState questState);
+    void checkQuestProgress();  // 检查任务进度
 };
