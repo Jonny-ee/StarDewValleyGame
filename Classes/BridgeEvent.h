@@ -1,5 +1,6 @@
 #pragma once
-#include"BaseEvent.h"
+#include "BaseEvent.h"
+#include "QuestSystem.h"
 class BridgeEvent : public BaseEvent {
 public:
    static BridgeEvent* create(GameMap* gameMap, Player* player);
