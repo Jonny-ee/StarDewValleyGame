@@ -41,7 +41,7 @@ bool BridgeEvent::checkTriggerCondition() {
 }
 
 void BridgeEvent::executeEvent() {
-    if (_isExecuting|| _bridgeRepaired) return;
+    if (_isExecuting || _bridgeRepaired) return;
     _isExecuting = true;
     _player->setCanPerformAction(false);
 
@@ -55,6 +55,12 @@ void BridgeEvent::executeEvent() {
         CallFunc::create([this]() {
             _gameMap->repairBridge();
             this->hideBlackFilter(0.5f);
+
+            // 完成修桥任务
+            auto questSystem = QuestSystem::getInstance();
+            if (questSystem->getQuestState(QuestType::REPAIR_BRIDGE) == QuestState::IN_PROGRESS) {
+                questSystem->completeQuest(QuestType::REPAIR_BRIDGE);
+            }
             }),
 
         DelayTime::create(0.5f),
