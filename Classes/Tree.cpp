@@ -1,74 +1,89 @@
 #include "Tree.h"
 
-USING_NS_CC;
-
-/*
- * Ê÷Ä¾¹¹Ôìº¯Êı
- * @param spriteName Ê÷Ä¾¾«ÁéÍ¼Æ¬Ãû³Æ
- * @param health Ê÷Ä¾µÄÉúÃüÖµ
- */
-Tree::Tree(const std::string& spriteName, int health)
-    : _health(health), _chopped(false), _canChop(true) {
-    this->initWithSprite(spriteName, health);
+Tree* Tree::create(const std::string& spriteName, int health)
+{
+    Tree* tree = new (std::nothrow) Tree();
+    if (tree && tree->init(spriteName, health))
+    {
+        tree->autorelease();
+        return tree;
+    }
+    CC_SAFE_DELETE(tree);
+    return nullptr;
 }
 
-// Îö¹¹º¯Êı
-Tree::~Tree() {}
+Tree::Tree() :
+    _health(100),
+    _chopped(false),
+    _canChop(true),
+    _onTreeChopped(nullptr)
+{
+}
 
-/*
- * ³õÊ¼»¯Ê÷Ä¾¾«Áé
- * @param spriteName ¾«ÁéÍ¼Æ¬Ãû³Æ
- * @param health ³õÊ¼ÉúÃüÖµ
- * @return ³õÊ¼»¯ÊÇ·ñ³É¹¦
- */
-bool Tree::initWithSprite(const std::string& spriteName, int health) {
-    if (!Sprite::initWithFile(spriteName)) {
+Tree::~Tree()
+{
+}
+
+bool Tree::init(const std::string& spriteName, int health)
+{
+    if (!Sprite::initWithFile(spriteName))
+    {
         return false;
     }
-
-    // ÉèÖÃÊ÷Ä¾µÄ³õÊ¼ÉúÃüÖµºÍÆäËû×´Ì¬
     _health = health;
     _chopped = false;
     _canChop = true;
 
+    this->setAnchorPoint(Vec2(0.5f, 0.0f));
+    this->setTextureRect(cocos2d::Rect(192, 160, 48, 80));
+    this->setScale(3.0f);
     return true;
 }
 
-/*
- * ¿³·¥Ê÷Ä¾
- * @param damage Ôì³ÉµÄÉËº¦Öµ
- * ¹¦ÄÜ£º¼õÉÙÊ÷Ä¾µÄÉúÃüÖµ£¬´¦Àí¿³·¥Ïà¹ØÂß¼­
- */
-void Tree::chop(int damage) {
-    if (_chopped) {
-        return;  // Èç¹ûÒÑ¾­±»¿³µ¹£¬Ôò²»ÔÙ¿É¿³
+bool Tree::chop(int damage)
+{
+    if (!canBeChopped())
+    {
+        return false;
     }
 
     _health -= damage;
 
-    /* ¿³µ¹ºóµÄµôÂäÎïÎ´ÊµÏÖ
-    if (_health <= 0) {
+    // ä½¿ç”¨RotateByæ¥å®ç°æŠ–åŠ¨ï¼Œè¿™æ ·ä¼šä»¥åº•éƒ¨ä¸ºè½´å¿ƒæŠ–åŠ¨
+    auto shakeBy = Sequence::create(
+        RotateBy::create(0.05f, -5),  // å‘å·¦å€¾æ–œ5åº¦
+        RotateBy::create(0.05f, 10),  // å‘å³å€¾æ–œ10åº¦
+        RotateBy::create(0.05f, -10), // å‘å·¦å€¾æ–œ10åº¦
+        RotateBy::create(0.05f, 5),   // å›åˆ°åŸä½
+        nullptr
+    );
+    this->runAction(shakeBy);
+
+    if (_health <= 0)
+    {
         _chopped = true;
-        this->setTexture("tree_fallen.png");  // ÉèÖÃ¿³µ¹ºóµÄÊ÷Ä¾Í¼±ê
-        CCLOG("Tree has been chopped down!");
 
-        // Ö´ĞĞµôÂäÎïÆ·µÄÂß¼­£¨ÈçµôÂäÄ¾²Ä£©
-        // this->dropItem();
-    }*/
+        // å€’ä¸‹åŠ¨ç”»ä¹Ÿä¼šä»¥åº•éƒ¨ä¸ºè½´å¿ƒ
+        auto fallRotation = RotateTo::create(0.5f, 90.0f); // å‘å³å€’ä¸‹
+        auto fadeOut = FadeOut::create(0.3f);
+        auto removeTree = CallFunc::create([this]() {
+            if (_onTreeChopped)
+            {
+                _onTreeChopped();
+            }
+            this->removeFromParent();
+            });
+
+        this->runAction(Sequence::create(
+            fallRotation,
+            fadeOut,
+            removeTree,
+            nullptr
+        ));
+
+        return true;
+    }
+
+    return false;
 }
 
-/*
- * ¼ì²éÊÇ·ñ¿ÉÒÔ¿³·¥
- * @return ·µ»ØÊ÷Ä¾ÊÇ·ñ¿ÉÒÔ±»¿³·¥
- */
-bool Tree::canBeChopped() const {
-    return _canChop && !_chopped;
-}
-
-/*
- * ¼ì²éÊÇ·ñÒÑ±»¿³µ¹
- * @return ·µ»ØÊ÷Ä¾ÊÇ·ñÒÑ±»¿³µ¹
- */
-bool Tree::isChopped() const {
-    return _chopped;
-}
