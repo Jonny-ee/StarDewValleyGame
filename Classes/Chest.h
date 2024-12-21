@@ -46,7 +46,8 @@ private:
     // 宝箱内物品相关配置
     const std::vector<std::string> possibleItems = {
         "wood", "apple", "corn", "bread",
-        "tomato", "fish", "stone"
+        "tomato", "fish", "stone", "corn seed",
+        "tomato seed", "mermaid's KISS(*)"
     };
 
     const int MIN_ITEMS = 1;    // 宝箱最少物品数量
