@@ -133,8 +133,8 @@ float SkillSystem::getSkillBonus(SkillType type) {
             break;
 
         case SkillType::COOKING:
-            // 每级增加20%烹饪成功率
-            bonus += (level - 1) * 0.2f;
+            // 每升一级，食物产出增加两倍
+            bonus = pow(2.0f, level - 1);
             break;
     }
     return bonus;

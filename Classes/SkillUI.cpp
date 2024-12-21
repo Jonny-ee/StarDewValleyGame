@@ -75,7 +75,7 @@ void SkillUI::showLevelUpTip(SkillType type, int newLevel, float bonus) {
             bonusText = StringUtils::format("Fishing time: -%.0f%%", (1.0f - bonus) * 100);
             break;
         case SkillType::COOKING:
-            bonusText = StringUtils::format("Cooking success rate: +%.0f%%", (bonus - 1.0f) * 100);
+            bonusText = StringUtils::format("Food output: x%.0f", bonus);
             break;
     }
 
