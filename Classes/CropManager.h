@@ -95,6 +95,7 @@ private:
     const float CROP_OFFSET_X = 20.0f;     // 作物水平偏移量
     const float CROP_OFFSET_Y = -12.0f;    // 作物垂直偏移量
     cocos2d::EventListenerKeyboard* _keyboardListener = nullptr;
+
     // 玉米生长阶段的图块ID
     const std::vector<cocos2d::Rect> CORN_GROWTH_RECTS =
     {
@@ -104,6 +105,7 @@ private:
         cocos2d::Rect(48, 0, 16, 16),   // 生长阶段3
         cocos2d::Rect(64, 0, 16, 16)    // 成熟
     };
+
     // 作物信息结构体
     struct CropInfo
     {
@@ -117,6 +119,8 @@ private:
         int waterLevel = 1;             // 水分状态: 2-充足, 1-略缺, 0-严重缺水
         bool isWatered = false;         // 今天是否浇过水
         unsigned int growthCounter;     // 生长计数器（用于番茄：因为其需要两天才长一次）
+        bool hasInsectPest = false;     // 是否有虫害
+        Sprite* bugSprite = nullptr;    // 虫害精灵
     };
 
     std::vector<CropInfo> _cropInfos;   // 存储所有作物信息
@@ -125,6 +129,22 @@ private:
 
     void createHarvestDrop(const Vec2& position);   // 创建收获掉落物
     const int FINAL_GROWTH_STAGE = 3;               // 最终生长阶段
+
+    // 小游戏：虫害相关
+    bool _isBugKilling = false;
+    float _bugKillingTimeLeft = 0.0f;
+    int _requiredClicks = 15;                   // 需要的空格次数
+    int _currentClicks = 0;
+    Vec2 _currentBugTilePos;
+
+    const float BUG_KILLING_TIME_LIMIT = 3.0f;  // 3秒时间限制
+    const float INSECT_PEST_CHANCE = 0.3f;      // 虫害概率 30%
+
+    void checkInsectPest();                     // 检查虫害
+    void updateBugKilling(float dt);            // 更新杀虫状态
+    bool startBugKilling(const Vec2& tilePos);
+    void createBugSprite(CropInfo& info);       // 创建虫害精灵
+    ;
     /*
      * 图块ID说明：
      * 1. Tiled编辑器中图块ID从0开始，实际使用时需要加1

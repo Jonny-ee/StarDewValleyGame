@@ -357,6 +357,15 @@ void CropManager::updateTips(const Vec2& playerTilePos, Player::ToolType playerT
         hideTip();
         return;
     }
+    // 首先检查是否有虫害
+    for (const auto& info : _cropInfos)
+    {
+        if (info.tilePos == playerTilePos && info.hasInsectPest)
+        {
+            showTip("Press SPACE to remove bug, or your crop will die", playerTilePos);
+            return;
+        }
+    }
     // 检查该位置是否是耕地
     auto backLayer = _gameMap->getTileMap()->getLayer("Back");
     if (!backLayer)
@@ -630,6 +639,25 @@ void CropManager::initKeyboardListener()
                     }
                 }
             }
+            else if (keyCode == EventKeyboard::KeyCode::KEY_SPACE)
+            {
+                if (_isBugKilling)
+                {
+                    _currentClicks++;
+                    CCLOG("Bug killing clicks: %d", _currentClicks);
+                }
+                else
+                {
+                    // 获取玩家位置，检查附近的作物是否有虫害
+                    auto player = Player::getInstance();
+                    if (!player) return;
+
+                    Vec2 playerPos = player->getPosition();
+                    Vec2 playerTilePos = _gameMap->convertToTileCoord(playerPos);
+
+                    startBugKilling(playerTilePos);
+                }
+            }
         };
     Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(
         _keyboardListener, _gameMap->getTileMap());
@@ -641,6 +669,15 @@ void CropManager::initKeyboardListener()
  */
 void CropManager::updateCrops()
 {
+    // 检查虫害（每天执行一次）
+    auto gameTime = GameTime::getInstance();
+    static int lastCheckDay = -1;
+    if (gameTime->getDay() != lastCheckDay)
+    {
+        checkInsectPest();
+        lastCheckDay = gameTime->getDay();
+    }
+
     for (size_t i = 0; i < _cropInfos.size(); i++)
     {
         auto& info = _cropInfos[i];
@@ -971,7 +1008,11 @@ void CropManager::createHarvestDrop(const Vec2& position)
     }
 }
 
-
+/*
+ * 查指定位置是否可以施肥
+ * @param tilePos 要检查的瓦片坐标
+ * @return 如果可以施肥返回true，否则返回false
+ */
 bool CropManager::canFertilize(const Vec2& tilePos) const
 {
     for (const auto& info : _cropInfos)
@@ -984,6 +1025,11 @@ bool CropManager::canFertilize(const Vec2& tilePos) const
     return false;
 }
 
+/*
+ * 对指定位置的作物进行施肥
+ * @param tilePos 要施肥的瓦片坐标
+ * @return 施肥成功返回true，否则返回false
+ */
 bool CropManager::fertilizeCrop(const Vec2& tilePos)
 {
     auto itemSystem = ItemSystem::getInstance();
@@ -1023,4 +1069,144 @@ bool CropManager::fertilizeCrop(const Vec2& tilePos)
         }
     }
     return false;
+}
+
+/*
+ * 创建虫害精灵
+ * @param info 作物信息结构体引用
+ * 功能：
+ * 1.移除已存在的虫害精灵
+ * 2.创建新的虫害精灵
+ * 3.设置精灵的位置和外观
+ */
+void CropManager::createBugSprite(CropInfo& info)
+{
+    if (info.bugSprite)
+    {
+        info.bugSprite->removeFromParent();
+        info.bugSprite = nullptr;
+    }
+    info.bugSprite = Sprite::create("bug.png");
+    if (info.bugSprite)
+    {
+        // 设置虫子图片显示区域（第一行第一个，16x16）
+        info.bugSprite->setTextureRect(Rect(0, 0, 16, 16));
+        // 设置位置（使用作物的世界坐标）
+        info.bugSprite->setPosition(info.position);
+        // 添加到场景
+        _gameScene->addChild(info.bugSprite, 1);
+    }
+}
+
+/*
+ * 检查所有作物的虫害状态
+ * 功能：
+ * 1.遍历所有作物检查是否染上虫害
+ * 2.处理已有虫害的作物
+ * 3.移除因虫害死亡的作物
+ */
+void CropManager::checkInsectPest()
+{
+    // 遍历所有作物，检查是否染上虫害
+    for (auto& info : _cropInfos)
+    {
+        if (!info.hasInsectPest)  // 当前没有虫害的情况下
+        {
+            // 随机判定是否染上虫害 (30%概率)
+            if (rand() % 100 < 30)
+            {
+                info.hasInsectPest = true;
+                createBugSprite(info);
+            }
+        }
+        else  // 已有虫害且未处理，作物死亡
+        {
+            // 移除虫害精灵
+            if (info.bugSprite)
+            {
+                info.bugSprite->removeFromParent();
+            }
+            // 移除作物
+            for (size_t i = 0; i < _cropInfos.size(); i++)
+            {
+                if (_cropInfos[i].tilePos == info.tilePos)
+                {
+                    if (i < _crops.size() && _crops[i])
+                    {
+                        _crops[i]->removeFromParent();
+                        _crops.erase(_crops.begin() + i);
+                    }
+                    _cropInfos.erase(_cropInfos.begin() + i);
+                    break;
+                }
+            }
+        }
+
+    }
+}
+
+/*
+ * 开始杀虫小游戏
+ * @param tilePos 要进行杀虫的瓦片坐标
+ * @return 如果该位置有虫害并开始游戏返回true，否则返回false
+ */
+bool CropManager::startBugKilling(const Vec2& tilePos)
+{
+    // 检查该位置是否有虫害的作物
+    for (auto& info : _cropInfos)
+    {
+        if (info.tilePos == tilePos && info.hasInsectPest)
+        {
+            _isBugKilling = true;
+            _bugKillingTimeLeft = BUG_KILLING_TIME_LIMIT;
+            _currentClicks = 0;
+            _currentBugTilePos = tilePos;
+
+            return true;
+        }
+    }
+    return false;
+}
+
+/*
+ * 更新杀虫小游戏状态
+ * @param dt 帧间隔时间
+ * 功能：
+ * 1.更新剩余时间
+ * 2.显示游戏状态
+ * 3.判定游戏结果
+ */
+void CropManager::updateBugKilling(float dt)
+{
+    if (!_isBugKilling)
+        return;
+    _bugKillingTimeLeft -= dt;
+    // 更新倒计时提示和点击次数
+    showTip(StringUtils::format("Time: %.1f  Clicks: %d/%d",
+        _bugKillingTimeLeft, _currentClicks, _requiredClicks),
+        _currentBugTilePos);
+    if (_bugKillingTimeLeft <= 0)
+    {
+        _isBugKilling = false;
+        // 判定结果
+        bool success = _currentClicks >= _requiredClicks;
+        if (success)
+        {
+            // 移除虫害
+            for (auto& info : _cropInfos)
+            {
+                if (info.tilePos == _currentBugTilePos)
+                {
+                    info.hasInsectPest = false;
+                    // 移除虫害精灵
+                    if (info.bugSprite)
+                    {
+                        info.bugSprite->removeFromParent();
+                        info.bugSprite = nullptr;
+                    }
+                    break;
+                }
+            }
+        }
+    }
 }
