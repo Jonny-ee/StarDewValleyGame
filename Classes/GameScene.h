@@ -51,6 +51,8 @@ public:
     // 时间更新相关
     void onDayChanged();                    // 每日更新函数声明
     std::vector<Tree*> trees;                           // 存储所有树的指针
+
+    void toggleMute(Ref* sender);
 private:
     // 场景对象
     Player* player = nullptr;                             // 玩家对象指针
@@ -105,6 +107,10 @@ private:
     int lastMineEnterDay = 0;    // 记录上次进入矿洞的日期
     int lastMineEnterMonth = 0;  // 记录上次进入矿洞的月份
     int lastMineEnterYear = 0;   // 记录上次进入矿洞的年份
+
+    cocos2d::MenuItemImage* muteButton; // 静音按钮
+    bool isMuted; // 静音状态
+
     std::vector<BaseEvent*> _events;
     // 输入状态
     std::set<char> _pressedKeys;                                    // 已按下的按键集合

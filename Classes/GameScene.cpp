@@ -8,6 +8,7 @@
 #include "Cooking.h"
 #include "CropManager.h"
 #include "NormalWeather.h"
+#include"AudioManager.h"
 USING_NS_CC;
 
 Scene* GameScene::createScene()
@@ -126,6 +127,7 @@ bool GameScene::init()
     isMarlonCreated = false;    // 初始化标志
     isMaruCreated = false;      // 初始化标志
     isAlexCreated = false;      // 初始化标志
+    isMuted = false; // 初始化为未静音
 
     // 初始化矿洞进入时间记录
     lastMineEnterDay = 0;
@@ -251,10 +253,37 @@ bool GameScene::init()
     auto weatherManager = WeatherManager::getInstance();
     weatherManager->setWeather(NormalWeather::create());
 
+    AudioManager::getInstance()->playBGM("normal.mp3");
+
+    //// 创建静音按钮
+    //muteButton = MenuItemImage::create(
+    //    "mute.png", // 静音图标
+    //    "unmute.png", // 取消静音图标
+    //    CC_CALLBACK_1(GameScene::toggleMute, this) // 点击事件回调
+    //);
+
+    //// 设置按钮位置
+    //muteButton->setPosition(Vec2(50, Director::getInstance()->getVisibleSize().height - 50));
+
+    //// 创建菜单并添加按钮
+    //auto menu = Menu::create(muteButton, nullptr);
+    //menu->setPosition(Vec2::ZERO); // 菜单位置
+    //this->addChild(menu, 10); // 添加到场景中
 
     return true;
 }
-
+// 切换静音状态
+void GameScene::toggleMute(Ref* sender) {
+    isMuted = !isMuted; // 切换静音状态
+    if (isMuted) {
+        AudioManager::getInstance()->setVolume(0.0f); // 设置音量为0
+        muteButton->setNormalImage(Sprite::create("unmute.png")); // 更改按钮图标
+    }
+    else {
+        AudioManager::getInstance()->setVolume(1.0f); // 恢复音量
+        muteButton->setNormalImage(Sprite::create("mute.png")); // 更改按钮图标
+    }
+}
 void GameScene::onDayChanged()
 {
     // 更新作物生长
