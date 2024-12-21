@@ -52,11 +52,10 @@ void CharacterCreateScene::initUI() {
 
     // 创建确认按钮
     _confirmButton = Button::create("button_normal.png", "button_pressed.png");
-    _confirmButton->setTitleText("Enter");
-    _confirmButton->setTitleFontSize(20);
+
     _confirmButton->setPosition(Vec2(visibleSize.width / 2 + origin.x,
         visibleSize.height * 0.4f + origin.y));
-
+    _confirmButton->setScale(0.07f);
     _confirmButton->addClickEventListener([this](Ref* sender) {
         this->onConfirmClicked();
         });
