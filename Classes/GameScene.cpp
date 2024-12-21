@@ -8,7 +8,6 @@
 #include "Cooking.h"
 #include "CropManager.h"
 #include "NormalWeather.h"
-
 USING_NS_CC;
 
 Scene* GameScene::createScene()
@@ -267,17 +266,18 @@ void GameScene::onDayChanged()
     // 重置任务状态
     auto questSystem = QuestSystem::getInstance();
     auto gameTime = GameTime::getInstance();
-    int newDay = gameTime->getDay();
+    int currentDay = gameTime->getDay();
+
 
     // 第一天开始时，重置木头收集任务
-    if (newDay == 1) {
+    if (currentDay == 1) {
         questSystem->resetQuest(QuestType::COLLECT_WOOD);
         if (lewis) {
             showQuestMark(lewis);
         }
     }
     // 第二天开始时，重置修桥任务，同时确保木头任务已完成
-    else if (newDay == 2) {
+    else if (currentDay == 2) {
         // 如果前一天的木头任务还在进行中，强制完成它
         if (questSystem->getQuestState(QuestType::COLLECT_WOOD) == QuestState::IN_PROGRESS) {
             questSystem->completeQuest(QuestType::COLLECT_WOOD);
@@ -579,9 +579,28 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
     if (_gameMap) {
         _gameMap->getTileMap()->removeFromParent();  // 从显示层级中移除旧地图
     }
+    // 获取当前日期
+    auto gameTime = GameTime::getInstance();
+    int currentDay = gameTime->getDay();
+    int currentMonth = gameTime->getMonth();
 
-    // 加载新地图
-    _gameMap->loadMap(mapName);
+    // 检查是否是切换到Town地图
+    if (mapName == "Town") {
+        // 如果是12月25日，传送到Town_Christmas
+        if (currentMonth == 12 && currentDay == 25) {
+            CCLOG("Switching to Town_Christmas map");
+            _gameMap->loadMap("Town_Christmas");
+        }
+        else {
+            // 否则传送到普通的Town地图
+            CCLOG("Switching to Town map");
+            _gameMap->loadMap("Town");
+        }
+    }
+    else {
+        // 其他地图的处理逻辑
+        _gameMap->loadMap(mapName);
+    }
 
     // 重用现有玩家，而不是创建新的（修复原来多重玩家的bug）
     if (currentPlayer) {
@@ -700,7 +719,6 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         // 初始化马龙NPC
         initMarlon();
     }
-
     // 重新初始化钓鱼系统
     FishingSystem::getInstance()->initFishingAreas(_gameMap);
 }

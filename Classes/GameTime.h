@@ -1,6 +1,6 @@
 #pragma once
 #include "cocos2d.h"
-
+#include<string>
 class GameTime {
 public:
 	static GameTime* getInstance() {
@@ -22,6 +22,7 @@ public:
 	int getDay();
 	int getHour();
 	int getMinute();
+	std::string getSeason();
 	//更改游戏时间
 	void modifyGameTime(int targetHour = 6);
 private:
@@ -36,9 +37,11 @@ private:
 	int _Month;
 	int _Day;
 	int _Hour;
+	std::string _Season;
 	//更新年，月，日，小时
 	void updateYears();
 	void updateMonths();
 	void updateDays();
 	void updateHours();
+	void updateSeason();
 };

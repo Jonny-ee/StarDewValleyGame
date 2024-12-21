@@ -29,11 +29,11 @@ void Cooking::executeEvent() {
     _player->setCanPerformAction(false);
     _isExecuting = true;
     auto _itemSystem = ItemSystem::getInstance();
-    if(_itemSystem->hasEnoughItems("apple",0)&& _itemSystem->hasEnoughItems("bread", 0))
+    if(_itemSystem->hasEnoughItems("apple",3)&& _itemSystem->hasEnoughItems("bread", 3))
     {
         auto _skillSystem = SkillSystem::getInstance();
         int count = _skillSystem->getSkillLevel(SkillType::COOKING);
-        _itemSystem->addItem("corn",count);
+        _itemSystem->addItem("CatFood",count);
         std::string _text = "Congratulations! You got ";
         _text += std::to_string(count);
         _text+=" Cat Food";

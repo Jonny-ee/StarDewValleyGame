@@ -34,7 +34,8 @@ void CharacterCreateScene::initUI() {
     this->addChild(titleLabel);
 
     // 创建名字输入框背景
-    auto inputBg = Sprite::create("input_bg.png");  // 需要准备一个输入框背景图片
+    auto inputBg = Sprite::create("input_bg.png");  
+    inputBg->setScale(2);
     inputBg->setPosition(Vec2(visibleSize.width / 2 + origin.x,
         visibleSize.height * 0.6f + origin.y));
     this->addChild(inputBg);
@@ -43,8 +44,8 @@ void CharacterCreateScene::initUI() {
     _nameInput = EditBox::create(Size(200, 40), Scale9Sprite::create("input_bg.png"));
     _nameInput->setPosition(Vec2(visibleSize.width / 2 + origin.x,
         visibleSize.height * 0.6f + origin.y));
-    _nameInput->setPlaceHolder("Please enter the character's name");
-    _nameInput->setMaxLength(12);
+    _nameInput->setPlaceHolder("Enter your name");
+    _nameInput->setMaxLength(22);
     _nameInput->setFontSize(20);
     _nameInput->setFontColor(Color3B::BLACK);
     this->addChild(_nameInput);

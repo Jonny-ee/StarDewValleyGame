@@ -11,6 +11,17 @@ void GameTime::updateYears()
         _Month = 1;
     }
 }
+void GameTime::updateSeason()
+{
+    if (_Month >= 3 && _Month < 6)
+        _Season = "Spring";
+    else if (_Month >= 6 && _Month < 9)
+        _Season = "Summmer";
+    else if (_Month >= 9  && _Month < 12)
+        _Season = "Fall";
+    else if (_Month >= 12 && _Month < 3)
+        _Season = "Winter";
+}
 void GameTime::updateMonths()
 {
     if (_Day >= 31)
@@ -45,6 +56,7 @@ GameTime::GameTime()
     _Day = 1;
     _Minute = 0;
     _Hour = 6;
+    _Season = "Spring";
 }
 void GameTime::update()
 {
@@ -66,6 +78,7 @@ void GameTime::update()
     updateDays();
     updateMonths();
     updateYears();
+    updateSeason();
 }
 
 int GameTime::getYear() {
@@ -89,6 +102,9 @@ int GameTime::getHour() {
 int GameTime::getMinute()
 {
     return _Minute;
+}
+std::string GameTime::getSeason() {
+    return _Season;
 }
 
 int  GameTime::getAbsoluteTime() {
