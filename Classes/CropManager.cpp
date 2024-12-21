@@ -946,65 +946,60 @@ bool CropManager::harvestCrop(const Vec2& tilePos)
  */
 void CropManager::createHarvestDrop(const Vec2& position)
 {
+    // 在创建掉落物时就确定类型
+    std::string cropType;
+    for (const auto& info : _cropInfos)
+    {
+        if (info.position == position)
+        {
+            cropType = info.type;
+            break;
+        }
+    }
+    // 如果没找到作物类型，返回
+    if (cropType.empty())
+        return;
     // 创建掉落物精灵
     auto drop = Sprite::create("Plants.png");
     if (drop)
     {
-        // 根据作物类型设置掉落物贴图区域
-        for (const auto& info : _cropInfos)
+        // 根据保存的作物类型设置掉落物贴图区域
+        if (cropType == "corn")
         {
-            if (info.position == position)
-            {
-                if (info.type == "corn")
-                {
-                    drop->setTextureRect(Rect(80, 0, 16, 16));      // 玉米收获物
-                }
-                else if (info.type == "tomato")
-                {
-                    drop->setTextureRect(Rect(80, 16, 16, 16));     // 番茄收获物
-                }
-                break;
-            }
+            drop->setTextureRect(Rect(80, 0, 16, 16));      // 玉米收获物
+        }
+        else if (cropType == "tomato")
+        {
+            drop->setTextureRect(Rect(80, 16, 16, 16));     // 番茄收获物
         }
         // 设置位置（稍微偏移一点，避免完全重叠）
         drop->setPosition(position + Vec2(30, 0));
-        // 设置缩放比例为2.0
         drop->setScale(2.0f);
-        // 添加到场景
         _gameScene->addChild(drop);
-        // 创建定时器来检查距离
+        // 创建定时器来检查距离，使用捕获的cropType
         auto scheduler = Director::getInstance()->getScheduler();
-        scheduler->schedule([this, drop, position](float dt) {
+        scheduler->schedule([this, drop, cropType](float dt) {
             auto player = Player::getInstance();
             if (player)
             {
-                // 检查玩家是否足够近（16像素内）
                 if (player->getPosition().distance(drop->getPosition()) < 16)
                 {
-                    // 根据作物类型添加对应的收获物
+                    // 直接使用保存的作物类型添加物品
                     auto itemSystem = ItemSystem::getInstance();
-                    for (const auto& info : _cropInfos)
+                    if (cropType == "corn")
                     {
-                        if (info.position == position)
-                        {
-                            if (info.type == "corn")
-                            {
-                                itemSystem->addItem("corn", 1);
-                            }
-                            else if (info.type == "tomato")
-                            {
-                                itemSystem->addItem("tomato", 1);
-                            }
-                            break;
-                        }
+                        itemSystem->addItem("corn", 1);
+                    }
+                    else if (cropType == "tomato")
+                    {
+                        itemSystem->addItem("tomato", 1);
                     }
                     // 移除掉落物
                     drop->removeFromParent();
-                    // 停止定时器
                     Director::getInstance()->getScheduler()->unschedule("check_drop_distance", drop);
                 }
             }
-            }, drop, 0.1f, false, "check_drop_distance");  // 每0.1秒检查一次
+            }, drop, 0.1f, false, "check_drop_distance");
     }
 }
 
