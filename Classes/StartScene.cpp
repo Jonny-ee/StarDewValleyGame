@@ -18,7 +18,7 @@ bool StartScene::init() {
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     // 创建并添加开场图片
-    auto startImage = Sprite::create("start.png");  // 确保在Resources文件夹中有start.png
+    auto startImage = Sprite::create("start.png");  
     if (startImage) {
         // 将图片放在屏幕中央
         startImage->setPosition(Vec2(visibleSize.width / 2 + origin.x,
@@ -30,6 +30,19 @@ bool StartScene::init() {
         startImage->setScale(scaleX, scaleY);
 
         this->addChild(startImage);
+    }
+    auto startLogo = Sprite::create("Logo.png");
+    if (startLogo) {
+        // 将图片放在屏幕中央
+        startLogo->setPosition(Vec2(visibleSize.width / 2 + origin.x,
+            visibleSize.height / 2 + origin.y));
+
+        // 调整图片大小以适应屏幕
+        float scaleX = visibleSize.width / startLogo->getContentSize().width/2;
+        float scaleY = visibleSize.height / startLogo->getContentSize().height/2;
+        startLogo->setScale(scaleX, scaleY);
+
+        this->addChild(startLogo);
     }
 
     // 设置触摸监听
@@ -52,6 +65,6 @@ void StartScene::setupTouchListener() {
 
 void StartScene::switchToGameScene(float dt) {
     // 创建游戏场景并切换
-    auto gameScene = CharacterCreateScene::createScene();
-    Director::getInstance()->replaceScene(TransitionFade::create(1.0f, gameScene));
+    auto characterCreateScene = CharacterCreateScene::createScene();
+    Director::getInstance()->replaceScene(TransitionFade::create(1.0f, characterCreateScene));
 }

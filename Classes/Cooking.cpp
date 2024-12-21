@@ -18,7 +18,7 @@ Cooking* Cooking::create(GameMap* gameMap, Player* player) {
 bool Cooking::checkTriggerCondition() {
     if (!_player || !_gameMap || _isExecuting) return false;
 
-    Vec2 playerTilePos = _gameMap->convertToTileCoord(_player->getPosition());
+    const Vec2 playerTilePos = _gameMap->convertToTileCoord(_player->getPosition());
     return _gameMap->getMapName() == "House" &&
         std::abs(playerTilePos.x - TRIGGER_POS.x) < 0.5f &&
         std::abs(playerTilePos.y - TRIGGER_POS.y) < 0.5f;
@@ -32,7 +32,7 @@ void Cooking::executeEvent() {
     if(_itemSystem->hasEnoughItems("apple",3)&& _itemSystem->hasEnoughItems("bread", 3))
     {
         auto _skillSystem = SkillSystem::getInstance();
-        int count = _skillSystem->getSkillLevel(SkillType::COOKING);
+        const int count = _skillSystem->getSkillLevel(SkillType::COOKING);
         _itemSystem->addItem("CatFood",count);
         std::string _text = "Congratulations! You got ";
         _text += std::to_string(count);

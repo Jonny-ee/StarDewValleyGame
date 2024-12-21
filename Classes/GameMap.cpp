@@ -53,12 +53,12 @@ bool GameMap::loadMap(const std::string& mapName) {
     _tileMap->retain();
 
     // 获取地图和屏幕尺寸
-    Size mapSize = _tileMap->getMapSize();
-    Size tileSize = _tileMap->getTileSize();
-    Size visibleSize = Director::getInstance()->getVisibleSize();
+    const Size mapSize = _tileMap->getMapSize();
+    const Size tileSize = _tileMap->getTileSize();
+    const  Size visibleSize = Director::getInstance()->getVisibleSize();
 
     // 设置地图缩放
-    float scale = 2.5f;
+    const float scale = 2.5f;
     _tileMap->setScale(scale);
 
     this->addChild(_tileMap);
@@ -86,11 +86,11 @@ void GameMap::saveCurrentMapState() {
     auto backLayer = _tileMap->getLayer("Back");
     if (!backLayer) return;
 
-    Size mapSize = _tileMap->getMapSize();
+    const Size mapSize = _tileMap->getMapSize();
     // 遍历地图所有瓦片
     for (int x = 0; x < mapSize.width; x++) {
         for (int y = 0; y < mapSize.height; y++) {
-            int tileGID = backLayer->getTileGIDAt(Vec2(x, y));
+            const int tileGID = backLayer->getTileGIDAt(Vec2(x, y));
             // 如果是耕地（TILLED_TILE_ID = 681）
             if (tileGID == 681) {
                 MapObject obj;
@@ -132,15 +132,15 @@ Vec2 GameMap::convertToWorldCoord(const Vec2& tileCoord) const {
         return Vec2::ZERO;
     }
 
-    Size tileSize = _tileMap->getTileSize();
-    Size mapSize = _tileMap->getMapSize();
-    float scale = _tileMap->getScale();
+    const Size tileSize = _tileMap->getTileSize();
+    const Size mapSize = _tileMap->getMapSize();
+    const  float scale = _tileMap->getScale();
 
     // X坐标：方向一致，直接乘以瓦片宽度和缩放
-    float x = tileCoord.x * tileSize.width*scale;
+    const float x = tileCoord.x * tileSize.width*scale;
     // Y坐标：从地图底部开始计算
    // Tiled的Y是从上往下，而我们需要从下往上
-    float y = (mapSize.height- tileCoord.y) * tileSize.height * scale;
+    const  float y = (mapSize.height- tileCoord.y) * tileSize.height * scale;
 
     //CCLOG("坐标转换：瓦片坐标(%.0f, %.0f) -> 世界坐标(%.1f, %.1f)",tileCoord.x, tileCoord.y, x, y);
 
@@ -153,14 +153,14 @@ Vec2 GameMap::convertToTileCoord(const Vec2& worldPosition) const {
         return Vec2::ZERO;
     }
 
-    Size tileSize = _tileMap->getTileSize();//瓦片大小，本程序都是16*16
-    Size mapSize = _tileMap->getMapSize();//地图大小
-    float scale = _tileMap->getScale();
+    const  Size tileSize = _tileMap->getTileSize();//瓦片大小，本程序都是16*16
+    const Size mapSize = _tileMap->getMapSize();//地图大小
+    const  float scale = _tileMap->getScale();
 
     // X坐标：直接除以瓦片宽度和缩放
-    int x = worldPosition.x / (tileSize.width* scale);
+    const int x = worldPosition.x / (tileSize.width* scale);
     // Y坐标：从地图底部转换回Tiled的从上往下
-    int y = mapSize.height - worldPosition.y / (scale * tileSize.height);
+    const int y = mapSize.height - worldPosition.y / (scale * tileSize.height);
 
     //CCLOG("坐标转换：世界坐标(%.1f, %.1f) -> 瓦片坐标(%d, %d)",worldPosition.x, worldPosition.y, x, y);
 
@@ -169,7 +169,7 @@ Vec2 GameMap::convertToTileCoord(const Vec2& worldPosition) const {
 
 bool GameMap::checkForTransition(const Vec2& tilePos, TransitionInfo& outTransition) const {
     // 首先检查坐标是否在地图范围内
-    Size mapSize = _tileMap->getMapSize();
+    const Size mapSize = _tileMap->getMapSize();
     if (tilePos.x < 0 || tilePos.x >= mapSize.width ||
         tilePos.y < 0 || tilePos.y >= mapSize.height) {
         //CCLOG("传送检测：坐标 (%.1f, %.1f) 超出地图范围", tilePos.x, tilePos.y);
@@ -211,7 +211,7 @@ bool GameMap::isWalkable(const Vec2& worldPos) const {
         return false;
     }
 
-    Vec2 tilePos = convertToTileCoord(worldPos);
+    const Vec2 tilePos = convertToTileCoord(worldPos);
 
     // 检查宝箱碰撞
     if (isChestCollision(worldPos)) {
@@ -226,7 +226,7 @@ bool GameMap::isWalkable(const Vec2& worldPos) const {
             std::string layerName = layer->getLayerName();
             if (layerName.substr(0, 9) == "Buildings") {
                 // 检查该位置是否有图块
-                int tileGID = layer->getTileGIDAt(tilePos);
+                const int tileGID = layer->getTileGIDAt(tilePos);
                 if (tileGID > 0) {
                     return false;  // 任何Buildings层有图块都不可通行
                 }
@@ -234,7 +234,7 @@ bool GameMap::isWalkable(const Vec2& worldPos) const {
         }
     }
     // 检查坐标是否在地图范围内
-    Size mapSize = _tileMap->getMapSize();
+    const Size mapSize = _tileMap->getMapSize();
     if (tilePos.x < 0 || tilePos.x >= mapSize.width ||
         tilePos.y < 0 || tilePos.y >= mapSize.height) {
         //CCLOG("碰撞检测：位置 (%.0f, %.0f) 超出地图范围", tilePos.x, tilePos.y);
@@ -252,13 +252,13 @@ bool GameMap::isChestCollision(const Vec2& worldPos) const
     }
 
     // 转换为瓦片坐标
-    Vec2 tilePos = convertToTileCoord(worldPos);
+    const Vec2 tilePos = convertToTileCoord(worldPos);
 
     // 获取宝箱碰撞层
     auto chestLayer = _tileMap->getLayer("CollisionChest");
     if (chestLayer) {
         // 检查该位置是否有碰撞图块
-        int tileGID = chestLayer->getTileGIDAt(tilePos);
+        const int tileGID = chestLayer->getTileGIDAt(tilePos);
         if (tileGID > 0) {
             CCLOG("Chest collision detected at tile position (%.1f, %.1f)",
                 tilePos.x, tilePos.y);
@@ -286,12 +286,12 @@ void GameMap::repairBridge() {
 void GameMap::updateFrontTileVisibility(const Vec2& playerPos) {
     if (_frontLayers.empty()) return;
 
-    Vec2 currentTilePos = convertToTileCoord(playerPos);
+    const Vec2 currentTilePos = convertToTileCoord(playerPos);
     if (currentTilePos == _lastPlayerTilePos) return;
 
     // 恢复上一个位置的瓦片到完全不透明
     for (const auto& [layer, tilePos] : _fadedTiles) {
-        uint32_t gid = layer->getTileGIDAt(tilePos);
+        const auto gid = layer->getTileGIDAt(tilePos);
         if (gid > 0) {
             auto tile = layer->getTileAt(tilePos);
             tile->stopAllActions();
@@ -307,7 +307,7 @@ void GameMap::updateFrontTileVisibility(const Vec2& playerPos) {
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dy = -radius; dy <= radius; dy++) {
                 Vec2 checkPos(currentTilePos.x + dx, currentTilePos.y + dy);
-                uint32_t gid = layer->getTileGIDAt(checkPos);
+                const auto gid = layer->getTileGIDAt(checkPos);
                 if (gid > 0) {
                     auto tile = layer->getTileAt(checkPos);
                     tile->stopAllActions();
@@ -342,7 +342,7 @@ void GameMap::initFrontLayers() {
 }
 void GameMap::restoreAllFrontTiles() {
     for (const auto& [layer, tilePos] : _fadedTiles) {
-        uint32_t gid = layer->getTileGIDAt(tilePos);
+        const auto gid = layer->getTileGIDAt(tilePos);
         if (gid > 0) {
             auto tile = layer->getTileAt(tilePos);
             tile->stopAllActions();
@@ -372,18 +372,18 @@ void GameMap::refreshResources()
         return;
     }
 
-    Size mapSize = _tileMap->getMapSize();
+    const Size mapSize = _tileMap->getMapSize();
     for (int x = 0; x < mapSize.width; x++)
     {
         for (int y = 0; y < mapSize.height; y++)
         {
-            Vec2 tilePos(x, y);
-            int tileGID = backLayer->getTileGIDAt(tilePos);
+            const Vec2 tilePos(x, y);
+            const int tileGID = backLayer->getTileGIDAt(tilePos);
 
             if (tileGID == RESOURCE_REMOVED_TILE_ID)
             {
                 // 随机选择一个新的资源图块 ID
-                int newResourceID = RESOURCE_TILES[rand() % RESOURCE_TILES.size()];
+                const  int newResourceID = RESOURCE_TILES[rand() % RESOURCE_TILES.size()];
 
                 // 更新资源层
                 backLayer->setTileGID(newResourceID, tilePos);

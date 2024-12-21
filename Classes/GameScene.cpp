@@ -33,7 +33,7 @@ void GameScene::updateToolIcon()
     if (!toolIcon || !player) return;
 
     // 根据玩家当前工具设置图标
-    int toolIndex = static_cast<int>(player->getCurrentTool());
+    const int toolIndex = static_cast<int>(player->getCurrentTool());
 
     // 根据实际的枚举值设置对应的纹理区域
     switch (toolIndex) {
@@ -148,8 +148,8 @@ bool GameScene::init()
     }
 
     // 设置玩家初始位置
-    Vec2 tilePos = Vec2(14.5, 15);
-    Vec2 worldPos = _gameMap->convertToWorldCoord(tilePos);
+    const Vec2 tilePos = Vec2(14.5, 15);
+    const Vec2 worldPos = _gameMap->convertToWorldCoord(tilePos);
     player->setPosition(worldPos);
     player->setScale(3.0f);
 
@@ -226,8 +226,8 @@ bool GameScene::init()
     _statusUI = StatusUI::create();
     if (_statusUI) {
         // 设置位置到右上角
-        Size visibleSize = Director::getInstance()->getVisibleSize();
-        Vec2 origin = Director::getInstance()->getVisibleOrigin();
+        const Size visibleSize = Director::getInstance()->getVisibleSize();
+        const Vec2 origin = Director::getInstance()->getVisibleOrigin();
         _statusUI->setPosition(origin.x + visibleSize.width,
             origin.y + visibleSize.height);
 
@@ -266,7 +266,7 @@ void GameScene::onDayChanged()
     // 重置任务状态
     auto questSystem = QuestSystem::getInstance();
     auto gameTime = GameTime::getInstance();
-    int currentDay = gameTime->getDay();
+    const int currentDay = gameTime->getDay();
 
 
     // 第一天开始时，重置木头收集任务
@@ -310,7 +310,7 @@ void GameScene::update(float dt)
     GameTime* gameTime = GameTime::getInstance();
 
     // 记录更新前的日期
-    int oldDay = gameTime->getDay();
+    const int oldDay = gameTime->getDay();
 
     // 更新游戏时间
     gameTime->update();
@@ -328,7 +328,7 @@ void GameScene::update(float dt)
     player->update(dt);
 
     // 检查传送点
-    Vec2 playerTilePos = _gameMap->convertToTileCoord(player->getPosition());
+    const Vec2 playerTilePos = _gameMap->convertToTileCoord(player->getPosition());
     TransitionInfo transition;
     if (_gameMap->checkForTransition(playerTilePos, transition))
     {
@@ -380,14 +380,14 @@ void GameScene::update(float dt)
     {
         if (tipLabel->isVisible())
         {
-            Vec2 playerPos = player->getPosition();
+            const Vec2 playerPos = player->getPosition();
             // 设置在玩家头顶上方50像素
             tipLabel->setPosition(playerPos + Vec2(0, 50));
         }
     }
 
     // 更新作物提示
-    CropManager::getInstance()->updateTips(playerTilePos, player->getCurrentTool());
+  //  CropManager::getInstance()->updateTips(playerTilePos, player->getCurrentTool());
 
     // 检查所有事件
     for (auto event : _events)
@@ -412,17 +412,17 @@ void GameScene::updateCamera()
     if (_gameMap->getMapName() == "First")
         return;
 
-    Size visibleSize = Director::getInstance()->getVisibleSize();
-    Size mapSize = _gameMap->getTileMap()->getMapSize();
-    Size tileSize = _gameMap->getTileMap()->getTileSize();
-    float scale = _gameMap->getTileMap()->getScale();
+    const Size visibleSize = Director::getInstance()->getVisibleSize();
+    const Size mapSize = _gameMap->getTileMap()->getMapSize();
+    const Size tileSize = _gameMap->getTileMap()->getTileSize();
+    const float scale = _gameMap->getTileMap()->getScale();
 
     // 计算地图的实际像素大小
-    float mapWidth = mapSize.width * tileSize.width * scale;
-    float mapHeight = mapSize.height * tileSize.height * scale;
+    const  float mapWidth = mapSize.width * tileSize.width * scale;
+    const float mapHeight = mapSize.height * tileSize.height * scale;
 
     // 获取玩家位置
-    Vec2 playerPos = player->getPosition();
+    const Vec2 playerPos = player->getPosition();
 
     float x, y;
 
@@ -447,8 +447,8 @@ void GameScene::updateCamera()
         y = std::min(y, mapHeight - visibleSize.height / 2);
     }
 
-    Vec2 pointA = Vec2(visibleSize.width / 2, visibleSize.height / 2);
-    Vec2 pointB = Vec2(x, y);
+    const Vec2 pointA = Vec2(visibleSize.width / 2, visibleSize.height / 2);
+    const Vec2 pointB = Vec2(x, y);
     Vec2 offset = pointA - pointB;
 
 
@@ -581,8 +581,8 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
     }
     // 获取当前日期
     auto gameTime = GameTime::getInstance();
-    int currentDay = gameTime->getDay();
-    int currentMonth = gameTime->getMonth();
+    const int currentDay = gameTime->getDay();
+    const int currentMonth = gameTime->getMonth();
 
     // 检查是否是切换到Town地图
     if (mapName == "Town") {
@@ -604,7 +604,7 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
 
     // 重用现有玩家，而不是创建新的（修复原来多重玩家的bug）
     if (currentPlayer) {
-        Vec2 worldPos = _gameMap->convertToWorldCoord(targetTilePos);
+        const Vec2 worldPos = _gameMap->convertToWorldCoord(targetTilePos);
         currentPlayer->setPosition(worldPos);
         currentPlayer->setGameMap(_gameMap);
         this->addChild(currentPlayer, 1);
@@ -642,9 +642,7 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         }
 
         // 如果有进行中的任务，重新创建任务UI
-        auto questSystem = QuestSystem::getInstance();
-        auto gameTime = GameTime::getInstance();
-        int currentDay = gameTime->getDay();
+        const auto questSystem = QuestSystem::getInstance();
 
         if ((currentDay == 1 && questSystem->getQuestState(QuestType::COLLECT_WOOD) == QuestState::IN_PROGRESS) ||
             (currentDay == 2 && questSystem->getQuestState(QuestType::REPAIR_BRIDGE) == QuestState::IN_PROGRESS)) {
@@ -684,10 +682,7 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
     if (mapName == "Mine") {
         CCLOG("Switch to the mine map...");
 
-        auto gameTime = GameTime::getInstance();
-        int currentDay = gameTime->getDay();
-        int currentMonth = gameTime->getMonth();
-        int currentYear = gameTime->getYear();
+        const  int currentYear = gameTime->getYear();
 
         // 检查是否需要刷新宝箱
         bool shouldRefreshChests = false;
@@ -733,10 +728,10 @@ void GameScene::initMouseListener()
     mouseListener->onMouseMove = [=](Event* event)
         {
             EventMouse* e = (EventMouse*)event;
-            Vec2 mousePos = e->getLocation();
+            const Vec2 mousePos = e->getLocation();
 
             if (lewis) {
-                float distance = player->getPosition().distance(lewis->getPosition());
+                const float distance = player->getPosition().distance(lewis->getPosition());
 
                 if (distance < 50.0f) {
                     // 鼠标靠近Lewis，手上有礼物，变成礼物光标
@@ -754,7 +749,7 @@ void GameScene::initMouseListener()
                 }
             }
             if (marlon) {
-                float distance = player->getPosition().distance(marlon->getPosition());
+                const float distance = player->getPosition().distance(marlon->getPosition());
 
                 if (distance < 50.0f) {
                     Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
@@ -764,7 +759,7 @@ void GameScene::initMouseListener()
                 }
             }
             if (maru) {
-                float distance = player->getPosition().distance(maru->getPosition());
+                const float distance = player->getPosition().distance(maru->getPosition());
 
                 if (distance < 120.0f) {
                     Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
@@ -774,7 +769,7 @@ void GameScene::initMouseListener()
                 }
             }
             if (alex) {
-                float distance = player->getPosition().distance(alex->getPosition());
+                const float distance = player->getPosition().distance(alex->getPosition());
 
                 if (distance < 50.0f) {
                     Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
@@ -787,8 +782,8 @@ void GameScene::initMouseListener()
 
     mouseListener->onMouseDown = [=](Event* event)
         {
-            EventMouse* e = (EventMouse*)event;
-            Vec2 clickPos = e->getLocation(); // 获取点击位置
+            const EventMouse* e = (EventMouse*)event;
+            const Vec2 clickPos = e->getLocation(); // 获取点击位置
 
             // 鼠标点击时触发开垦
             if (player && player->getCurrentTool() == Player::ToolType::SHOVEL)
@@ -809,13 +804,13 @@ void GameScene::initMouseListener()
 
             // 检查是否靠近并点击了刘易斯
             if (lewis) {
-                float distance = player->getPosition().distance(lewis->getPosition());
+                const  float distance = player->getPosition().distance(lewis->getPosition());
 
                 if (distance < 50.0f) {
                     player->setCanPerformAction(false); // 禁止玩家动作
 
                     // 获取任务状态
-                    auto questState = QuestSystem::getInstance()->getQuestState(QuestType::COLLECT_WOOD);
+                    const  auto questState = QuestSystem::getInstance()->getQuestState(QuestType::COLLECT_WOOD);
 
                     if (questState == QuestState::COMPLETED) {
                         // 如果任务已完成，触发普通对话
@@ -845,7 +840,7 @@ void GameScene::initMouseListener()
             }
             // 检查是否靠近并点击了马龙
             if (marlon) {
-                float distance = player->getPosition().distance(marlon->getPosition());
+                const float distance = player->getPosition().distance(marlon->getPosition());
 
                 if (distance < 50.0f) {
                     player->setCanPerformAction(false); // 禁止玩家动作
@@ -860,7 +855,7 @@ void GameScene::initMouseListener()
             }
             // 检查是否靠近并点击了玛鲁
             if (maru) {
-                float distance = player->getPosition().distance(maru->getPosition());
+                const float distance = player->getPosition().distance(maru->getPosition());
 
                 if (distance < 150.0f) {
                     player->setCanPerformAction(false); // 禁止玩家动作
@@ -875,7 +870,7 @@ void GameScene::initMouseListener()
             }
             // 检查是否靠近并点击了艾利克斯
             if (alex) {
-                float distance = player->getPosition().distance(alex->getPosition());
+                const float distance = player->getPosition().distance(alex->getPosition());
 
                 if (distance < 50.0f) {
                     player->setCanPerformAction(false); // 禁止玩家动作
@@ -891,7 +886,7 @@ void GameScene::initMouseListener()
             // 检查是否靠近并点击了猪
             if (!pigs.empty()) {  // 确保vector不为空
                 for (auto pig : pigs) {  // 遍历所有的pig
-                    float distance = player->getPosition().distance(pig->getPosition());
+                    const float distance = player->getPosition().distance(pig->getPosition());
                     if (distance < 50.0f) {
                         if (player->getCurrentTool() == Player::ToolType::CARROT) {
                             // 如果玩家手持胡萝卜，触发吃饱了动画
@@ -904,7 +899,7 @@ void GameScene::initMouseListener()
             // 检查是否靠近并点击了鸡
             if (!chickens.empty()) {  // 确保vector不为空
                 for (auto chicken : chickens) {
-                    float distance = player->getPosition().distance(chicken->getPosition());
+                    const  float distance = player->getPosition().distance(chicken->getPosition());
                     if (distance < 50.0f) {
                         if (player->getCurrentTool() == Player::ToolType::CARROT) {
                             // 如果玩家手持胡萝卜，触发吃饱了动画
@@ -917,7 +912,7 @@ void GameScene::initMouseListener()
             // 检查是否靠近并点击了羊
             if (!sheeps.empty()) {  // 确保vector不为空
                 for (auto sheep : sheeps) {
-                    float distance = player->getPosition().distance(sheep->getPosition());
+                    const float distance = player->getPosition().distance(sheep->getPosition());
                     if (distance < 50.0f) {
                         if (player->getCurrentTool() == Player::ToolType::CARROT) {
                             // 如果玩家手持胡萝卜，触发吃饱了动画
@@ -961,8 +956,8 @@ void GameScene::initLewis()
 
     // 检查当前日期和任务状态
     auto gameTime = GameTime::getInstance();
-    auto questSystem = QuestSystem::getInstance();
-    int currentDay = gameTime->getDay();
+    const  auto questSystem = QuestSystem::getInstance();
+    const int currentDay = gameTime->getDay();
 
     // 第一天检查木头任务
     if (currentDay == 1 &&
@@ -987,8 +982,8 @@ void GameScene::initMarlon()
     }
 
     // 设置马龙初始位置
-    Vec2 marlon_tilePos = Vec2(12, 10);
-    Vec2 marlon_worldPos = _gameMap->convertToWorldCoord(marlon_tilePos);
+    const  Vec2 marlon_tilePos = Vec2(12, 10);
+    const Vec2 marlon_worldPos = _gameMap->convertToWorldCoord(marlon_tilePos);
     marlon->setPosition(marlon_worldPos);
 
     this->addChild(marlon, 1);
@@ -1006,8 +1001,8 @@ void GameScene::initMaru()
     }
 
     // 设置玛鲁初始位置
-    Vec2 maru_tilePos = Vec2(7, 14);
-    Vec2 maru_worldPos = _gameMap->convertToWorldCoord(maru_tilePos);
+    const Vec2 maru_tilePos = Vec2(7, 14);
+    const Vec2 maru_worldPos = _gameMap->convertToWorldCoord(maru_tilePos);
     maru->setPosition(maru_worldPos);
 
     this->addChild(maru, 1);
@@ -1025,8 +1020,8 @@ void GameScene::initAlex()
     }
 
     // 设置艾利克斯初始位置
-    Vec2 alex_tilePos = Vec2(21, 20);
-    Vec2 alex_worldPos = _gameMap->convertToWorldCoord(alex_tilePos);
+    const Vec2 alex_tilePos = Vec2(21, 20);
+    const Vec2 alex_worldPos = _gameMap->convertToWorldCoord(alex_tilePos);
     alex->setPosition(alex_worldPos);
 
     this->addChild(alex, 1);
@@ -1040,8 +1035,8 @@ void GameScene::createPig(const Vec2& initialPosition, const std::vector<Vec2>& 
     if (newPig) {
         newPig->setPosition(initialPosition); // 设置初始位置
         // 设置猪初始位置
-        Vec2 newpig_tilePos = Vec2(initialPosition);
-        Vec2 newpig_worldPos = _gameMap->convertToWorldCoord(newpig_tilePos);
+        const Vec2 newpig_tilePos = Vec2(initialPosition);
+        const Vec2 newpig_worldPos = _gameMap->convertToWorldCoord(newpig_tilePos);
         newPig->setPosition(newpig_worldPos);
         newPig->setPath(path); // 设置路径
         this->addChild(newPig, 1); // 将猪添加到场景中
@@ -1060,8 +1055,8 @@ void GameScene::createPig(const Vec2& initialPosition)
     if (staticPig) {
         staticPig->setPosition(initialPosition); // 设置初始位置
         // 设置猪初始位置
-        Vec2 staticpig_tilePos = Vec2(initialPosition);
-        Vec2 staticpig_worldPos = _gameMap->convertToWorldCoord(staticpig_tilePos);
+        const Vec2 staticpig_tilePos = Vec2(initialPosition);
+        const Vec2 staticpig_worldPos = _gameMap->convertToWorldCoord(staticpig_tilePos);
         staticPig->setPosition(staticpig_worldPos);
         this->addChild(staticPig, 1); // 将静止猪添加到场景中
         pigs.push_back(staticPig); // 将静止猪添加到向量中
@@ -1078,29 +1073,29 @@ void GameScene::initPig()
 {
     isPigCreated = true; // 设置标志为已创建
     // 创建第一只猪
-    Vec2 movePig1Path1_tilePos = Vec2(11, 14);
-    Vec2 movePig1Path2_tilePos = Vec2(11, 18);
+    const Vec2 movePig1Path1_tilePos = Vec2(11, 14);
+    const Vec2 movePig1Path2_tilePos = Vec2(11, 18);
 
-    Vec2 movePig1Path1_worldPos = _gameMap->convertToWorldCoord(movePig1Path1_tilePos);
-    Vec2 movePig1Path2_worldPos = _gameMap->convertToWorldCoord(movePig1Path2_tilePos);
+    const Vec2 movePig1Path1_worldPos = _gameMap->convertToWorldCoord(movePig1Path1_tilePos);
+    const  Vec2 movePig1Path2_worldPos = _gameMap->convertToWorldCoord(movePig1Path2_tilePos);
     std::vector<Vec2> pig1Path = { movePig1Path1_worldPos,movePig1Path2_worldPos };
     createPig(Vec2(11, 16), pig1Path); // 第一只猪的位置和路径
 
     // 创建第二只猪
-    Vec2 movePig2Path1_tilePos = Vec2(6, 14);
-    Vec2 movePig2Path2_tilePos = Vec2(10, 14);
+    const Vec2 movePig2Path1_tilePos = Vec2(6, 14);
+    const Vec2 movePig2Path2_tilePos = Vec2(10, 14);
 
-    Vec2 movePig2Path1_worldPos = _gameMap->convertToWorldCoord(movePig2Path1_tilePos);
-    Vec2 movePig2Path2_worldPos = _gameMap->convertToWorldCoord(movePig2Path2_tilePos);
+    const Vec2 movePig2Path1_worldPos = _gameMap->convertToWorldCoord(movePig2Path1_tilePos);
+    const Vec2 movePig2Path2_worldPos = _gameMap->convertToWorldCoord(movePig2Path2_tilePos);
     std::vector<Vec2> pig2Path = { movePig2Path1_worldPos,movePig2Path2_worldPos };
     createPig(Vec2(9, 14), pig2Path); // 第二只猪的位置和路径
 
     // 创建第三只猪
-    Vec2 movePig3Path1_tilePos = Vec2(14, 19);
-    Vec2 movePig3Path2_tilePos = Vec2(14, 17);
+    const Vec2 movePig3Path1_tilePos = Vec2(14, 19);
+    const Vec2 movePig3Path2_tilePos = Vec2(14, 17);
 
-    Vec2 movePig3Path1_worldPos = _gameMap->convertToWorldCoord(movePig3Path1_tilePos);
-    Vec2 movePig3Path2_worldPos = _gameMap->convertToWorldCoord(movePig3Path2_tilePos);
+    const Vec2 movePig3Path1_worldPos = _gameMap->convertToWorldCoord(movePig3Path1_tilePos);
+    const Vec2 movePig3Path2_worldPos = _gameMap->convertToWorldCoord(movePig3Path2_tilePos);
     std::vector<Vec2> pig3Path = { movePig3Path1_worldPos,movePig3Path2_worldPos };
     createPig(Vec2(14, 18), pig3Path); // 第三只猪的位置和路径
 
@@ -1114,8 +1109,8 @@ void GameScene::createChicken(const Vec2& initialPosition, const std::vector<Vec
     if (newChicken) {
         newChicken->setPosition(initialPosition); // 设置初始位置
         // 设置鸡初始位置
-        Vec2 newChicken_tilePos = Vec2(initialPosition);
-        Vec2 newChicken_worldPos = _gameMap->convertToWorldCoord(newChicken_tilePos);
+        const Vec2 newChicken_tilePos = Vec2(initialPosition);
+        const Vec2 newChicken_worldPos = _gameMap->convertToWorldCoord(newChicken_tilePos);
         newChicken->setPosition(newChicken_worldPos);
         newChicken->setPath(path); // 设置路径
         this->addChild(newChicken, 1); // 将鸡添加到场景中
@@ -1134,8 +1129,8 @@ void GameScene::createChicken(const Vec2& initialPosition)
     if (staticChicken) {
         staticChicken->setPosition(initialPosition); // 设置初始位置
         // 设置鸡初始位置
-        Vec2 staticChicken_tilePos = Vec2(initialPosition);
-        Vec2 staticChicken_worldPos = _gameMap->convertToWorldCoord(staticChicken_tilePos);
+        const Vec2 staticChicken_tilePos = Vec2(initialPosition);
+        const Vec2 staticChicken_worldPos = _gameMap->convertToWorldCoord(staticChicken_tilePos);
         staticChicken->setPosition(staticChicken_worldPos);
         this->addChild(staticChicken, 1); // 将静止猪\鸡添加到场景中
         chickens.push_back(staticChicken); // 将静止猪添加到向量中
@@ -1152,11 +1147,11 @@ void GameScene::initChicken()
 {
     isChickenCreated = true; // 设置标志为已创建
     // 创建第一只鸡
-    Vec2 moveChicken1Path1_tilePos = Vec2(26, 16);
-    Vec2 moveChicken1Path2_tilePos = Vec2(30, 16);
+    const Vec2 moveChicken1Path1_tilePos = Vec2(26, 16);
+    const Vec2 moveChicken1Path2_tilePos = Vec2(30, 16);
 
-    Vec2 moveChicken1Path1_worldPos = _gameMap->convertToWorldCoord(moveChicken1Path1_tilePos);
-    Vec2 moveChicken1Path2_worldPos = _gameMap->convertToWorldCoord(moveChicken1Path2_tilePos);
+    const Vec2 moveChicken1Path1_worldPos = _gameMap->convertToWorldCoord(moveChicken1Path1_tilePos);
+    const Vec2 moveChicken1Path2_worldPos = _gameMap->convertToWorldCoord(moveChicken1Path2_tilePos);
     std::vector<Vec2> Chicken1Path = { moveChicken1Path1_worldPos,moveChicken1Path2_worldPos };
     createChicken(Vec2(28, 16), Chicken1Path); // 第一只鸡的位置和路径
 
@@ -1170,8 +1165,8 @@ void GameScene::createSheep(const Vec2& initialPosition, const std::vector<Vec2>
     if (newSheep) {
         newSheep->setPosition(initialPosition); // 设置初始位置
         // 设置羊初始位置
-        Vec2 newSheep_tilePos = Vec2(initialPosition);
-        Vec2 newSheep_worldPos = _gameMap->convertToWorldCoord(newSheep_tilePos);
+        const Vec2 newSheep_tilePos = Vec2(initialPosition);
+        const Vec2 newSheep_worldPos = _gameMap->convertToWorldCoord(newSheep_tilePos);
         newSheep->setPosition(newSheep_worldPos);
         newSheep->setPath(path); // 设置路径
         this->addChild(newSheep, 1); // 将羊添加到场景中
@@ -1190,8 +1185,8 @@ void GameScene::createSheep(const Vec2& initialPosition)
     if (staticSheep) {
         staticSheep->setPosition(initialPosition); // 设置初始位置
         // 设置羊初始位置
-        Vec2 staticSheep_tilePos = Vec2(initialPosition);
-        Vec2 staticSheep_worldPos = _gameMap->convertToWorldCoord(staticSheep_tilePos);
+        const  Vec2 staticSheep_tilePos = Vec2(initialPosition);
+        const Vec2 staticSheep_worldPos = _gameMap->convertToWorldCoord(staticSheep_tilePos);
         staticSheep->setPosition(staticSheep_worldPos);
         this->addChild(staticSheep, 1); // 将静止羊添加到场景中
         sheeps.push_back(staticSheep); // 将静止羊添加到向量中
@@ -1208,20 +1203,20 @@ void GameScene::initSheep()
 {
     isSheepCreated = true; // 设置标志为已创建
     // 创建第一只羊
-    Vec2 moveSheep1Path1_tilePos = Vec2(28, 17);
-    Vec2 moveSheep1Path2_tilePos = Vec2(28, 22);
+    const  Vec2 moveSheep1Path1_tilePos = Vec2(28, 17);
+    const  Vec2 moveSheep1Path2_tilePos = Vec2(28, 22);
 
-    Vec2 moveSheep1Path1_worldPos = _gameMap->convertToWorldCoord(moveSheep1Path1_tilePos);
-    Vec2 moveSheep1Path2_worldPos = _gameMap->convertToWorldCoord(moveSheep1Path2_tilePos);
+    const Vec2 moveSheep1Path1_worldPos = _gameMap->convertToWorldCoord(moveSheep1Path1_tilePos);
+    const Vec2 moveSheep1Path2_worldPos = _gameMap->convertToWorldCoord(moveSheep1Path2_tilePos);
     std::vector<Vec2> sheep1Path = { moveSheep1Path1_worldPos,moveSheep1Path2_worldPos };
     createSheep(Vec2(28, 20), sheep1Path); // 第一只羊的位置和路径
 
     // 创建第二只羊
-    Vec2 moveSheep2Path1_tilePos = Vec2(23, 19);
-    Vec2 moveSheep2Path2_tilePos = Vec2(27, 19);
+    const  Vec2 moveSheep2Path1_tilePos = Vec2(23, 19);
+    const Vec2 moveSheep2Path2_tilePos = Vec2(27, 19);
 
-    Vec2 moveSheep2Path1_worldPos = _gameMap->convertToWorldCoord(moveSheep2Path1_tilePos);
-    Vec2 moveSheep2Path2_worldPos = _gameMap->convertToWorldCoord(moveSheep2Path2_tilePos);
+    const Vec2 moveSheep2Path1_worldPos = _gameMap->convertToWorldCoord(moveSheep2Path1_tilePos);
+    const Vec2 moveSheep2Path2_worldPos = _gameMap->convertToWorldCoord(moveSheep2Path2_tilePos);
     std::vector<Vec2> sheep2Path = { moveSheep2Path1_worldPos,moveSheep2Path2_worldPos };
     createSheep(Vec2(26, 19), sheep2Path); // 第二只羊的位置和路径
 
@@ -1233,7 +1228,7 @@ void GameScene::createTree(const Vec2& initialPosition)
 {
     Tree* tree = Tree::create("TileSheets/fruitTrees.png", 100);
     if (tree) {
-        Vec2 tree_worldPos = _gameMap->convertToWorldCoord(initialPosition);
+        const Vec2 tree_worldPos = _gameMap->convertToWorldCoord(initialPosition);
         tree->setPosition(tree_worldPos);
 
         // 设置树木被砍倒后的回调
@@ -1280,8 +1275,8 @@ void GameScene::createTree(const Vec2& initialPosition)
                 Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, woodSprite);
 
                 // 添加掉落动画
-                auto dropDistance = 50.0f;
-                auto dropDuration = 0.5f;
+                const  auto dropDistance = 50.0f;
+                const  auto dropDuration = 0.5f;
                 woodSprite->setPositionY(woodSprite->getPositionY() + dropDistance);
                 auto dropAction = EaseOut::create(
                     MoveBy::create(dropDuration, Vec2(0, -dropDistance)),
@@ -1337,26 +1332,26 @@ void GameScene::initChests()
     for (auto& obj : objects)
     {
         auto& dict = obj.asValueMap();
-        float x = dict["x"].asFloat();
-        float y = dict["y"].asFloat();
+        const float x = dict["x"].asFloat();
+        const  float y = dict["y"].asFloat();
 
         // 创建宝箱
         auto chest = Chest::create();
         if (chest)
         {
             // 获取地图的瓦片大小和缩放比例
-            Size tileSize = _gameMap->getTileMap()->getTileSize();
-            float scale = _gameMap->getTileMap()->getScale();
+            const Size tileSize = _gameMap->getTileMap()->getTileSize();
+            const  float scale = _gameMap->getTileMap()->getScale();
 
             // 将 Tiled 对象坐标转换为瓦片坐标
-            float tileX = x / tileSize.width;
-            float tileY = y / tileSize.height;
+            const float tileX = x / tileSize.width;
+            const float tileY = y / tileSize.height;
 
             CCLOG("Converting chest position: Tiled(%.1f, %.1f) -> Tile(%.1f, %.1f)",
                 x, y, tileX, tileY);
 
             // 使用 GameMap 的转换方法获取世界坐标
-            Vec2 worldPos = _gameMap->convertToWorldCoord(Vec2(tileX, tileY));
+            const Vec2 worldPos = _gameMap->convertToWorldCoord(Vec2(tileX, tileY));
 
             chest->setPosition(worldPos);
             chest->setScale(2.0f);
@@ -1414,15 +1409,15 @@ void GameScene::hideQuestMark(Node* target) {
 
 void GameScene::updateQuestUI() {
     if (_questTipLabel) {
-        auto questSystem = QuestSystem::getInstance();
+        const auto questSystem = QuestSystem::getInstance();
         auto gameTime = GameTime::getInstance();
-        int currentDay = gameTime->getDay();
+        const  int currentDay = gameTime->getDay();
 
         if (currentDay == 1 &&
             questSystem->getQuestState(QuestType::COLLECT_WOOD) == QuestState::IN_PROGRESS) {
             // 木头收集任务UI
             auto& questData = questSystem->getQuestData(QuestType::COLLECT_WOOD);
-            int woodCount = ItemSystem::getInstance()->getItemCount("wood");
+            const int woodCount = ItemSystem::getInstance()->getItemCount("wood");
             _questTipLabel->setString(questData.title + ": " +
                 std::to_string(woodCount) + "/" +
                 std::to_string(questData.targetAmount));
@@ -1439,7 +1434,7 @@ void GameScene::updateQuestUI() {
 void GameScene::handleQuestDialogue(Lewis* lewis) {
     if (!lewis) return;
 
-    auto questSystem = QuestSystem::getInstance();
+    const  auto questSystem = QuestSystem::getInstance();
     if (!questSystem) return;
 
     auto gameTime = GameTime::getInstance();
@@ -1447,7 +1442,7 @@ void GameScene::handleQuestDialogue(Lewis* lewis) {
 
     // 第一天的木头收集任务
     if (currentDay == 1) {
-        auto woodQuestState = questSystem->getQuestState(QuestType::COLLECT_WOOD);
+        const auto woodQuestState = questSystem->getQuestState(QuestType::COLLECT_WOOD);
         if (woodQuestState != QuestState::COMPLETED) {  // 只有未完成时才处理任务
             handleWoodQuest(lewis, woodQuestState);
             return;
@@ -1455,7 +1450,7 @@ void GameScene::handleQuestDialogue(Lewis* lewis) {
     }
     // 第二天的修桥任务
     else if (currentDay == 2) {
-        auto bridgeQuestState = questSystem->getQuestState(QuestType::REPAIR_BRIDGE);
+        const auto bridgeQuestState = questSystem->getQuestState(QuestType::REPAIR_BRIDGE);
         if (bridgeQuestState != QuestState::COMPLETED) {  // 只有未完成时才处理任务
             handleBridgeQuest(lewis, bridgeQuestState);
             return;
@@ -1485,7 +1480,7 @@ void GameScene::handleWoodQuest(Lewis* lewis, QuestState questState) {
         if (!_questTipLabel) {
             _questTipLabel = Label::createWithTTF("", "fonts/arial.ttf", 24);
             if (_questTipLabel) {
-                Size visibleSize = Director::getInstance()->getVisibleSize();
+                const Size visibleSize = Director::getInstance()->getVisibleSize();
                 // 将Label添加为HUD层的子节点
                 this->addChild(_questTipLabel, 10);
                 _questTipLabel->setAnchorPoint(Vec2(1, 1)); // 设置右上角为锚点
@@ -1499,7 +1494,7 @@ void GameScene::handleWoodQuest(Lewis* lewis, QuestState questState) {
         updateQuestUI();
     }
     else if (questState == QuestState::IN_PROGRESS) {
-        int woodCount = ItemSystem::getInstance()->getItemCount("wood");
+        const int woodCount = ItemSystem::getInstance()->getItemCount("wood");
         auto& questData = questSystem->getQuestData(QuestType::COLLECT_WOOD);
 
         if (woodCount >= questData.targetAmount) {
@@ -1599,8 +1594,8 @@ void GameScene::handleBridgeQuest(Lewis* lewis, QuestState questState) {
 // 更新任务UI位置
 void GameScene::updateQuestUIPosition() {
     if (_questTipLabel) {
-        Size visibleSize = Director::getInstance()->getVisibleSize();
-        Vec2 origin = Director::getInstance()->getVisibleOrigin();
+        const Size visibleSize = Director::getInstance()->getVisibleSize();
+        const Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
         // 计算屏幕右上角的位置
         Vec2 position = Vec2(origin.x + visibleSize.width - 20,  // 右边缘留20像素边距
@@ -1616,7 +1611,7 @@ void GameScene::updateQuestUIPosition() {
 void GameScene::checkQuestProgress() {
     auto questSystem = QuestSystem::getInstance();
     if (questSystem->getQuestState(QuestType::COLLECT_WOOD) == QuestState::IN_PROGRESS) {
-        int woodCount = ItemSystem::getInstance()->getItemCount("wood");
+        const int woodCount = ItemSystem::getInstance()->getItemCount("wood");
         questSystem->updateQuestProgress(QuestType::COLLECT_WOOD, woodCount);
         updateQuestUI();
     }

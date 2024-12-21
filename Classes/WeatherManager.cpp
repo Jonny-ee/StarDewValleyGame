@@ -31,7 +31,7 @@ Weather* WeatherManager::getCurrentWeather() {
     return _currentWeather;
 }
 void WeatherManager::randomRefreshWeather() {
-    int randomNum = rand() % 10;  // 生成0到9的随机数,对应各种天气，目前设置为3种天气
+    const int randomNum = rand() % 10;  // 生成0到9的随机数,对应各种天气，目前设置为3种天气
     Weather* newWeather = nullptr;
     switch (randomNum) {
         case 0:

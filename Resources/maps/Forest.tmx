@@ -2,7 +2,7 @@
 <map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="60" height="32" tilewidth="16" tileheight="16" infinite="0" nextlayerid="11" nextobjectid="3">
  <properties>
   <property name="Outdoors" type="bool" value="true"/>
-  <property name="Warp" value="59 15 Farm 16 1 59 16 Farm 17 1"/>
+  <property name="Warp" value="59 15 Farm 16 2 59 16 Farm 17 2"/>
  </properties>
  <tileset firstgid="1" source="../AllTSX/spring_outdoorsTileSheet.tsx"/>
  <layer id="1" name="Back" width="60" height="32">
