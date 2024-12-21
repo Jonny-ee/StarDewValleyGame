@@ -386,6 +386,13 @@ void CropManager::updateTips(const Vec2& playerTilePos, Player::ToolType playerT
             }
         }
     }
+    // 检查是否可以施肥
+    if (canFertilize(playerTilePos) &&
+        ItemSystem::getInstance()->getItemCount("fertilizer") > 0)
+    {
+        showTip("Press F to fertilize", playerTilePos);
+        return;
+    }
     // 其他情况隐藏提示（除了当前位置已有作物，即可能重复种植）
     if (!hasCropAt(playerTilePos))
     {
@@ -603,6 +610,23 @@ void CropManager::initKeyboardListener()
                     else
                     {
                         CCLOG("Cannot harvest at this position");
+                    }
+                }
+            }
+            else if (keyCode == EventKeyboard::KeyCode::KEY_F)  // F键施肥
+            {
+                auto player = Player::getInstance();
+                if (!player)
+                    return;
+
+                Vec2 playerPos = player->getPosition();
+                Vec2 playerTilePos = _gameMap->convertToTileCoord(playerPos);
+
+                if (canFertilize(playerTilePos))
+                {
+                    if (fertilizeCrop(playerTilePos))
+                    {
+                        CCLOG("Successfully fertilized crop");
                     }
                 }
             }
@@ -945,4 +969,58 @@ void CropManager::createHarvestDrop(const Vec2& position)
             }
             }, drop, 0.1f, false, "check_drop_distance");  // 每0.1秒检查一次
     }
+}
+
+
+bool CropManager::canFertilize(const Vec2& tilePos) const
+{
+    for (const auto& info : _cropInfos)
+    {
+        if (info.tilePos == tilePos && info.growthStage < FINAL_GROWTH_STAGE)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CropManager::fertilizeCrop(const Vec2& tilePos)
+{
+    auto itemSystem = ItemSystem::getInstance();
+    if (!itemSystem->hasEnoughItems("fertilizer", 1))
+    {
+        return false;
+    }
+    for (size_t i = 0; i < _cropInfos.size(); i++)
+    {
+        if (_cropInfos[i].tilePos == tilePos && _cropInfos[i].growthStage < FINAL_GROWTH_STAGE)
+        {
+            // 消耗肥料
+            itemSystem->removeItem("fertilizer", 1);
+
+            // 增加生长阶段
+            _cropInfos[i].growthStage++;
+
+            // 更新作物显示
+            if (i < _crops.size() && _crops[i])
+            {
+                if (_cropInfos[i].type == "corn")
+                {
+                    if (auto corn = dynamic_cast<Corn*>(_crops[i]))
+                    {
+                        corn->updateGrowthStage(_cropInfos[i].growthStage);
+                    }
+                }
+                else if (_cropInfos[i].type == "tomato")
+                {
+                    if (auto tomato = dynamic_cast<Tomato*>(_crops[i]))
+                    {
+                        tomato->updateGrowthStage(_cropInfos[i].growthStage);
+                    }
+                }
+            }
+            return true;
+        }
+    }
+    return false;
 }

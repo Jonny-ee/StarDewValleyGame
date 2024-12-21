@@ -246,6 +246,7 @@ bool GameScene::init()
     ItemSystem* itemSystem = ItemSystem::getInstance();
     itemSystem->addItem("corn seed", 5);
     itemSystem->addItem("tomato seed", 5);
+    itemSystem->addItem("fertilizer", 5);
 
     auto weatherManager = WeatherManager::getInstance();
     weatherManager->setWeather(NormalWeather::create());

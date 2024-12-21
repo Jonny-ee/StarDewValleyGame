@@ -53,15 +53,17 @@ public:
     bool plantCrop(const Vec2& tilePos);                    // 根据当前选择的种子类型种植作物
     bool canPlant(const Vec2& tilePos) const;               // 检查指定位置是否可以种植
     bool plantCorn(const Vec2& tilePos);                    // 在指定位置种植玉米
-
     bool plantTomato(const Vec2& tilePos);                  // 在指定位置种植番茄
-
     void initKeyboardListener();                            // 初始化键盘监听
 
+    // 施肥相关
+    bool canFertilize(const Vec2& tilePos) const;  // 检查指定位置是否可以施肥
+    bool fertilizeCrop(const Vec2& tilePos);       // 对指定位置的作物施肥
+
     // 保存和加载相关
-    void saveCrops();
-    void loadCrops();
-    void clearCrops();   // 切换地图时清理作物精灵
+    void saveCrops();   // 保存作物信息
+    void loadCrops();   // 加载作物
+    void clearCrops();  // 切换地图时清理作物精灵
 
     const std::vector<int> RESOURCE_TILES = { 258,182,162 };    // 可除草或碎石（资源）的图块ID列表
     const int RESOURCE_REMOVED_TILE_ID = 473;                   // 移除资源后的图块ID
