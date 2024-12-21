@@ -270,6 +270,14 @@ void Chest::onOpenAnimationFinished()
 
     // 显示物品汇总弹窗
     showItemsSummaryPopup();
+
+    // 添加挖矿经验
+    auto skillSystem = SkillSystem::getInstance();
+    if (skillSystem) {
+        const int CHEST_MINING_EXP = 2;  // 每次开启宝箱获得2点挖矿经验
+        skillSystem->gainExp(SkillType::MINING, CHEST_MINING_EXP);
+
+    }
 }
 
 
