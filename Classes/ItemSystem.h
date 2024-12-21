@@ -17,11 +17,11 @@ class ItemSystem
 private:
     static ItemSystem* instance;                                // 单例实例指针
     std::map<std::string, int> inventory;                       // 物品存储映射（物品ID和数量）
-
+    std::set<std::string> _discoveredItems;                     // 记录已发现的物品
     // 有效物品ID列表
     const std::set<std::string> validItems =
     {
-        "wood",  "apple", "corn", "bread", "tomato", "fish", "mermaid's KISS(*)", "stone", "corn seed", "tomato seed", "corn", "tomato"
+        "wood", "apple", "CatFood", "corn", "bread", "tomato", "fish", "mermaid's KISS(*)", "stone", "corn seed", "tomato seed"
     };
 
     // 单例模式相关
@@ -45,7 +45,8 @@ public:
     int getItemCount(const std::string& itemId);                // 获取物品数量
     bool useItem(const std::string& itemId);                    // 使用物品
     bool hasEnoughItems(const std::string& itemId, int count);  // 检查物品数量是否足够
-
+    bool hasDiscovered(const std::string& itemId) const { return _discoveredItems.count(itemId) > 0; }  // 是否获得过物品
+    void markAsDiscovered(const std::string& itemId) { _discoveredItems.insert(itemId); }               // 标记为已获得过
     // 设置UI更新回调
     void setUpdateCallback(UpdateCallback callback) { _updateCallback = callback; }
 };

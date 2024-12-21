@@ -25,7 +25,7 @@ public:
 
 private:
     void createUI();                                            // 创建UI布局
-
     cocos2d::LayerColor* _bgLayer;                              // 背景层
     std::map<std::string, cocos2d::Label*> _countLabels;        // 数量标签映射
+    std::map<std::string, cocos2d::Label*> _nameLabels;         // 存储物品名称标签
 };

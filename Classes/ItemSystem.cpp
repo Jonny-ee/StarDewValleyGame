@@ -46,6 +46,7 @@ bool ItemSystem::addItem(const std::string& itemId, int count)
     }
 
     inventory[itemId] += count;
+    markAsDiscovered(itemId);   // 添加物品时标记为已获得过
     CCLOG("Added %d %s, current count: %d", count, itemId.c_str(), inventory[itemId]);
 
     // 调用更新回调

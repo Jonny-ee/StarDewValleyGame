@@ -46,21 +46,19 @@ bool InventoryUI::init()
 void InventoryUI::createUI()
 {
     auto visibleSize = Director::getInstance()->getVisibleSize();
-
     // 创建半透明黑色背景
     _bgLayer = LayerColor::create(Color4B(0, 0, 0, 128), visibleSize.width, visibleSize.height);
     _bgLayer->setPosition(Vec2(-this->getPosition().x, -this->getPosition().y));
     this->addChild(_bgLayer);
-
     // 物品列表
-    std::vector<std::string> items = { "wood", "apple", "corn", "bread", "tomato", "fish", "mermaid's KISS(*)", "stone", "corn seed", "tomato seed", "corn", "tomato"};
-    
+    std::vector<std::string> items = { "wood", "apple", "CatFood", "corn", "bread", "tomato", "fish", "mermaid's KISS(*)", "stone", "corn seed", "tomato seed" };
+
     // 计算布局参数
     float itemHeight = 45;  // 减小每个物品行的高度
     float totalContentHeight = items.size() * itemHeight;  // 所有内容的总高度
     float panelHeight = totalContentHeight + 40;  // 减小上下边距(从80改为40)
     float panelWidth = 300;  // 面板宽度
-    
+
     // 创建背包面板背景
     auto panelBg = LayerColor::create(Color4B(255, 255, 255, 230), panelWidth, panelHeight);
     panelBg->setPosition(
@@ -68,10 +66,9 @@ void InventoryUI::createUI()
         visibleSize.height / 2 - panelHeight / 2    // 垂直居中
     );
     _bgLayer->addChild(panelBg);
-
     // 计算第一个物品的起始Y坐标（从面板顶部向下20像素开始）
-    float startY = visibleSize.height / 2 + panelHeight / 2 - 40;  // 减小顶部边距
-    
+    float startY = visibleSize.height / 2 + panelHeight / 2 - 40;   // 减小顶部边距
+
     // 为每个物品创建显示行
     for (const auto& itemId : items)
     {
@@ -84,11 +81,12 @@ void InventoryUI::createUI()
         _bgLayer->addChild(itemBg);
 
         // 创建物品名称标签
-        auto nameLabel = Label::createWithSystemFont(itemId, "Arial", 24);
+        auto nameLabel = Label::createWithSystemFont("???", "Arial", 24);
         nameLabel->setPosition(Vec2(visibleSize.width / 2 - panelWidth / 2 + 30, startY));
         nameLabel->setAnchorPoint(Vec2(0, 0.5f));
         nameLabel->setTextColor(Color4B::BLACK);
         _bgLayer->addChild(nameLabel);
+        _nameLabels[itemId] = nameLabel;    // 保存名称标签的引用
 
         // 创建物品数量标签
         auto countLabel = Label::createWithSystemFont("0", "Arial", 24);
@@ -96,9 +94,8 @@ void InventoryUI::createUI()
         countLabel->setAnchorPoint(Vec2(1, 0.5f));
         countLabel->setTextColor(Color4B::BLACK);
         _bgLayer->addChild(countLabel);
-
         _countLabels[itemId] = countLabel;
-        startY -= itemHeight;  // 使用新的行高
+        startY -= itemHeight;   // 使用新的行高
     }
 }
 
@@ -121,11 +118,24 @@ void InventoryUI::updateDisplay()
     for (const auto& pair : _countLabels)
     {
         const std::string& itemId = pair.first;
-        auto label = pair.second;
+        auto countLabel = pair.second;
+        auto nameLabel = _nameLabels[itemId];
+
         int count = itemSystem->getItemCount(itemId);
-        label->setString(std::to_string(count));
+        countLabel->setString(std::to_string(count));
+
+        // 如果物品曾经获得过，就显示名称，否则显示???
+        if (itemSystem->hasDiscovered(itemId))
+        {
+            nameLabel->setString(itemId);
+        }
+        else
+        {
+            nameLabel->setString("???");
+        }
     }
 }
+
 
 /*
  * 添加物品
