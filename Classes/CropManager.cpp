@@ -684,6 +684,12 @@ void CropManager::updateCrops()
         // 先检查水分状态
         if (info.waterLevel <= 0)
         {
+            // 清理虫害精灵（新增）
+            if (info.hasInsectPest && info.bugSprite)
+            {
+                info.bugSprite->removeFromParent();
+            }
+            // 清理作物精灵
             if (i < _crops.size() && _crops[i])
             {
                 _crops[i]->removeFromParent();
