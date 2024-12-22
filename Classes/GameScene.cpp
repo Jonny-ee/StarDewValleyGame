@@ -834,7 +834,6 @@ void GameScene::initMouseListener()
                 CropManager::getInstance()->onMouseDown(clickPos, player);
             }
 
-
             // 检查是否靠近并点击了刘易斯
             if (lewis) {
                 const  float distance = player->getPosition().distance(lewis->getPosition());
@@ -1575,9 +1574,11 @@ void GameScene::handleBridgeQuest(Lewis* lewis, QuestState questState) {
         this->addChild(dialogueBox, 10);
 
         // 创建任务提示UI
-        if (!_questTipLabel) {
+        if (!_questTipLabel)
+        {
             _questTipLabel = Label::createWithTTF("", "fonts/arial.ttf", 24);
-            if (_questTipLabel) {
+            if (_questTipLabel)
+            {
                 this->addChild(_questTipLabel, 10);
                 _questTipLabel->setAnchorPoint(Vec2(1, 1));
                 updateQuestUIPosition();
