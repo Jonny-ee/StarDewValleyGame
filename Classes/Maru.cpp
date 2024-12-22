@@ -4,25 +4,33 @@ USING_NS_CC;
 
 Maru* Maru::create()
 {
-    Maru* npc = new (std::nothrow) Maru();
-    if (npc && npc->init())
+    Maru* maru = new (std::nothrow) Maru();
+    if (maru && maru->init())
     {
-        npc->autorelease();
-        return npc;
+        maru->autorelease();
+        return maru;
     }
-    CC_SAFE_DELETE(npc);
+    CC_SAFE_DELETE(maru);
     return nullptr;
 }
 
 bool Maru::init()
 {
-    const std::string imagePath = "Characters/Maru_Hospital.png"; // ¬Í¬≥ NPC µƒÕº∆¨¬∑æ∂
-    if (!NPC::init(imagePath))
-    {
+    const std::string imagePath = "Characters/Maru_Hospital.png"; // ÁéõÈ≤Å NPC ÁöÑÂõæÁâáË∑ØÂæÑ
+    if (!Sprite::initWithFile(imagePath)) { // Áõ¥Êé•‰ΩøÁî® Sprite ÁöÑÂàùÂßãÂåñ
         return false;
     }
-    this->setTextureRect(cocos2d::Rect(0, 0, 16, 32)); // …Ë÷√≥ﬂ¥Á
-    this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f)); // …Ë÷√√™µ„
+    //ÂàùÂßãÂåñÂü∫Êú¨‰ø°ÊÅØ
+    moveSpeed = 50.0f;//ÁßªÈÄü
+    heartPoint = 0;
+    relationship = Relation::DEFAULT;
+
+    //ËÆæÁΩÆÁ≤æÁÅµÂ±ûÊÄß
+    this->setAnchorPoint(Vec2(0.5f, 0.5f));//ËÆæÁΩÆÈîöÁÇπ
+    this->setScale(2.0f);//ËÆæÁΩÆÁº©Êîæ
+
+    this->setTextureRect(cocos2d::Rect(0, 0, 16, 32)); // ËÆæÁΩÆÂ∞∫ÂØ∏
+    this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f)); // ËÆæÁΩÆÈîöÁÇπ
     this->setScale(2.5);
     initializeDefaultBehavior();
     return true;
@@ -30,22 +38,11 @@ bool Maru::init()
 
 void Maru::initializeDefaultBehavior()
 {
-    setName("¬Í¬≥");
-    setOccupation("ª§ ø");
-    setBirthday(Season::WINTER, 10); // ºŸ…Ë…˙»’‘⁄∂¨ºæµƒµ⁄10ÃÏ
-
+    setName("Maru");
+    completeDialogue();
 }
 
-void Maru::startConversation()
+void Maru::staticAnimation()
 {
-    // œ‘ æ∂‘ª∞øÚ
-    std::string dialogue = getRandomDialogue();
-    // DialogueManager::getInstance()->showDialogue(dialogue); // ºŸ…Ë”–∂‘ª∞π‹¿Ì∆˜
-    CCLOG("∂‘ª∞: %s", dialogue.c_str());
-}
-
-std::string Maru::getRandomDialogue()
-{
-    int index = std::rand() % 4;
-    return dialogueList[index];
+    ;
 }
