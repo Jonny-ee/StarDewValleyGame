@@ -6,19 +6,19 @@ class Chicken :public NPC
 public:
 	static Chicken* create();
 	virtual bool init();
-	void moveToDirection(cocos2d::Vec2& destination, float dt);//ÒÆ¶¯µ½Ä¿µÄµØ
-	void staticAnimation();//¾²Ö¹Ê±µÄºôÎü¶¯»­
-	void moveAlongPath(float dt);//ÒÆ¶¯ÑØÂ·¾¶
-	ActionState currentActionState = ActionState::MOVING; // µ±Ç°¶¯×÷×´Ì¬
-	std::vector<cocos2d::Vec2> path; // ÒÆ¶¯Â·¾¶
+	void moveToDirection(cocos2d::Vec2& destination, float dt);//ç§»åŠ¨åˆ°ç›®çš„åœ°
+	void staticAnimation() override;//é™æ­¢æ—¶çš„å‘¼å¸åŠ¨ç”»
+	void moveAlongPath(float dt);//ç§»åŠ¨æ²¿è·¯å¾„
+	ActionState currentActionState = ActionState::MOVING; // å½“å‰åŠ¨ä½œçŠ¶æ€
+	std::vector<cocos2d::Vec2> path; // ç§»åŠ¨è·¯å¾„
 	void setPath(const std::vector<cocos2d::Vec2>& newPath) {
 		path = newPath;
-		currentPathIndex = 0; // ÖØÖÃÂ·¾¶Ë÷Òı
+		currentPathIndex = 0; // é‡ç½®è·¯å¾„ç´¢å¼•
 	}
 private:
-	int currentPathIndex = 0; // µ±Ç°Â·¾¶Ë÷Òı
-	int currentDirection = 0;                   // µ±Ç°³¯Ïò(0:ÏÂ, 1:ÉÏ, 2:×ó, 3:ÓÒ)
-	int currentFrame = 0;                       // µ±Ç°Ö¡Ë÷Òı
-	float animationTimer = 0;                   // ¶¯»­¼ÆÊ±Æ÷
-	const float FRAME_INTERVAL = 0.3f;          // Ö¡¼ä¸ôÊ±¼ä
+	int currentPathIndex = 0; // å½“å‰è·¯å¾„ç´¢å¼•
+	int currentDirection = 0;                   // å½“å‰æœå‘(0:ä¸‹, 1:ä¸Š, 2:å·¦, 3:å³)
+	int currentFrame = 0;                       // å½“å‰å¸§ç´¢å¼•
+	float animationTimer = 0;                   // åŠ¨ç”»è®¡æ—¶å™¨
+	const float FRAME_INTERVAL = 0.3f;          // å¸§é—´éš”æ—¶é—´
 };
