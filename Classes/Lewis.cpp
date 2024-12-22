@@ -13,48 +13,36 @@ Lewis* Lewis::create()
 bool Lewis::init()
 {
     const std::string imagePath = "Characters/Lewis.png";
-    if (!NPC::init(imagePath)) {
+    if (!Sprite::initWithFile(imagePath)) { // 直接使用 Sprite 的初始化
         return false;
     }
+    //初始化基本信息
+    moveSpeed = 50.0f;//移速
+    heartPoint = 0;
+    relationship = Relation::DEFAULT;
+
+    //设置精灵属性
+    this->setAnchorPoint(Vec2(0.5f, 0.5f));//设置锚点
+    this->setScale(2.0f);//设置缩放
+
+
     this->setTextureRect(cocos2d::Rect(0, 0, 16, 32)); // 设置尺寸
     this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f)); // 设置锚点
     this->setScale(2.5);
     initializeDefaultBehavior();
-    loadLewisDialogues();
     return true;
 }
 // 设置基本信息
 void Lewis::initializeDefaultBehavior()
 {
     setName("Lewis");
-    setOccupation("镇长");
-    setBirthday(Season::SPRING, 7);
-}
-// 添加刘易斯专属对话
-void Lewis::loadLewisDialogues() noexcept
-{
-    //// 添加刘易斯专属对话
-    // addDialogue(0, " 欢迎来到鹈鹕镇！");
-    // addDialogue(0, " 作为镇长，我一直在努力让这个小镇变得更好。");
-    // addDialogue(5, " 你为鹈鹕镇做出了很大贡献！");
-    // addDialogue(10, " 你已经成为了这个小镇不可或缺的一部分。");
-}
-
-std::string Lewis::getRandomDialogue()
-{
-    int index = std::rand() % 4;
-    return dialogueList[index];
+    completeDialogue();
 }
 
 void Lewis::moveToDirection(cocos2d::Vec2& destination, float dt)
 {
     cocos2d::Vec2 direction = destination - this->getPosition();
     float distance = direction.length();
-    //// 如果NPC已经到达目标位置，停止移动
-    //if (distance < 1.0f) {
-    //    staticAnimation();
-    //    return;
-    //}
 
     // 更新方向
     if (direction.y > 0)
@@ -159,4 +147,8 @@ void Lewis::showThanks()
     // 将序列动作和延迟动作结合
     auto finalSequence = Sequence::create(sequence, delay, resetAction, nullptr);
     this->runAction(finalSequence); // 运行动画
+
+    // 好感度增加3
+    this->heartPoint += 3;
+
 }
