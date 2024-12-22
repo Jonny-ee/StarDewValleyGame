@@ -1,16 +1,16 @@
 #include "SkillSystem.h"
 
 /*
- * ¼¼ÄÜÏµÍ³
- * ¹¦ÄÜ£º¹ÜÀíÓÎÏ·ÖĞµÄ¼¼ÄÜÏµÍ³£¬°üÀ¨µÈ¼¶¡¢¾­ÑéÖµºÍ¼¼ÄÜ¼Ó³É
+ * æŠ€èƒ½ç³»ç»Ÿ
+ * åŠŸèƒ½ï¼šç®¡ç†æ¸¸æˆä¸­çš„æŠ€èƒ½ç³»ç»Ÿï¼ŒåŒ…æ‹¬ç­‰çº§ã€ç»éªŒå€¼å’ŒæŠ€èƒ½åŠ æˆ
  */
 
- // ³õÊ¼»¯¾²Ì¬ÊµÀıÖ¸Õë
+ // åˆå§‹åŒ–é™æ€å®ä¾‹æŒ‡é’ˆ
 SkillSystem* SkillSystem::_instance = nullptr;
 
 /*
- * »ñÈ¡¼¼ÄÜÏµÍ³µ¥ÀıÊµÀı
- * @return ·µ»Ø¼¼ÄÜÏµÍ³ÊµÀıÖ¸Õë
+ * è·å–æŠ€èƒ½ç³»ç»Ÿå•ä¾‹å®ä¾‹
+ * @return è¿”å›æŠ€èƒ½ç³»ç»Ÿå®ä¾‹æŒ‡é’ˆ
  */
 SkillSystem* SkillSystem::getInstance() {
     if (_instance == nullptr) {
@@ -20,72 +20,72 @@ SkillSystem* SkillSystem::getInstance() {
 }
 
 /*
- * ¼¼ÄÜÏµÍ³¹¹Ôìº¯Êı
- * ¹¦ÄÜ£º³õÊ¼»¯ËùÓĞ¼¼ÄÜµÄµÈ¼¶ºÍ¾­ÑéÖµ
+ * æŠ€èƒ½ç³»ç»Ÿæ„é€ å‡½æ•°
+ * åŠŸèƒ½ï¼šåˆå§‹åŒ–æ‰€æœ‰æŠ€èƒ½çš„ç­‰çº§å’Œç»éªŒå€¼
  */
 SkillSystem::SkillSystem() : skillUI(nullptr) {
-    // ³õÊ¼»¯Ã¿¸ö¼¼ÄÜµÄµÈ¼¶ºÍ¾­Ñé
+    // åˆå§‹åŒ–æ¯ä¸ªæŠ€èƒ½çš„ç­‰çº§å’Œç»éªŒ
     for (auto type : { SkillType::FARMING, SkillType::MINING,
                      SkillType::FISHING, SkillType::COOKING }) {
-        skillLevels[type] = 1;  // ³õÊ¼µÈ¼¶Îª1
-        skillExp[type] = 0;     // ³õÊ¼¾­ÑéÎª0
+        skillLevels[type] = 1;  // åˆå§‹ç­‰çº§ä¸º1
+        skillExp[type] = 0;     // åˆå§‹ç»éªŒä¸º0
     }
 }
 
 /*
- * »ñÈ¡Ö¸¶¨¼¼ÄÜµÄµÈ¼¶
- * @param type ¼¼ÄÜÀàĞÍ
- * @return ·µ»Ø¼¼ÄÜµ±Ç°µÈ¼¶
+ * è·å–æŒ‡å®šæŠ€èƒ½çš„ç­‰çº§
+ * @param type æŠ€èƒ½ç±»å‹
+ * @return è¿”å›æŠ€èƒ½å½“å‰ç­‰çº§
  */
 int SkillSystem::getSkillLevel(SkillType type) {
     return skillLevels[type];
 }
 
 /*
- * »ñÈ¡Ö¸¶¨¼¼ÄÜµÄ¾­ÑéÖµ
- * @param type ¼¼ÄÜÀàĞÍ
- * @return ·µ»Ø¼¼ÄÜµ±Ç°¾­ÑéÖµ
+ * è·å–æŒ‡å®šæŠ€èƒ½çš„ç»éªŒå€¼
+ * @param type æŠ€èƒ½ç±»å‹
+ * @return è¿”å›æŠ€èƒ½å½“å‰ç»éªŒå€¼
  */
 int SkillSystem::getSkillExp(SkillType type) {
     return skillExp[type];
 }
 
 /*
- * ¼ÆËãÉı¼¶ËùĞè¾­ÑéÖµ
- * @param level µ±Ç°µÈ¼¶
- * @return ·µ»ØÉıµ½ÏÂÒ»¼¶ËùĞèµÄ¾­ÑéÖµ
+ * è®¡ç®—å‡çº§æ‰€éœ€ç»éªŒå€¼
+ * @param level å½“å‰ç­‰çº§
+ * @return è¿”å›å‡åˆ°ä¸‹ä¸€çº§æ‰€éœ€çš„ç»éªŒå€¼
  */
 int SkillSystem::calculateExpNeeded(int level) {
     return BASE_EXP_NEEDED * level;
 }
 
 /*
- * »ñµÃ¼¼ÄÜ¾­ÑéÖµ
- * @param type ¼¼ÄÜÀàĞÍ
- * @param amount »ñµÃµÄ¾­ÑéÖµÊıÁ¿
- * ¹¦ÄÜ£ºÔö¼Ó¼¼ÄÜ¾­ÑéÖµ²¢´¦ÀíÉı¼¶Âß¼­
+ * è·å¾—æŠ€èƒ½ç»éªŒå€¼
+ * @param type æŠ€èƒ½ç±»å‹
+ * @param amount è·å¾—çš„ç»éªŒå€¼æ•°é‡
+ * åŠŸèƒ½ï¼šå¢åŠ æŠ€èƒ½ç»éªŒå€¼å¹¶å¤„ç†å‡çº§é€»è¾‘
  */
 void SkillSystem::gainExp(SkillType type, int amount) {
-    // ÒÑ´ïµ½×î¸ßµÈ¼¶Ôò²»ÔÙÔö¼Ó¾­Ñé
+    // å·²è¾¾åˆ°æœ€é«˜ç­‰çº§åˆ™ä¸å†å¢åŠ ç»éªŒ
     if (skillLevels[type] >= MAX_LEVEL) {
         return;
     }
 
-    // Ôö¼Ó¾­ÑéÖµ
+    // å¢åŠ ç»éªŒå€¼
     skillExp[type] += amount;
 
-    // ¼ì²éÊÇ·ñ¿ÉÒÔÉı¼¶
+    // æ£€æŸ¥æ˜¯å¦å¯ä»¥å‡çº§
     while (true) {
         int currentLevel = skillLevels[type];
         int expNeeded = calculateExpNeeded(currentLevel);
 
-        // Èç¹û¾­ÑéÖµ×ã¹»ÇÒÎ´´ïµ½×î¸ßµÈ¼¶
+        // å¦‚æœç»éªŒå€¼è¶³å¤Ÿä¸”æœªè¾¾åˆ°æœ€é«˜ç­‰çº§
         if (skillExp[type] >= expNeeded && currentLevel < MAX_LEVEL) {
-            // Éı¼¶²¢¿Û³ı¾­ÑéÖµ
+            // å‡çº§å¹¶æ‰£é™¤ç»éªŒå€¼
             skillLevels[type]++;
             skillExp[type] -= expNeeded;
 
-            // ¸üĞÂUIÏÔÊ¾
+            // æ›´æ–°UIæ˜¾ç¤º
             if (skillUI) {
                 float bonus = getSkillBonus(type);
                 skillUI->showLevelUpTip(type, skillLevels[type], bonus);
@@ -98,18 +98,18 @@ void SkillSystem::gainExp(SkillType type, int amount) {
         }
     }
 
-    // ¸üĞÂUIÏÔÊ¾
-    if (skillUI) {-
+    // æ›´æ–°UIæ˜¾ç¤º
+    if (skillUI) {
         skillUI->updateSkillDisplay(type, skillLevels[type],
             skillExp[type], calculateExpNeeded(skillLevels[type]));
     }
 }
 
 /*
- * »ñÈ¡¼¼ÄÜ¼Ó³É
- * @param type ¼¼ÄÜÀàĞÍ
- * @return ·µ»Ø¼¼ÄÜ¼Ó³ÉÏµÊı
- * ¹¦ÄÜ£º¸ù¾İ¼¼ÄÜµÈ¼¶¼ÆËã²»Í¬¼¼ÄÜµÄ¼Ó³ÉĞ§¹û
+ * è·å–æŠ€èƒ½åŠ æˆ
+ * @param type æŠ€èƒ½ç±»å‹
+ * @return è¿”å›æŠ€èƒ½åŠ æˆç³»æ•°
+ * åŠŸèƒ½ï¼šæ ¹æ®æŠ€èƒ½ç­‰çº§è®¡ç®—ä¸åŒæŠ€èƒ½çš„åŠ æˆæ•ˆæœ
  */
 float SkillSystem::getSkillBonus(SkillType type) {
     int level = skillLevels[type];
@@ -117,23 +117,23 @@ float SkillSystem::getSkillBonus(SkillType type) {
 
     switch (type) {
         case SkillType::FARMING:
-            // Ã¿¼¶Ôö¼Ó10%ÊÕ»ñÁ¿
+            // æ¯çº§å¢åŠ 10%æ”¶è·é‡
             bonus += (level - 1) * 0.1f;
             break;
 
         case SkillType::MINING:
-            // Ã¿¼¶Ôö¼Ó15%¿óÊ¯»ñÈ¡Á¿
+            // æ¯çº§å¢åŠ 15%çŸ¿çŸ³è·å–é‡
             bonus += (level - 1) * 0.15f;
             break;
 
         case SkillType::FISHING:
-            // Ã¿¼¶¼õÉÙ5%µöÓãÊ±¼ä
+            // æ¯çº§å‡å°‘5%é’“é±¼æ—¶é—´
             bonus -= (level - 1) * 0.05f;
-            if (bonus < 0.5f) bonus = 0.5f; // ×î¶à¼õÉÙµ½50%Ê±¼ä
+            if (bonus < 0.5f) bonus = 0.5f; // æœ€å¤šå‡å°‘åˆ°50%æ—¶é—´
             break;
 
         case SkillType::COOKING:
-            // Ã¿ÉıÒ»¼¶£¬Ê³Îï²ú³öÔö¼ÓÁ½±¶
+            // æ¯å‡ä¸€çº§ï¼Œé£Ÿç‰©äº§å‡ºå¢åŠ ä¸¤å€
             bonus = pow(2.0f, level - 1);
             break;
     }
