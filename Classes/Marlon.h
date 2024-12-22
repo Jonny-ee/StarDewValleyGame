@@ -1,23 +1,21 @@
 #pragma once
 #include "NPC.h"
 
-// ÂíÁú NPC Àà
+// é©¬é¾™ NPC ç±»
 class Marlon : public NPC
 {
 public:
     static Marlon* create();
-    virtual bool init();
+    virtual bool init() override;
 
-    void assignTask(Player* player); // ÎªÍæ¼Ò·ÖÅäÈÎÎñ
-    void startConversation(); // ¿ªÊ¼¶Ô»°
-    std::string getRandomDialogue();
+    void staticAnimation() override;
 private:
-    void initializeDefaultBehavior(); // ³õÊ¼»¯ÂíÁú NPC µÄÄ¬ÈÏĞĞÎª
-    std::vector<std::string> taskList; // ÈÎÎñÁĞ±í
-    std::vector<std::string> dialogueList = {
-      "Can't resist the urge for adventure? Great, today's challenge is here.",
-      "The light of courage shines in your eyes. How about a challenge?",
-      "Though I can only see with one eye, I will not miss any lurking beast.",
-      "Don't get too close to the cage..."
-    };
+    void initializeDefaultBehavior(); // åˆå§‹åŒ–é©¬é¾™ NPC çš„é»˜è®¤è¡Œä¸º
+    void completeDialogue()
+    {
+        this->addDialogue("Can't resist the urge for adventure? Great, today's challenge is here.");
+        this->addDialogue("The light of courage shines in your eyes. How about a challenge?");
+        this->addDialogue("Though I can only see with one eye, I will not miss any lurking beast.");
+        this->addDialogue("Don't get too close to the cage...");
+    }
 };
