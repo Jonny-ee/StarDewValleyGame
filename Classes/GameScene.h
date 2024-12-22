@@ -44,15 +44,15 @@ public:
 	void switchToMap(const std::string& mapName, const cocos2d::Vec2& targetTilePos);	// 切换到指定地图和位置
 
 	// 相机控制
-	void updateCamera();                    // 更新相机位置跟随玩家
-	void updateQuestUIPosition();           // 更新任务UI的位置
+	void updateCamera();											// 更新相机位置跟随玩家
+	void updateQuestUIPosition();									// 更新任务UI的位置
 
 	// 时间更新相关
-	void onDayChanged();                    // 处理日期变化时的更新
-	std::vector<Tree*> trees;               // 存储场景中所有树木的指针数组
-	std::vector<Ore*> ores;                             // 存储所有矿石的指针
+	void onDayChanged();											// 处理日期变化时的更新
+	std::vector<Tree*> trees;										// 存储场景中所有树木的指针数组
+	std::vector<Ore*> ores;											// 存储所有矿石的指针
 	void showDialogue(const std::string& dialogue, const std::string& characterImagePath, const std::string& characterName, int heartPoints);
-	void toggleMute(Ref* sender);           // 切换静音状态
+	void toggleMute(Ref* sender);									// 切换静音状态
 
 private:
 	// 场景对象
@@ -73,7 +73,7 @@ private:
 	std::vector<Sheep*> sheeps;								// 存储所有羊的实例
 	bool isSheepCreated = false;							// 羊是否已创建的标志
 	bool isTreeCreated = false;								// 树木是否已创建的标志
-    	bool isOreCreated = false;                         // 添加标志以跟踪矿石是否已经创建
+	bool isOreCreated = false;								// 添加标志以跟踪矿石是否已经创建
 	DialogueBox* dialogueBox = nullptr;						// 对话框实例
 	cocos2d::TMXTiledMap* tileMap = nullptr;				// Tiled地图实例
 	cocos2d::TMXObjectGroup* collisionsGroup = nullptr;		// 碰撞检测组
@@ -93,7 +93,8 @@ private:
 	void initChicken();										// 初始化鸡
 	void initSheep();										// 初始化羊
 	void initTree();										// 初始化树木
-    	void initOre();                      // 初始化矿石
+	void initOre();											// 初始化矿石
+
 	// 创建动物、树木和宝箱的方法
 	void createPig(const Vec2& initialPosition, const std::vector<Vec2>& path);		// 创建带路径的猪
 	void createPig(const Vec2& initialPosition);									// 创建固定位置的猪
@@ -102,18 +103,18 @@ private:
 	void createSheep(const Vec2& initialPosition, const std::vector<Vec2>& path);	// 创建带路径的羊
 	void createSheep(const Vec2& initialPosition);									// 创建固定位置的羊
 	void createTree(const Vec2& initialPosition);									// 创建树木
-    	void createOre(const Vec2& initialPosition);
+	void createOre(const Vec2& initialPosition);									// 创建矿石
 	std::vector<Chest*> _chests;													// 存储所有宝箱的实例
 	void initChests();																// 初始化宝箱
 	void clearChests();																// 清理所有宝箱
 
 	// 矿洞进入记录
-	int lastMineEnterDay = 0;              // 上次进入矿洞的日期
-	int lastMineEnterMonth = 0;            // 上次进入矿洞的月份
-	int lastMineEnterYear = 0;             // 上次进入矿洞的年份
-	cocos2d::MenuItemImage* muteButton;    // 静音按钮
-	bool isMuted;                          // 当前静音状态
-	std::vector<BaseEvent*> _events;       // 存储所有事件实例
+	int lastMineEnterDay = 0;										// 上次进入矿洞的日期
+	int lastMineEnterMonth = 0;										// 上次进入矿洞的月份
+	int lastMineEnterYear = 0;										// 上次进入矿洞的年份
+	cocos2d::MenuItemImage* muteButton;								// 静音按钮
+	bool isMuted;													// 当前静音状态
+	std::vector<BaseEvent*> _events;								// 存储所有事件实例
 
 	// 输入控制
 	std::set<char> _pressedKeys;                                    // 当前按下的按键集合
