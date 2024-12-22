@@ -34,7 +34,7 @@ void GameScene::updateToolIcon()
     if (!toolIcon || !player) return;
 
     // 根据玩家当前工具设置图标
-    const int toolIndex = static_cast<int>(player->getCurrentTool());
+    int toolIndex = static_cast<int>(player->getCurrentTool());
 
     // 根据实际的枚举值设置对应的纹理区域
     switch (toolIndex) {
@@ -51,22 +51,27 @@ void GameScene::updateToolIcon()
             toolIcon->setVisible(true);
             toolIcon->setTextureRect(cocos2d::Rect(16, 0, 16, 16));
             break;
-        case 3:  // WATERING
+        case 3:  // PICK
+            toolIcon->setTexture("TileSheets/tools.png");  // 使用新的工具贴图
+            toolIcon->setVisible(true);
+            toolIcon->setTextureRect(cocos2d::Rect(80, 96, 16, 16));
+            break;
+        case 4:  // WATERING
             toolIcon->setTexture("tools.png");  // 使用原来的工具贴图
             toolIcon->setVisible(true);
             toolIcon->setTextureRect(cocos2d::Rect(0, 0, 16, 16));
             break;
-        case 4:  // ROD
+        case 5:  // ROD
             toolIcon->setTexture("TileSheets/Tools.png");  // 使用新的贴图
             toolIcon->setVisible(true);
             toolIcon->setTextureRect(cocos2d::Rect(128, 0, 16, 16));
             break;
-        case 5:  // GIFT
+        case 6:  // GIFT
             toolIcon->setTexture("TileSheets/Objects_2.png");  // 使用新的贴图
             toolIcon->setVisible(true);
             toolIcon->setTextureRect(cocos2d::Rect(96, 32, 16, 16));
             break;
-        case 6:  // CARROT
+        case 7:  // CARROT
             toolIcon->setTexture("LooseSprites/emojis.png");  // 使用新的贴图
             toolIcon->setVisible(true);
             toolIcon->setTextureRect(cocos2d::Rect(18, 36, 9, 9));
@@ -296,22 +301,17 @@ void GameScene::onDayChanged()
     // 重置任务状态
     auto questSystem = QuestSystem::getInstance();
     auto gameTime = GameTime::getInstance();
-    const int currentDay = gameTime->getDay();
-
+    int newDay = gameTime->getDay();
 
     // 第一天开始时，重置木头收集任务
-    if (currentDay == 1) {
+    if (newDay == 1) {
         questSystem->resetQuest(QuestType::COLLECT_WOOD);
         if (lewis) {
             showQuestMark(lewis);
         }
     }
-    // 第二天开始时，重置修桥任务，同时确保木头任务已完成
-    else if (currentDay == 2) {
-        // 如果前一天的木头任务还在进行中，强制完成它
-        if (questSystem->getQuestState(QuestType::COLLECT_WOOD) == QuestState::IN_PROGRESS) {
-            questSystem->completeQuest(QuestType::COLLECT_WOOD);
-        }
+    // 第二天开始时，重置修桥任务
+    else if (newDay == 2) {
         // 重置修桥任务
         questSystem->resetQuest(QuestType::REPAIR_BRIDGE);
         if (lewis) {
@@ -340,7 +340,7 @@ void GameScene::update(float dt)
     GameTime* gameTime = GameTime::getInstance();
 
     // 记录更新前的日期
-    const int oldDay = gameTime->getDay();
+    int oldDay = gameTime->getDay();
 
     // 更新游戏时间
     gameTime->update();
@@ -358,7 +358,7 @@ void GameScene::update(float dt)
     player->update(dt);
 
     // 检查传送点
-    const Vec2 playerTilePos = _gameMap->convertToTileCoord(player->getPosition());
+    Vec2 playerTilePos = _gameMap->convertToTileCoord(player->getPosition());
     TransitionInfo transition;
     if (_gameMap->checkForTransition(playerTilePos, transition))
     {
@@ -371,7 +371,6 @@ void GameScene::update(float dt)
     // 更新Lewis的状态
     if (lewis)
     {
-        //lewis->updateSchedule(dt);
         lewis->moveAlongPath(dt); // 移动沿路径
     }
 
@@ -383,7 +382,6 @@ void GameScene::update(float dt)
             pig->moveAlongPath(dt); // 移动沿路径
         }
     }
-
     // 更新所有鸡的状态
     for (auto chicken : chickens)
     {
@@ -392,7 +390,6 @@ void GameScene::update(float dt)
             chicken->moveAlongPath(dt); // 移动沿路径
         }
     }
-
     // 更新所有羊的状态
     for (auto sheep : sheeps)
     {
@@ -401,7 +398,6 @@ void GameScene::update(float dt)
             sheep->moveAlongPath(dt); // 移动沿路径
         }
     }
-
     // 持续检查钓鱼条件
     auto fishingSystem = FishingSystem::getInstance();
     fishingSystem->canFish(player->getPosition(), player);
@@ -410,7 +406,7 @@ void GameScene::update(float dt)
     {
         if (tipLabel->isVisible())
         {
-            const Vec2 playerPos = player->getPosition();
+            Vec2 playerPos = player->getPosition();
             // 设置在玩家头顶上方50像素
             tipLabel->setPosition(playerPos + Vec2(0, 50));
         }
@@ -418,9 +414,6 @@ void GameScene::update(float dt)
 
     // 更新作物提示
     CropManager::getInstance()->updateTips(playerTilePos, player->getCurrentTool());
-
-    // 更新杀虫状态
-    CropManager::getInstance()->updateBugKilling(dt);
 
     // 检查所有事件
     for (auto event : _events)
@@ -591,6 +584,12 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
             tree->setVisible(false); // 设置为不可见
         }
     }
+    // 移除所有矿石
+    for (auto ore : ores) {
+        if (ore) {
+            ore->setVisible(false); // 设置为不可见
+        }
+    }
 
     // 保存当前背包UI的引用和状态
     auto currentInventoryUI = _inventoryUI;
@@ -612,32 +611,13 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
     if (_gameMap) {
         _gameMap->getTileMap()->removeFromParent();  // 从显示层级中移除旧地图
     }
-    // 获取当前日期
-    auto gameTime = GameTime::getInstance();
-    const int currentDay = gameTime->getDay();
-    const int currentMonth = gameTime->getMonth();
 
-    // 检查是否是切换到Town地图
-    if (mapName == "Town") {
-        // 如果是12月25日，传送到Town_Christmas
-        if (currentMonth == 12 && currentDay == 25) {
-            CCLOG("Switching to Town_Christmas map");
-            _gameMap->loadMap("Town_Christmas");
-        }
-        else {
-            // 否则传送到普通的Town地图
-            CCLOG("Switching to Town map");
-            _gameMap->loadMap("Town");
-        }
-    }
-    else {
-        // 其他地图的处理逻辑
-        _gameMap->loadMap(mapName);
-    }
+    // 加载新地图
+    _gameMap->loadMap(mapName);
 
     // 重用现有玩家，而不是创建新的（修复原来多重玩家的bug）
     if (currentPlayer) {
-        const Vec2 worldPos = _gameMap->convertToWorldCoord(targetTilePos);
+        Vec2 worldPos = _gameMap->convertToWorldCoord(targetTilePos);
         currentPlayer->setPosition(worldPos);
         currentPlayer->setGameMap(_gameMap);
         this->addChild(currentPlayer, 1);
@@ -675,7 +655,9 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         }
 
         // 如果有进行中的任务，重新创建任务UI
-        const auto questSystem = QuestSystem::getInstance();
+        auto questSystem = QuestSystem::getInstance();
+        auto gameTime = GameTime::getInstance();
+        int currentDay = gameTime->getDay();
 
         if ((currentDay == 1 && questSystem->getQuestState(QuestType::COLLECT_WOOD) == QuestState::IN_PROGRESS) ||
             (currentDay == 2 && questSystem->getQuestState(QuestType::REPAIR_BRIDGE) == QuestState::IN_PROGRESS)) {
@@ -711,11 +693,14 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
         initAlex();
     }
 
-    // 如果是矿洞地图，检查是否需要刷新宝箱
+    // 如果是矿洞地图，检查是否需要刷新宝箱，初始化矿石
     if (mapName == "Mine") {
         CCLOG("Switch to the mine map...");
 
-        const  int currentYear = gameTime->getYear();
+        auto gameTime = GameTime::getInstance();
+        int currentDay = gameTime->getDay();
+        int currentMonth = gameTime->getMonth();
+        int currentYear = gameTime->getYear();
 
         // 检查是否需要刷新宝箱
         bool shouldRefreshChests = false;
@@ -746,7 +731,15 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
 
         // 初始化马龙NPC
         initMarlon();
+
+        initOre();
+        for (auto ore : ores) {
+            if (ore) {
+                ore->setVisible(true);
+            }
+        }
     }
+
     // 重新初始化钓鱼系统
     FishingSystem::getInstance()->initFishingAreas(_gameMap);
 }
@@ -761,10 +754,10 @@ void GameScene::initMouseListener()
     mouseListener->onMouseMove = [=](Event* event)
         {
             EventMouse* e = (EventMouse*)event;
-            const Vec2 mousePos = e->getLocation();
+            Vec2 mousePos = e->getLocation();
 
             if (lewis) {
-                const float distance = player->getPosition().distance(lewis->getPosition());
+                float distance = player->getPosition().distance(lewis->getPosition());
 
                 if (distance < 50.0f) {
                     // 鼠标靠近Lewis，手上有礼物，变成礼物光标
@@ -782,7 +775,7 @@ void GameScene::initMouseListener()
                 }
             }
             if (marlon) {
-                const float distance = player->getPosition().distance(marlon->getPosition());
+                float distance = player->getPosition().distance(marlon->getPosition());
 
                 if (distance < 50.0f) {
                     Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
@@ -792,17 +785,22 @@ void GameScene::initMouseListener()
                 }
             }
             if (maru) {
-                const float distance = player->getPosition().distance(maru->getPosition());
+                float distance = player->getPosition().distance(maru->getPosition());
 
                 if (distance < 120.0f) {
-                    Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
+                    if (player->getCurrentTool() == Player::ToolType::GIFT) {
+                        Director::getInstance()->getOpenGLView()->setCursor("cursor_gift.png");
+                    }
+                    else {
+                        Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
+                    }
                 }
                 else {
                     Director::getInstance()->getOpenGLView()->setCursor("cursor_default.png");
                 }
             }
             if (alex) {
-                const float distance = player->getPosition().distance(alex->getPosition());
+                float distance = player->getPosition().distance(alex->getPosition());
 
                 if (distance < 50.0f) {
                     Director::getInstance()->getOpenGLView()->setCursor("cursor_dialogue.png");
@@ -815,8 +813,8 @@ void GameScene::initMouseListener()
 
     mouseListener->onMouseDown = [=](Event* event)
         {
-            const EventMouse* e = (EventMouse*)event;
-            const Vec2 clickPos = e->getLocation(); // 获取点击位置
+            EventMouse* e = (EventMouse*)event;
+            Vec2 clickPos = e->getLocation(); // 获取点击位置
 
             // 鼠标点击时触发开垦
             if (player && player->getCurrentTool() == Player::ToolType::SHOVEL)
@@ -836,31 +834,37 @@ void GameScene::initMouseListener()
 
             // 检查是否靠近并点击了刘易斯
             if (lewis) {
-                const  float distance = player->getPosition().distance(lewis->getPosition());
+                float distance = player->getPosition().distance(lewis->getPosition());
 
                 if (distance < 50.0f) {
                     player->setCanPerformAction(false); // 禁止玩家动作
 
-                    // 获取任务状态
-                    const  auto questState = QuestSystem::getInstance()->getQuestState(QuestType::COLLECT_WOOD);
-
-                    if (questState == QuestState::COMPLETED) {
-                        // 如果任务已完成，触发普通对话
-                        std::srand(static_cast<unsigned int>(std::time(nullptr)));
-                        dialogueBox = DialogueBox::create(lewis->getRandomDialogue(), "Portraits/Lewis.png", "Lewis");
-                        this->addChild(dialogueBox, 10);
-                    }
-                    else {
-                        // 如果任务未完成，处理任务对话
-                        handleQuestDialogue(lewis);
-                    }
+                    handleQuestDialogue(lewis);
 
                     // 处理礼物逻辑
                     if (player->getCurrentTool() == Player::ToolType::GIFT) {
                         lewis->stopAllActions();
                         lewis->showThanks();
-                        dialogueBox = DialogueBox::create("I love this! Thank you! Mmmmmmm......", "Portraits/Lewis.png", "Lewis");
+                        dialogueBox = DialogueBox::create("I love this! Thank you! Mmmmmmm......", "Portraits/Lewis.png", "Lewis", lewis->getHeartPoints());
                         this->addChild(dialogueBox, 10);
+
+                        Size visibleSize = Director::getInstance()->getVisibleSize();
+
+                        auto popup = cocos2d::Label::createWithSystemFont("Heartpoint with Lewis + 3", "Arial", 24);
+                        popup->setPosition(visibleSize.width / 2, visibleSize.height / 2 + 650);
+                        popup->setAnchorPoint(Vec2(0.5f, 0.5f)); // 设置锚点为中心
+                        popup->setColor(cocos2d::Color3B::BLACK);
+                        this->addChild(popup, 100);
+
+                        // 弹窗消失
+                        auto fadeOutPopup = FadeOut::create(5.0f);
+                        auto removePopup = RemoveSelf::create();
+                        popup->runAction(Sequence::create(fadeOutPopup, removePopup, nullptr));
+
+                        if (lewis->getHeartPoints() == 10) {
+                            dialogueBox = DialogueBox::create("We are best friends!", "Portraits/Lewis.png", "Lewis", lewis->getHeartPoints());
+                            this->addChild(dialogueBox, 10);
+                        }
                     }
                     else {
                         lewis->staticAnimation(); // 静止状态
@@ -872,13 +876,14 @@ void GameScene::initMouseListener()
             }
             // 检查是否靠近并点击了马龙
             if (marlon) {
-                const float distance = player->getPosition().distance(marlon->getPosition());
+                float distance = player->getPosition().distance(marlon->getPosition());
 
                 if (distance < 50.0f) {
                     player->setCanPerformAction(false); // 禁止玩家动作
+
                     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
-                    dialogueBox = DialogueBox::create(marlon->getRandomDialogue(), "Portraits/Marlon.png", "Marlon");
+                    dialogueBox = DialogueBox::create(marlon->getRandomDialogue(), "Portraits/Marlon.png", "Marlon", marlon->getHeartPoints());
                     this->addChild(dialogueBox, 10);
                 }
                 else {
@@ -887,28 +892,57 @@ void GameScene::initMouseListener()
             }
             // 检查是否靠近并点击了玛鲁
             if (maru) {
-                const float distance = player->getPosition().distance(maru->getPosition());
+                float distance = player->getPosition().distance(maru->getPosition());
 
                 if (distance < 150.0f) {
                     player->setCanPerformAction(false); // 禁止玩家动作
-                    std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
-                    dialogueBox = DialogueBox::create(maru->getRandomDialogue(), "Portraits/Maru_Hospital.png", "Maru");
+                    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+                    dialogueBox = DialogueBox::create(maru->getRandomDialogue(), "Portraits/Maru_Hospital.png", "Maru", maru->getHeartPoints());
                     this->addChild(dialogueBox, 10);
+
+                    // 处理礼物逻辑
+                    if (player->getCurrentTool() == Player::ToolType::GIFT) {
+
+                        // 好感度增加3
+                        maru->heartPoint += 3;
+                        dialogueBox = DialogueBox::create("Wow Yummy!", "Portraits/Maru.png", "Maru", maru->getHeartPoints());
+                        this->addChild(dialogueBox, 10);
+                        Size visibleSize = Director::getInstance()->getVisibleSize();
+
+                        auto popup = cocos2d::Label::createWithSystemFont("Heartpoint with Maru + 3", "Arial", 24);
+                        popup->setPosition(visibleSize.width / 2, visibleSize.height / 2 + 650);
+                        popup->setAnchorPoint(Vec2(0.5f, 0.5f)); // 设置锚点为中心
+                        popup->setColor(cocos2d::Color3B::BLACK);
+                        this->addChild(popup, 100);
+
+                        // 弹窗消失
+                        auto fadeOutPopup = FadeOut::create(5.0f);
+                        auto removePopup = RemoveSelf::create();
+                        popup->runAction(Sequence::create(fadeOutPopup, removePopup, nullptr));
+
+                        if (maru->getHeartPoints() == 10) {
+                            dialogueBox = DialogueBox::create("I love you forever!!!", "Portraits/Maru.png", "Maru", maru->getHeartPoints());
+                            this->addChild(dialogueBox, 10);
+                        }
+                    }
+                    else {
+                        maru->staticAnimation();
+                    }
                 }
                 else {
-                    player->setCanPerformAction(true);  // 允许玩家动作
+                   player->setCanPerformAction(true);  // 允许玩家动作
                 }
             }
             // 检查是否靠近并点击了艾利克斯
             if (alex) {
-                const float distance = player->getPosition().distance(alex->getPosition());
+                float distance = player->getPosition().distance(alex->getPosition());
 
                 if (distance < 50.0f) {
                     player->setCanPerformAction(false); // 禁止玩家动作
                     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
-                    dialogueBox = DialogueBox::create(alex->getRandomDialogue(), "Portraits/Alex.png", "Alex");
+                    dialogueBox = DialogueBox::create(alex->getRandomDialogue(), "Portraits/Alex.png", "Alex", alex->getHeartPoints());
                     this->addChild(dialogueBox, 10);
                 }
                 else {
@@ -918,7 +952,7 @@ void GameScene::initMouseListener()
             // 检查是否靠近并点击了猪
             if (!pigs.empty()) {  // 确保vector不为空
                 for (auto pig : pigs) {  // 遍历所有的pig
-                    const float distance = player->getPosition().distance(pig->getPosition());
+                    float distance = player->getPosition().distance(pig->getPosition());
                     if (distance < 50.0f) {
                         if (player->getCurrentTool() == Player::ToolType::CARROT) {
                             // 如果玩家手持胡萝卜，触发吃饱了动画
@@ -931,7 +965,7 @@ void GameScene::initMouseListener()
             // 检查是否靠近并点击了鸡
             if (!chickens.empty()) {  // 确保vector不为空
                 for (auto chicken : chickens) {
-                    const  float distance = player->getPosition().distance(chicken->getPosition());
+                    float distance = player->getPosition().distance(chicken->getPosition());
                     if (distance < 50.0f) {
                         if (player->getCurrentTool() == Player::ToolType::CARROT) {
                             // 如果玩家手持胡萝卜，触发吃饱了动画
@@ -944,7 +978,7 @@ void GameScene::initMouseListener()
             // 检查是否靠近并点击了羊
             if (!sheeps.empty()) {  // 确保vector不为空
                 for (auto sheep : sheeps) {
-                    const float distance = player->getPosition().distance(sheep->getPosition());
+                    float distance = player->getPosition().distance(sheep->getPosition());
                     if (distance < 50.0f) {
                         if (player->getCurrentTool() == Player::ToolType::CARROT) {
                             // 如果玩家手持胡萝卜，触发吃饱了动画
@@ -1339,7 +1373,96 @@ void GameScene::initTree()
     }
     isTreeCreated = true; // 设置标志为已创建
 }
+// 创建矿石
+void GameScene::createOre(const Vec2& initialPosition)
+{
+    Ore* ore = Ore::create("TileSheets/Objects_2.png", 10); // 假设矿石的初始生命值为10
+    ore->setTextureRect(cocos2d::Rect(65, 112, 16, 16));
+    if (ore) {
+        Vec2 ore_worldPos = _gameMap->convertToWorldCoord(initialPosition);
+        ore->setPosition(ore_worldPos);
 
+        // 设置矿石被挖后的回调
+        ore->setOnOreDug([this, ore, ore_worldPos]() {
+            // 创建矿石掉落物
+            auto stoneSprite = Sprite::create("TileSheets/Objects_2.png");
+            if (stoneSprite) {
+                stoneSprite->setTextureRect(Rect(65, 112, 16, 16)); // 矿石的纹理
+                stoneSprite->setPosition(ore_worldPos);
+                stoneSprite->setScale(1.5f);
+                this->addChild(stoneSprite, 2);
+
+                // 添加点击事件
+                auto listener = EventListenerTouchOneByOne::create();
+                listener->setSwallowTouches(true);
+
+                listener->onTouchBegan = [this, stoneSprite](Touch* touch, Event* event) {
+                    Vec2 touchPos = touch->getLocation();
+                    touchPos = this->convertToNodeSpace(touchPos);
+
+                    if (stoneSprite->getBoundingBox().containsPoint(touchPos)) {
+                        // 播放拾取动画
+                        auto fadeOut = FadeOut::create(0.3f);
+                        auto moveUp = MoveBy::create(0.3f, Vec2(0, 20));
+                        auto spawn = Spawn::create(fadeOut, moveUp, nullptr);
+                        auto remove = RemoveSelf::create();
+
+                        // 添加矿石到物品系统
+                        auto addItem = CallFunc::create([]() {
+                            ItemSystem::getInstance()->addItem("stone", 10); // 假设添加10个矿石
+                            });
+
+                        stoneSprite->runAction(Sequence::create(
+                            spawn,
+                            addItem,
+                            remove,
+                            nullptr
+                        ));
+                        return true;
+                    }
+                    return false;
+                    };
+
+                Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, stoneSprite);
+
+                // 添加掉落动画
+                auto dropDistance = 50.0f;
+                auto dropDuration = 0.5f;
+                stoneSprite->setPositionY(stoneSprite->getPositionY() + dropDistance);
+                auto dropAction = EaseOut::create(
+                    MoveBy::create(dropDuration, Vec2(0, -dropDistance)),
+                    2.0f
+                );
+                stoneSprite->runAction(dropAction);
+            }
+
+            // 移除矿石
+            ore->removeFromParent();
+            auto iter = std::find(ores.begin(), ores.end(), ore);
+            if (iter != ores.end()) {
+                ores.erase(iter);
+            }
+            });
+
+        this->addChild(ore, 1);
+        ores.push_back(ore); 
+    }
+}
+
+void GameScene::initOre()
+{
+    if (!isOreCreated) {
+        // 矿洞右边
+        for (int i = 0; i < 8; i++) {
+            createOre(Vec2(17, 10+i));
+        }
+        // 矿洞左边
+        for (int i = 0; i < 9; i++) {
+            createOre(Vec2(3, 9+i));
+        }
+    }
+    isOreCreated = true; // 设置标志为已创建
+}
 /*
  * 初始化宝箱
  * 功能：在地图上创建宝箱
@@ -1441,15 +1564,15 @@ void GameScene::hideQuestMark(Node* target) {
 
 void GameScene::updateQuestUI() {
     if (_questTipLabel) {
-        const auto questSystem = QuestSystem::getInstance();
+        auto questSystem = QuestSystem::getInstance();
         auto gameTime = GameTime::getInstance();
-        const  int currentDay = gameTime->getDay();
+        int currentDay = gameTime->getDay();
 
         if (currentDay == 1 &&
             questSystem->getQuestState(QuestType::COLLECT_WOOD) == QuestState::IN_PROGRESS) {
             // 木头收集任务UI
             auto& questData = questSystem->getQuestData(QuestType::COLLECT_WOOD);
-            const int woodCount = ItemSystem::getInstance()->getItemCount("wood");
+            int woodCount = ItemSystem::getInstance()->getItemCount("wood");
             _questTipLabel->setString(questData.title + ": " +
                 std::to_string(woodCount) + "/" +
                 std::to_string(questData.targetAmount));
@@ -1466,7 +1589,7 @@ void GameScene::updateQuestUI() {
 void GameScene::handleQuestDialogue(Lewis* lewis) {
     if (!lewis) return;
 
-    const  auto questSystem = QuestSystem::getInstance();
+    auto questSystem = QuestSystem::getInstance();
     if (!questSystem) return;
 
     auto gameTime = GameTime::getInstance();
@@ -1474,7 +1597,7 @@ void GameScene::handleQuestDialogue(Lewis* lewis) {
 
     // 第一天的木头收集任务
     if (currentDay == 1) {
-        const auto woodQuestState = questSystem->getQuestState(QuestType::COLLECT_WOOD);
+        auto woodQuestState = questSystem->getQuestState(QuestType::COLLECT_WOOD);
         if (woodQuestState != QuestState::COMPLETED) {  // 只有未完成时才处理任务
             handleWoodQuest(lewis, woodQuestState);
             return;
@@ -1482,7 +1605,7 @@ void GameScene::handleQuestDialogue(Lewis* lewis) {
     }
     // 第二天的修桥任务
     else if (currentDay == 2) {
-        const auto bridgeQuestState = questSystem->getQuestState(QuestType::REPAIR_BRIDGE);
+        auto bridgeQuestState = questSystem->getQuestState(QuestType::REPAIR_BRIDGE);
         if (bridgeQuestState != QuestState::COMPLETED) {  // 只有未完成时才处理任务
             handleBridgeQuest(lewis, bridgeQuestState);
             return;
@@ -1491,7 +1614,7 @@ void GameScene::handleQuestDialogue(Lewis* lewis) {
 
     // 如果当天的任务已完成或是其他天，显示随机对话
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
-    dialogueBox = DialogueBox::create(lewis->getRandomDialogue(), "Portraits/Lewis.png", "Lewis");
+    dialogueBox = DialogueBox::create(lewis->getRandomDialogue(), "Portraits/Lewis.png", "Lewis", lewis->getHeartPoints());
     this->addChild(dialogueBox, 10);
 }
 
@@ -1502,7 +1625,7 @@ void GameScene::handleWoodQuest(Lewis* lewis, QuestState questState) {
         // 显示任务介绍对话
         auto& questData = questSystem->getQuestData(QuestType::COLLECT_WOOD);
         if (!dialogueBox) {  // 检查是否已存在对话框
-            dialogueBox = DialogueBox::create(questData.description, "Portraits/Lewis.png", "Lewis");
+            dialogueBox = DialogueBox::create(questData.description, "Portraits/Lewis.png", "Lewis", lewis->getHeartPoints());
             if (dialogueBox) {  // 检查创建是否成功
                 this->addChild(dialogueBox, 10);
             }
@@ -1512,7 +1635,7 @@ void GameScene::handleWoodQuest(Lewis* lewis, QuestState questState) {
         if (!_questTipLabel) {
             _questTipLabel = Label::createWithTTF("", "fonts/arial.ttf", 24);
             if (_questTipLabel) {
-                const Size visibleSize = Director::getInstance()->getVisibleSize();
+                Size visibleSize = Director::getInstance()->getVisibleSize();
                 // 将Label添加为HUD层的子节点
                 this->addChild(_questTipLabel, 10);
                 _questTipLabel->setAnchorPoint(Vec2(1, 1)); // 设置右上角为锚点
@@ -1526,14 +1649,15 @@ void GameScene::handleWoodQuest(Lewis* lewis, QuestState questState) {
         updateQuestUI();
     }
     else if (questState == QuestState::IN_PROGRESS) {
-        const int woodCount = ItemSystem::getInstance()->getItemCount("wood");
+        int woodCount = ItemSystem::getInstance()->getItemCount("wood");
         auto& questData = questSystem->getQuestData(QuestType::COLLECT_WOOD);
 
         if (woodCount >= questData.targetAmount) {
             dialogueBox = DialogueBox::create(
                 "Great! Thank you!",
                 "Portraits/Lewis.png",
-                "Lewis"
+                "Lewis",
+                lewis->getHeartPoints()
             );
             this->addChild(dialogueBox, 10);
 
@@ -1551,7 +1675,8 @@ void GameScene::handleWoodQuest(Lewis* lewis, QuestState questState) {
             dialogueBox = DialogueBox::create(
                 "Go on, I need " + std::to_string(questData.targetAmount - woodCount) + " more.",
                 "Portraits/Lewis.png",
-                "Lewis"
+                "Lewis",
+                lewis->getHeartPoints()
             );
             this->addChild(dialogueBox, 10);
         }
@@ -1559,7 +1684,7 @@ void GameScene::handleWoodQuest(Lewis* lewis, QuestState questState) {
     else if (questState == QuestState::COMPLETED) {
         // 任务完成后显示随机对话
         std::srand(static_cast<unsigned int>(std::time(nullptr)));
-        dialogueBox = DialogueBox::create(lewis->getRandomDialogue(), "Portraits/Lewis.png", "Lewis");
+        dialogueBox = DialogueBox::create(lewis->getRandomDialogue(), "Portraits/Lewis.png", "Lewis", lewis->getHeartPoints());
         this->addChild(dialogueBox, 10);
     }
 }
@@ -1570,15 +1695,13 @@ void GameScene::handleBridgeQuest(Lewis* lewis, QuestState questState) {
     if (questState == QuestState::NOT_STARTED) {
         // 显示任务介绍对话
         auto& questData = questSystem->getQuestData(QuestType::REPAIR_BRIDGE);
-        dialogueBox = DialogueBox::create(questData.description, "Portraits/Lewis.png", "Lewis");
+        dialogueBox = DialogueBox::create(questData.description, "Portraits/Lewis.png", "Lewis", lewis->getHeartPoints());
         this->addChild(dialogueBox, 10);
 
         // 创建任务提示UI
-        if (!_questTipLabel)
-        {
+        if (!_questTipLabel) {
             _questTipLabel = Label::createWithTTF("", "fonts/arial.ttf", 24);
-            if (_questTipLabel)
-            {
+            if (_questTipLabel) {
                 this->addChild(_questTipLabel, 10);
                 _questTipLabel->setAnchorPoint(Vec2(1, 1));
                 updateQuestUIPosition();
@@ -1594,9 +1717,11 @@ void GameScene::handleBridgeQuest(Lewis* lewis, QuestState questState) {
         dialogueBox = DialogueBox::create(
             "Come on! We will reach the other side of river.",
             "Portraits/Lewis.png",
-            "Lewis"
+            "Lewis",
+            lewis->getHeartPoints()
         );
         this->addChild(dialogueBox, 10);
+
     }
     else if (questState == QuestState::COMPLETED) {
         static bool isFirstCompletion = true;  // 静态变量记录是否是首次完成
@@ -1606,16 +1731,18 @@ void GameScene::handleBridgeQuest(Lewis* lewis, QuestState questState) {
             dialogueBox = DialogueBox::create(
                 "Great job! Now we can get there!",
                 "Portraits/Lewis.png",
-                "Lewis"
+                "Lewis",
+                lewis->getHeartPoints()
             );
             isFirstCompletion = false;  // 设置为非首次
+            this->addChild(dialogueBox, 10);
         }
         else {
             // 后续显示随机对话
             std::srand(static_cast<unsigned int>(std::time(nullptr)));
-            dialogueBox = DialogueBox::create(lewis->getRandomDialogue(), "Portraits/Lewis.png", "Lewis");
+            dialogueBox = DialogueBox::create(lewis->getRandomDialogue(), "Portraits/Lewis.png", "Lewis", lewis->getHeartPoints());
+            this->addChild(dialogueBox, 10);
         }
-        this->addChild(dialogueBox, 10);
 
         // 移除任务提示UI
         if (_questTipLabel) {
@@ -1628,8 +1755,8 @@ void GameScene::handleBridgeQuest(Lewis* lewis, QuestState questState) {
 // 更新任务UI位置
 void GameScene::updateQuestUIPosition() {
     if (_questTipLabel) {
-        const Size visibleSize = Director::getInstance()->getVisibleSize();
-        const Vec2 origin = Director::getInstance()->getVisibleOrigin();
+        Size visibleSize = Director::getInstance()->getVisibleSize();
+        Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
         // 计算屏幕右上角的位置
         Vec2 position = Vec2(origin.x + visibleSize.width - 20,  // 右边缘留20像素边距
@@ -1645,7 +1772,7 @@ void GameScene::updateQuestUIPosition() {
 void GameScene::checkQuestProgress() {
     auto questSystem = QuestSystem::getInstance();
     if (questSystem->getQuestState(QuestType::COLLECT_WOOD) == QuestState::IN_PROGRESS) {
-        const int woodCount = ItemSystem::getInstance()->getItemCount("wood");
+        int woodCount = ItemSystem::getInstance()->getItemCount("wood");
         questSystem->updateQuestProgress(QuestType::COLLECT_WOOD, woodCount);
         updateQuestUI();
     }
