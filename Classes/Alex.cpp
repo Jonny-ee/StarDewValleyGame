@@ -1,28 +1,35 @@
 #include "Alex.h"
 
 USING_NS_CC;
-
 Alex* Alex::create()
 {
-    Alex* npc = new (std::nothrow) Alex();
-    if (npc && npc->init())
-    {
-        npc->autorelease();
-        return npc;
+    Alex* alex = new (std::nothrow) Alex();
+    if (alex && alex->init()) {
+        alex->autorelease();
+        return alex;
     }
-    CC_SAFE_DELETE(npc);
+    CC_SAFE_DELETE(alex);
     return nullptr;
 }
 
 bool Alex::init()
 {
-    const std::string imagePath = "Characters/Alex.png"; // °¬Àû¿ËË¹ NPC µÄÍ¼Æ¬Â·¾¶
-    if (!NPC::init(imagePath))
-    {
+    const std::string imagePath = "Characters/Alex.png"; // è‰¾åˆ©å…‹æ–¯ NPC çš„å›¾ç‰‡è·¯å¾„
+    if (!Sprite::initWithFile(imagePath)) { // ç›´æ¥ä½¿ç”¨ Sprite çš„åˆå§‹åŒ–
         return false;
     }
-    this->setTextureRect(cocos2d::Rect(0, 128, 16, 32)); // ÉèÖÃ³ß´ç
-    this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f)); // ÉèÖÃÃªµã
+
+    //åˆå§‹åŒ–åŸºæœ¬ä¿¡æ¯
+    moveSpeed = 50.0f;//ç§»é€Ÿ
+    heartPoint = 0;
+    relationship = Relation::DEFAULT;
+   
+    //è®¾ç½®ç²¾çµå±æ€§
+    this->setAnchorPoint(Vec2(0.5f, 0.5f));//è®¾ç½®é”šç‚¹
+    this->setScale(2.0f);//è®¾ç½®ç¼©æ”¾
+
+    this->setTextureRect(cocos2d::Rect(0, 128, 16, 32)); // è®¾ç½®å°ºå¯¸
+    this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f)); // è®¾ç½®é”šç‚¹
     this->setScale(2.5);
     initializeDefaultBehavior();
     return true;
@@ -30,41 +37,28 @@ bool Alex::init()
 
 void Alex::initializeDefaultBehavior()
 {
-    setName("°¬Àû¿ËË¹");
-    setOccupation("ÔË¶¯Ô±");
-    setBirthday(Season::SPRING, 8); // ¼ÙÉèÉúÈÕÔÚ´º¼¾µÄµÚ8Ìì
-
+    setName("Alex");
+    completeDialogue();
 }
 
-void Alex::startConversation()
+void Alex::staticAnimation()
 {
-    // ÏÔÊ¾¶Ô»°¿ò
-    std::string dialogue = getRandomDialogue();
-    // DialogueManager::getInstance()->showDialogue(dialogue); // ¼ÙÉèÓĞ¶Ô»°¹ÜÀíÆ÷
-    CCLOG("¶Ô»°: %s", dialogue.c_str());
-}
-
-std::string Alex::getRandomDialogue()
-{
-    int index = std::rand() % 4;
-    return dialogueList[index];
+    ;
 }
 
 void Alex::initializeAnimations()
 {
-    // ´´½¨¶¯»­
+    // åˆ›å»ºåŠ¨ç”»
     auto animation = Animation::create();
-    animation->setDelayPerUnit(0.15f); // Ã¿Ö¡³ÖĞøÊ±¼ä
-
-    // ¾«Áé±íÓĞ8Ö¡¶¯»­
+    animation->setDelayPerUnit(0.15f); // æ¯å¸§æŒç»­æ—¶é—´
+    // ç²¾çµè¡¨æœ‰8å¸§åŠ¨ç”»
     for (int i = 0; i < 2; i++){
         for (int j = 0; j < 4; j++) {
-            auto frame = SpriteFrame::create("Characters/Alex.png", cocos2d::Rect(j * 16, 128 + i * 32, 16, 32)); // Ã¿Ö¡µÄÇøÓò
+            auto frame = SpriteFrame::create("Characters/Alex.png", cocos2d::Rect(j * 16, 128 + i * 32, 16, 32)); // æ¯å¸§çš„åŒºåŸŸ
             animation->addSpriteFrame(frame);
         }
     }
-
-    // ´´½¨Ñ­»·¶¯»­
+    // åˆ›å»ºå¾ªç¯åŠ¨ç”»
     auto runAnimation = RepeatForever::create(Animate::create(animation));
-    this->runAction(runAnimation); // ÔËĞĞ¶¯»­
+    this->runAction(runAnimation); // è¿è¡ŒåŠ¨ç”»
 }

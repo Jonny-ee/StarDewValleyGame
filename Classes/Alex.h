@@ -1,22 +1,27 @@
 #pragma once
 #include "NPC.h"
 
-// °¬Àû¿ËË¹ NPC Àà
+// è‰¾åˆ©å…‹æ–¯ NPC ç±»
 class Alex : public NPC
 {
 public:
     static Alex* create();
-    virtual bool init();
+    virtual bool init() override;
 
-    void startConversation(); // ¿ªÊ¼¶Ô»°
-    std::string getRandomDialogue();
+   // void startConversation(); // å¼€å§‹å¯¹è¯
+  //  std::string getRandomDialogue();
+
+    void staticAnimation() override;
+
     void initializeAnimations();
 private:
-    void initializeDefaultBehavior(); // ³õÊ¼»¯°¬Àû¿ËË¹ NPC µÄÄ¬ÈÏĞĞÎª
-    std::vector<std::string> dialogueList = {
-      "Today is a great day to train!",
-      "Hey, farmer! If you want to get stronger, you should do more sports.",
-      "I like working out with my friends, especially Maru.",
-      "Nice weather today. Perfect for getting a good workout in."
-    };
+    void initializeDefaultBehavior(); // åˆå§‹åŒ–è‰¾åˆ©å…‹æ–¯ NPC çš„é»˜è®¤è¡Œä¸º
+
+    void completeDialogue()
+    {
+        this->addDialogue("Today is a great day to train!");
+        this->addDialogue("Hey, farmer!If you want to get stronger, you should do more sports.");
+        this->addDialogue("I like working out with my friends, especially Maru.");
+        this->addDialogue("Nice weather today. Perfect for getting a good workout in.");
+    }
 };

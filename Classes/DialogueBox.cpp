@@ -2,10 +2,10 @@
 
 USING_NS_CC;
 
-DialogueBox* DialogueBox::create(const std::string& dialogue, const std::string& characterImagePath, const std::string& characterName)
+DialogueBox* DialogueBox::create(const std::string& dialogue, const std::string& characterImagePath, const std::string& characterName, int heartPoints)
 {
     DialogueBox* dialogueBox = new (std::nothrow) DialogueBox();
-    if (dialogueBox && dialogueBox->init(dialogue, characterImagePath, characterName))
+    if (dialogueBox && dialogueBox->init(dialogue, characterImagePath, characterName, heartPoints))
     {
         dialogueBox->autorelease();
         return dialogueBox;
@@ -38,7 +38,7 @@ void DialogueBox::startTypingEffect(Label* label, const std::string& dialogue)
     this->schedule(typingCallback, 0.08f, "typing"); // 0.08秒显示一个字符
 }
 
-bool DialogueBox::init(const std::string& dialogue, const std::string& characterImagePath, const std::string& characterName)
+bool DialogueBox::init(const std::string& dialogue, const std::string& characterImagePath, const std::string& characterName, int heartPoints)
 {
     if (!Node::init())
     {
@@ -74,6 +74,13 @@ bool DialogueBox::init(const std::string& dialogue, const std::string& character
     label->setDimensions(120, 0); // 设置最大宽度并启用自动换行
     label->setLineBreakWithoutSpace(true); // 不允许在单词中间换行
     this->addChild(label);
+
+    // 创建好感度文本
+    auto heartLabel = Label::createWithSystemFont(std::to_string(heartPoints) + " / 10", "Arial", 8);
+    heartLabel->setTextColor(cocos2d::Color4B(0, 0, 0, 255)); // 黑色，RGBA格式
+    heartLabel->setPosition(Vec2(82, 20)); // 根据需要调整位置
+    this->addChild(heartLabel);
+    
     // 开始打字效果
     label->setTextColor(cocos2d::Color4B(0, 0, 0, 255)); // 黑色，RGBA格式
     label->setPosition(Vec2(-20, 0)); // 根据需要调整位置

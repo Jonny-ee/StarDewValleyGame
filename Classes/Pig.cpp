@@ -15,9 +15,19 @@ Pig* Pig::create()
 bool Pig::init()
 {
 	const std::string imagePath = "Animals/Pig.png";
-	if (!NPC::init(imagePath)) {
+	if (!Sprite::initWithFile(imagePath)) { // 直接使用 Sprite 的初始化
 		return false;
 	}
+
+	//初始化基本信息
+	moveSpeed = 50.0f;//移速
+	heartPoint = 0;
+	relationship = Relation::DEFAULT;
+
+	//设置精灵属性
+	this->setAnchorPoint(Vec2(0.5f, 0.5f));//设置锚点
+	this->setScale(2.0f);//设置缩放
+
 	this->setTextureRect(cocos2d::Rect(0, 0, 32, 32));
 	this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f));
 	this->setScale(2.0);

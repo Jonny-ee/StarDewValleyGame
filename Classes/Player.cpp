@@ -60,6 +60,16 @@ bool Player::init()
         SkillSystem::getInstance()->setSkillUI(skillUI);
     }
 
+    // 初始化十字镐精灵
+    pickSprite = Sprite::create("TileSheets/Tools.png");
+    if (pickSprite) {
+        pickSprite->setTextureRect(cocos2d::Rect(80, 96, 16, 16));  
+        pickSprite->setScale(0.8f);
+        pickSprite->setPosition(Vec2(48, 0));  // 位于角色右侧
+        pickSprite->setVisible(false);
+        this->addChild(pickSprite);
+    }
+
     // 初始化鱼竿精灵
     rodSprite = Sprite::create("TileSheets/Tools.png");
     if (rodSprite) {
@@ -125,6 +135,9 @@ void Player::switchTool()
             currentTool = ToolType::AXE;
             break;
         case ToolType::AXE:
+            currentTool = ToolType::PICK;
+            break;
+        case ToolType::PICK:
             currentTool = ToolType::WATERING;
             break;
         case ToolType::WATERING:
@@ -142,6 +155,11 @@ void Player::switchTool()
         default:
             currentTool = ToolType::NONE;
             break;
+    }
+    // 更新十字镐显示状态
+    if (pickSprite)
+    {
+        pickSprite->setVisible(currentTool == ToolType::PICK);
     }
 
     // 更新鱼竿显示状态
@@ -340,7 +358,6 @@ void Player::performAction(const Vec2& clickPos)
                             auto removeEffect = RemoveSelf::create();
                             chopEffect->runAction(Sequence::create(fadeOut, removeEffect, nullptr));
                         }
-
                         // 砍树
                         tree->chop(10);
 
@@ -359,21 +376,53 @@ void Player::performAction(const Vec2& clickPos)
                         return; // 找到并砍了树后返回
                     }
                 }
+            }
+        }
+        // 如果是十字镐，检查是否在挖矿
+        else if (currentTool == ToolType::PICK) {
+            auto scene = dynamic_cast<GameScene*>(Director::getInstance()->getRunningScene());
+            if (scene)
+            {
+                Vec2 playerPos = this->getPosition();
 
-                // 如果没有找到可以砍的树，执行除草动作
-                isActioning = true;
-                actionTimer = 0;
-                currentFrame = 0;
+                // 遍历所有矿石
+                for (auto ore : scene->ores) // 假设 ores 是存储矿石的容器
+                {
+                    Vec2 orePos = ore->getPosition();
+                    float distance = playerPos.distance(orePos);
 
-                this->setOpacity(0);
-                actionSprite->setOpacity(255);
-                actionSprite->setPosition(Vec2::ZERO);
+                    // 如果距离足够近且矿石可以被挖掘
+                    if (distance < 100.0f && ore->canBeDug())
+                    {
+                        // 播放挖矿动画和效果
+                        auto digEffect = Sprite::create("effects/dig_effect.png");
+                        if (digEffect)
+                        {
+                            digEffect->setPosition(ore->getPosition());
+                            scene->addChild(digEffect, 10);
 
-                int toolOffset = 4; // 手上是斧头
+                            auto fadeOut = FadeOut::create(0.3f);
+                            auto removeEffect = RemoveSelf::create();
+                            digEffect->runAction(Sequence::create(fadeOut, removeEffect, nullptr));
+                        }
+                        // 挖掘矿石
+                        ore->dig(5); // 假设每次挖掘减少5的生命值
 
-                float y = (toolOffset + currentDirection) * 48;
-                actionSprite->setTextureRect(Rect(0, y, 48, 48));
-                actionSprite->setLocalZOrder(1);
+                        // 设置动画状态
+                        isActioning = true;
+                        actionTimer = 0;
+                        currentFrame = 0;
+
+                        this->setOpacity(0);
+                        actionSprite->setOpacity(255);
+                        actionSprite->setPosition(Vec2::ZERO);
+
+                        float y = 5 * 48 + currentDirection * 48; // 5是铲子动作的偏移
+                        actionSprite->setTextureRect(Rect(0, y, 48, 48));
+                        actionSprite->setLocalZOrder(1);
+                        return; // 找到并挖掘了矿石后返回
+                    }
+                }
             }
         }
         else
@@ -473,6 +522,32 @@ void Player::update(float dt)
     if (isKeyPressed(EventKeyboard::KeyCode::KEY_D) || isKeyPressed(EventKeyboard::KeyCode::KEY_RIGHT_ARROW))
         direction.x += 1;
 
+    // 更新十字镐朝向
+    if (pickSprite && pickSprite->isVisible()) {
+        switch (currentDirection) {
+            case 0: // 下
+                pickSprite->setPosition(Vec2(37, 25));
+                pickSprite->setFlippedX(false);  // 恢复正常方向
+                pickSprite->setLocalZOrder(1);  // 在角色上层
+                break;
+            case 1: // 上
+                pickSprite->setPosition(Vec2(12, 25));
+                pickSprite->setFlippedX(true);   // 翻转十字镐
+                pickSprite->setLocalZOrder(-1);  // 在角色下层
+                break;
+            case 2: // 左
+                pickSprite->setPosition(Vec2(15, 25));
+                pickSprite->setFlippedX(true);   // 翻转十字镐
+                pickSprite->setLocalZOrder(1);  // 在角色上层
+                break;
+            case 3: // 右
+                pickSprite->setPosition(Vec2(30, 25));
+                pickSprite->setFlippedX(false);  // 恢复正常方向
+                pickSprite->setLocalZOrder(-1);  // 在角色下层
+                break;
+        }
+    }
+
     // 更新鱼竿朝向
     if (rodSprite && rodSprite->isVisible()) {
         switch (currentDirection) {
@@ -509,12 +584,12 @@ void Player::update(float dt)
                 break;
             case 1: // 上
                 gift->setPosition(Vec2(12, 25));
-                gift->setFlippedX(true);   // 翻转鱼竿
+                gift->setFlippedX(true);   // 翻转礼物
                 gift->setLocalZOrder(-1);  // 在角色下层
                 break;
             case 2: // 左
                 gift->setPosition(Vec2(15, 25));
-                gift->setFlippedX(true);   // 翻转鱼竿
+                gift->setFlippedX(true);   // 翻转礼物
                 gift->setLocalZOrder(1);  // 在角色上层
                 break;
             case 3: // 右
@@ -535,12 +610,12 @@ void Player::update(float dt)
                 break;
             case 1: // 上
                 carrot->setPosition(Vec2(12, 25));
-                carrot->setFlippedX(true);   // 翻转鱼竿
+                carrot->setFlippedX(true);   // 翻转胡萝卜
                 carrot->setLocalZOrder(-1);  // 在角色下层
                 break;
             case 2: // 左
                 carrot->setPosition(Vec2(15, 25));
-                carrot->setFlippedX(true);   // 翻转鱼竿
+                carrot->setFlippedX(true);   // 翻转胡萝卜
                 carrot->setLocalZOrder(1);  // 在角色上层
                 break;
             case 3: // 右
@@ -616,3 +691,7 @@ void Player::toggleSkillUI() {
     }
 }
 
+void Player::digOre(Ore* ore)
+{
+    ore->dig(5); // 挖掘矿石，假设每次挖掘减少5的生命值
+}

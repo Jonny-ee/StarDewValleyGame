@@ -1,21 +1,24 @@
 #pragma once
 #include "NPC.h"
 
-// ÂêÂ³ NPC Àà
+// ç›é² NPC ç±»
 class Maru : public NPC
 {
 public:
     static Maru* create();
     virtual bool init();
 
-    void startConversation(); // ¿ªÊ¼¶Ô»°
-    std::string getRandomDialogue();
+   // void startConversation(); // å¼€å§‹å¯¹è¯
+   // std::string getRandomDialogue();
+
+    void staticAnimation() override;
 private:
-    void initializeDefaultBehavior(); // ³õÊ¼»¯ÂêÂ³ NPC µÄÄ¬ÈÏĞĞÎª
-    std::vector<std::string> dialogueList = {
-      "Welcome to Stardew Valley Hospital. Come to me at anytime.",
-      "If you're sick, remember to drink plenty of water and eat healthily.",
-      "Oh, you're injured? Let me check it out.",
-      "While it's quiet, there are occasionally situations that need attention."
-    };
+    void initializeDefaultBehavior(); // åˆå§‹åŒ–ç›é² NPC çš„é»˜è®¤è¡Œä¸º
+    void completeDialogue()
+    {
+        this->addDialogue("Welcome to Stardew Valley Hospital. Come to me at anytime.");
+        this->addDialogue("If you're sick, remember to drink plenty of water and eat healthily.");
+        this->addDialogue("Oh, you're injured? Let me check it out.");
+        this->addDialogue("While it's quiet, there are occasionally situations that need attention.");
+    }
 };

@@ -15,9 +15,19 @@ Chicken* Chicken::create()
 bool Chicken::init()
 {
 	const std::string imagePath = "Animals/White Chicken.png";
-	if (!NPC::init(imagePath)) {
+	if (!Sprite::initWithFile(imagePath)) { // ç›´æ¥ä½¿ç”¨ Sprite çš„åˆå§‹åŒ–
 		return false;
 	}
+
+	//åˆå§‹åŒ–åŸºæœ¬ä¿¡æ¯
+	moveSpeed = 50.0f;//ç§»é€Ÿ
+	heartPoint = 0;
+	relationship = Relation::DEFAULT;
+
+	//è®¾ç½®ç²¾çµå±æ€§
+	this->setAnchorPoint(Vec2(0.5f, 0.5f));//è®¾ç½®é”šç‚¹
+	this->setScale(2.0f);//è®¾ç½®ç¼©æ”¾
+
 	this->setTextureRect(cocos2d::Rect(0, 0, 16, 16));
 	this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f));
 	this->setScale(2.0);
@@ -29,7 +39,7 @@ void Chicken::moveToDirection(cocos2d::Vec2& destination, float dt)
 	cocos2d::Vec2 direction = destination - this->getPosition();
 	float distance = direction.length();
 
-	// ¸üĞÂ·½Ïò
+	// æ›´æ–°æ–¹å‘
 	if (direction.y > 0)
 		currentDirection = 2;
 	if (direction.y < 0)
@@ -39,32 +49,32 @@ void Chicken::moveToDirection(cocos2d::Vec2& destination, float dt)
 	if (direction.x > 0)
 		currentDirection = 1;
 
-	// ¹éÒ»»¯·½ÏòÏòÁ¿
+	// å½’ä¸€åŒ–æ–¹å‘å‘é‡
 	direction.normalize();
-	// ¸üĞÂÎ»ÖÃ
+	// æ›´æ–°ä½ç½®
 	this->setPosition(this->getPosition() + direction * moveSpeed * dt);
-	// ¸üĞÂ×ßÂ·¶¯»­
+	// æ›´æ–°èµ°è·¯åŠ¨ç”»
 	animationTimer += dt;
 	if (animationTimer >= FRAME_INTERVAL) {
 		animationTimer = 0;
 		currentFrame = (currentFrame + 1) % 4;
 	}
-	// ÉèÖÃ×ßÂ·Ö¡
-	if (currentDirection == 1) { // ÏòÓÒ
-		this->setScaleX(2.0f); // È·±£Õı³£Ëõ·Å
-		this->setTextureRect(cocos2d::Rect(currentFrame * 16, 16, 16, 16)); // Ê¹ÓÃµÚ¶şĞĞ
+	// è®¾ç½®èµ°è·¯å¸§
+	if (currentDirection == 1) { // å‘å³
+		this->setScaleX(2.0f); // ç¡®ä¿æ­£å¸¸ç¼©æ”¾
+		this->setTextureRect(cocos2d::Rect(currentFrame * 16, 16, 16, 16)); // ä½¿ç”¨ç¬¬äºŒè¡Œ
 	}
-	else if (currentDirection == 3) { // Ïò×ó
-		this->setScaleX(2.0f); // È·±£Õı³£Ëõ·Å
-		this->setTextureRect(cocos2d::Rect(currentFrame * 16, 48, 16, 16)); // Ê¹ÓÃµÚËÄĞĞ
+	else if (currentDirection == 3) { // å‘å·¦
+		this->setScaleX(2.0f); // ç¡®ä¿æ­£å¸¸ç¼©æ”¾
+		this->setTextureRect(cocos2d::Rect(currentFrame * 16, 48, 16, 16)); // ä½¿ç”¨ç¬¬å››è¡Œ
 	}
-	else if (currentDirection == 2) { // ÏòÉÏ
-		this->setScaleX(2.0f); // È·±£Õı³£Ëõ·Å
-		this->setTextureRect(cocos2d::Rect(currentFrame * 16, 32, 16, 16)); // Ê¹ÓÃµÚÈıĞĞ
+	else if (currentDirection == 2) { // å‘ä¸Š
+		this->setScaleX(2.0f); // ç¡®ä¿æ­£å¸¸ç¼©æ”¾
+		this->setTextureRect(cocos2d::Rect(currentFrame * 16, 32, 16, 16)); // ä½¿ç”¨ç¬¬ä¸‰è¡Œ
 	}
-	else if (currentDirection == 0) { // ÏòÏÂ
-		this->setScaleX(2.0f); // È·±£Õı³£Ëõ·Å
-		this->setTextureRect(cocos2d::Rect(currentFrame * 16, 0, 16, 16)); // Ê¹ÓÃµÚÒ»ĞĞ
+	else if (currentDirection == 0) { // å‘ä¸‹
+		this->setScaleX(2.0f); // ç¡®ä¿æ­£å¸¸ç¼©æ”¾
+		this->setTextureRect(cocos2d::Rect(currentFrame * 16, 0, 16, 16)); // ä½¿ç”¨ç¬¬ä¸€è¡Œ
 	}
 
 }
@@ -72,19 +82,19 @@ void Chicken::moveToDirection(cocos2d::Vec2& destination, float dt)
 void Chicken::staticAnimation()
 {
 	currentActionState = ActionState::IDLE;
-	// ´´½¨¶¯»­
+	// åˆ›å»ºåŠ¨ç”»
 	auto animation = Animation::create();
-	animation->setDelayPerUnit(1.0f); // Ã¿Ö¡³ÖĞøÊ±¼ä
+	animation->setDelayPerUnit(1.0f); // æ¯å¸§æŒç»­æ—¶é—´
 
-	// ¾«Áé±íÓĞ2Ö¡¶¯»­
+	// ç²¾çµè¡¨æœ‰2å¸§åŠ¨ç”»
 	for (int i = 0; i < 2; i++) {
-		auto frame = SpriteFrame::create("Animals/White Chicken.png", cocos2d::Rect(16 * i, 64, 16, 16)); // Ã¿Ö¡µÄÇøÓò
+		auto frame = SpriteFrame::create("Animals/White Chicken.png", cocos2d::Rect(16 * i, 64, 16, 16)); // æ¯å¸§çš„åŒºåŸŸ
 		animation->addSpriteFrame(frame);
 	}
 
-	// ´´½¨Ñ­»·¶¯»­
+	// åˆ›å»ºå¾ªç¯åŠ¨ç”»
 	auto runAnimation = RepeatForever::create(Animate::create(animation));
-	this->runAction(runAnimation); // ÔËĞĞ¶¯»­
+	this->runAction(runAnimation); // è¿è¡ŒåŠ¨ç”»
 }
 
 void Chicken::moveAlongPath(float dt)
@@ -93,16 +103,16 @@ void Chicken::moveAlongPath(float dt)
 		return;
 	}
 	if (currentPathIndex >= path.size()) {
-		currentPathIndex = 0;// Èç¹ûµ½´ïÂ·¾¶Ä©Î²£¬ÖØÖÃË÷Òı
+		currentPathIndex = 0;// å¦‚æœåˆ°è¾¾è·¯å¾„æœ«å°¾ï¼Œé‡ç½®ç´¢å¼•
 	}
 
 	cocos2d::Vec2 targetPosition = path[currentPathIndex];
 	currentActionState = ActionState::MOVING;
-	moveToDirection(targetPosition, dt);// µ÷ÓÃÒÆ¶¯·½·¨
+	moveToDirection(targetPosition, dt);// è°ƒç”¨ç§»åŠ¨æ–¹æ³•
 
-	// ¼ì²âÊÇ·ñµ½´ïÄ¿±êÎ»ÖÃ
+	// æ£€æµ‹æ˜¯å¦åˆ°è¾¾ç›®æ ‡ä½ç½®
 	if (this->getPosition().distance(targetPosition) < 1.0f) {
-		//staticAnimation();// ²¥·Å¾²Ö¹¶¯»­
-		currentPathIndex++;// ÒÆ¶¯µ½ÏÂÒ»¸öÄ¿±ê
+		//staticAnimation();// æ’­æ”¾é™æ­¢åŠ¨ç”»
+		currentPathIndex++;// ç§»åŠ¨åˆ°ä¸‹ä¸€ä¸ªç›®æ ‡
 	}
 }

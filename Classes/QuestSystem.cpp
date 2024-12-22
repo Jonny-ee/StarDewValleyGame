@@ -11,7 +11,7 @@ QuestSystem* QuestSystem::getInstance() {
 }
 
 void QuestSystem::init() {
-    // ³õÊ¼»¯Ä¾Í·ÊÕ¼¯ÈÎÎñ
+    // åˆå§‹åŒ–æœ¨å¤´æ”¶é›†ä»»åŠ¡
     QuestData woodQuest;
     woodQuest.type = QuestType::COLLECT_WOOD;
     woodQuest.title = "Collect Woods";
@@ -19,7 +19,7 @@ void QuestSystem::init() {
     woodQuest.targetAmount = 10;
     woodQuest.currentAmount = 0;
     woodQuest.state = QuestState::NOT_STARTED;
-    // ³õÊ¼»¯ĞŞÇÅÈÎÎñ
+    // åˆå§‹åŒ–ä¿®æ¡¥ä»»åŠ¡
     QuestData bridgeQuest;
     bridgeQuest.type = QuestType::REPAIR_BRIDGE;
     bridgeQuest.title = "Repair the Bridge";

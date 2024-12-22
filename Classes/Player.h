@@ -1,6 +1,7 @@
 #pragma once
 #include "cocos2d.h"
 #include "SkillSystem.h"
+#include "Ore.h"
 /*
  * 玩家类
  * 功能：管理玩家角色的所有行为和属性
@@ -23,6 +24,7 @@ public:
         NONE,       // 无工具
         SHOVEL,     // 铲子
         AXE,        // 斧头
+        PICK,       //十字镐
         WATERING,   // 水壶
         ROD,        // 鱼竿
         GIFT,       // 礼物(送给NPC)
@@ -98,6 +100,7 @@ private:
 
     // 工具相关
     ToolType currentTool = ToolType::NONE;          // 当前装备的工具
+    cocos2d::Sprite* pickSprite = nullptr;           // 十字镐精灵
     cocos2d::Sprite* rodSprite = nullptr;           // 鱼竿精灵
     cocos2d::Sprite* gift = nullptr;                // 礼物精灵
     cocos2d::Sprite* carrot = nullptr;              // 胡萝卜精灵
@@ -112,4 +115,6 @@ private:
     //技能等级系统相关
     bool isSkillUIVisible{ false };  // 技能界面显示状态
     SkillUI* skillUI{ nullptr };     // 技能界面指针
+
+    void digOre(Ore* ore);           // 挖掘矿石
 };
