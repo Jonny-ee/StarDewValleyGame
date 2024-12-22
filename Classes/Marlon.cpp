@@ -17,10 +17,18 @@ Marlon* Marlon::create()
 bool Marlon::init()
 {
     const std::string imagePath = "Characters/Marlon.png"; // 马龙 NPC 的图片路径
-    if (!NPC::init(imagePath))
-    {
+    if (!Sprite::initWithFile(imagePath)) { // 直接使用 Sprite 的初始化
         return false;
     }
+    //初始化基本信息
+    moveSpeed = 50.0f;//移速
+    heartPoint = 0;
+    relationship = Relation::DEFAULT;
+
+    //设置精灵属性
+    this->setAnchorPoint(Vec2(0.5f, 0.5f));//设置锚点
+    this->setScale(2.0f);//设置缩放
+
     this->setTextureRect(cocos2d::Rect(0, 0, 16, 32)); // 设置尺寸
     this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f)); // 设置锚点
     this->setScale(2.5);
@@ -30,39 +38,11 @@ bool Marlon::init()
 
 void Marlon::initializeDefaultBehavior()
 {
-    setName("马龙");
-    setOccupation("矿工");
-    setBirthday(Season::SUMMER, 10); // 假设生日在夏季的第10天
-
-    // 初始化任务列表
-    taskList.push_back("1");
-    taskList.push_back("1");
-    taskList.push_back("1");
+    setName("Malon");
+    completeDialogue();
 }
 
-void Marlon::assignTask(Player* player)
+void Marlon::staticAnimation()
 {
-    // 为玩家分配随机任务
-    if (!taskList.empty()) {
-        int randomIndex = rand() % taskList.size();
-        std::string task = taskList[randomIndex];
-        CCLOG("任务分配给玩家: %s", task.c_str());
-
-        // 这里可以添加更多的任务逻辑，例如更新玩家的任务状态
-        // player->addTask(task); // 假设 Player 类有 addTask 方法
-    }
-}
-
-void Marlon::startConversation()
-{
-    // 显示对话框
-    std::string dialogue = getRandomDialogue();
-    // DialogueManager::getInstance()->showDialogue(dialogue); // 假设有对话管理器
-    CCLOG("对话: %s", dialogue.c_str());
-}
-
-std::string Marlon::getRandomDialogue()
-{
-    int index = std::rand() % 4;
-    return dialogueList[index];
+    ;
 }
