@@ -325,7 +325,7 @@ void GameScene::onDayChanged()
         _questTipLabel = nullptr;
     }
 
-    // 这里可以添加其他每日更新的内容
+    // 添加其他每日更新的内容
     CCLOG("A new day has started!");
 }
 
