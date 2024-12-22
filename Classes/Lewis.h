@@ -15,10 +15,7 @@ public:
     void moveToDirection(cocos2d::Vec2& destination, float dt);//移动到目的地
     void staticAnimation() override;//人物静止时的呼吸动
     void moveAlongPath(float dt);//移动沿路径
-
-   // void startConversation() override;
     std::vector<cocos2d::Vec2> path; // 移动路径
-   
     void showThanks();//感谢动画
     void setActionState(ActionState state) { currentActionState = state; }
 
@@ -34,7 +31,6 @@ private:
     std::function<void(const std::string&, const std::string&, const std::string&, int)> friendshipCallback; // 友谊回调
 
     int currentPathIndex = 0; // 当前路径索引
-
     ActionState currentActionState = ActionState::MOVING; // 当前动作状态
     float waitTime = 2.0f; // 等待时间
     float elapsedTime = 0.0f; // 已经过的时间
