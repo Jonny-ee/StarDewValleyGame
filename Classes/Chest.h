@@ -5,79 +5,80 @@
 #include "GameTime.h"
 
 /*
- * ±¦ÏäÀà
- * ¹¦ÄÜ£ºÊµÏÖÓÎÏ·ÖĞµÄ±¦ÏäÏµÍ³
- * 1. ÔÚµØÍ¼ÉÏÏÔÊ¾±¦Ïä¾«Áé
- * 2. ´¦Àí±¦ÏäµÄ¿ªÆô×´Ì¬
+ * å®ç®±ç±»
+ * åŠŸèƒ½ï¼šå®ç°æ¸¸æˆä¸­çš„å®ç®±ç³»ç»Ÿ
+ * 1. åœ¨åœ°å›¾ä¸Šæ˜¾ç¤ºå®ç®±ç²¾çµ
+ * 2. å¤„ç†å®ç®±çš„å¼€å¯çŠ¶æ€
  */
 
 class Chest : public cocos2d::Sprite
 {
 public:
-    // ´´½¨±¦ÏäµÄ¾²Ì¬·½·¨
+    // åˆ›å»ºå®ç®±çš„é™æ€æ–¹æ³•
     static Chest* create();
 
-    // ³õÊ¼»¯·½·¨
+    // åˆå§‹åŒ–æ–¹æ³•
     virtual bool init();
 
-    // »ñÈ¡±¦Ïä×´Ì¬
+    // è·å–å®ç®±çŠ¶æ€
     bool isOpened() const { return opened; }
 
-    // ÉèÖÃ±¦ÏäÎ»ÖÃ
+    // è®¾ç½®å®ç®±ä½ç½®
     void setChestPosition(const cocos2d::Vec2& position);
 
-    // ³õÊ¼»¯´¥ÃşÊÂ¼ş
+    // åˆå§‹åŒ–è§¦æ‘¸äº‹ä»¶
     void initTouchEvents();
 
-    // ¼ì²éÍæ¼ÒÊÇ·ñÔÚ¿É½»»¥·¶Î§ÄÚ
+    // æ£€æŸ¥ç©å®¶æ˜¯å¦åœ¨å¯äº¤äº’èŒƒå›´å†…
     bool isPlayerInRange(const cocos2d::Vec2& playerPos) const;
 
 private:
-    bool opened;     // ±¦Ïä¿ªÆô×´Ì¬
+    // å®ç®±å¼€å¯çŠ¶æ€
+    bool opened;     
 
-    // ¾«Áé±íÏà¹Ø³£Á¿
+    // ç²¾çµè¡¨ç›¸å…³å¸¸é‡
     const std::string CHEST_SPRITE_FILE = "Chest.png";
-    const int FRAME_WIDTH = 48;        // Ã¿Ö¡¿í¶È
-    const int FRAME_HEIGHT = 48;       // Ã¿Ö¡¸ß¶È
-    const int TOTAL_FRAMES = 5;       // ×ÜÖ¡Êı
-    const float ANIMATION_SPEED = 0.2f;  // Ã¿Ö¡¶¯»­µÄÊ±¼ä¼ä¸ô
-    const float INTERACTION_RANGE = 100.0f;  // Íæ¼Ò¿ÉÒÔ¿ªÆô±¦ÏäµÄ¾àÀë
+    const int FRAME_WIDTH = 48;                    // æ¯å¸§å®½åº¦
+    const int FRAME_HEIGHT = 48;                   // æ¯å¸§é«˜åº¦
+    const int TOTAL_FRAMES = 5;                    // æ€»å¸§æ•°
+    const float ANIMATION_SPEED = 0.2f;            // æ¯å¸§åŠ¨ç”»çš„æ—¶é—´é—´éš”
+    const float INTERACTION_RANGE = 100.0f;        // ç©å®¶å¯ä»¥å¼€å¯å®ç®±çš„è·ç¦»
 
-    // ±¦ÏäÄÚÎïÆ·Ïà¹ØÅäÖÃ
+    // å®ç®±å†…ç‰©å“ç›¸å…³é…ç½®
     const std::vector<std::string> possibleItems = {
         "wood", "apple", "corn", "bread",
         "tomato", "fish", "stone", "corn seed",
-        "tomato seed", "mermaid's KISS(*)"
+        "tomato seed"
     };
 
-    const int MIN_ITEMS = 1;    // ±¦Ïä×îÉÙÎïÆ·ÊıÁ¿
-    const int MAX_ITEMS = 3;    // ±¦Ïä×î¶àÎïÆ·ÊıÁ¿
+    const int MIN_ITEMS = 1;    // å®ç®±æœ€å°‘ç‰©å“æ•°é‡
+    const int MAX_ITEMS = 3;    // å®ç®±æœ€å¤šç‰©å“æ•°é‡
 
 
-    // ¼ÇÂ¼ÉÏ´Î¿ªÆôµÄÊ±¼ä
-    int lastOpenDay = 0;    // ÉÏ´Î¿ªÆôµÄÈÕÆÚ
-    int lastOpenMonth = 0;  // ÉÏ´Î¿ªÆôµÄÔÂ·İ
-    int lastOpenYear = 0;   // ÉÏ´Î¿ªÆôµÄÄê·İ
+    // è®°å½•ä¸Šæ¬¡å¼€å¯çš„æ—¶é—´
+    int lastOpenDay = 0;    // ä¸Šæ¬¡å¼€å¯çš„æ—¥æœŸ
+    int lastOpenMonth = 0;  // ä¸Šæ¬¡å¼€å¯çš„æœˆä»½
+    int lastOpenYear = 0;   // ä¸Šæ¬¡å¼€å¯çš„å¹´ä»½
 
-    // ¼ì²éÊÇ·ñ¿ÉÒÔÖØĞÂ¿ªÆô
+    // æ£€æŸ¥æ˜¯å¦å¯ä»¥é‡æ–°å¼€å¯
     bool canReopen() const;
-    // ÖØÖÃ±¦Ïä×´Ì¬
+    // é‡ç½®å®ç®±çŠ¶æ€
     void resetChest();
-    // ¼ÇÂ¼¿ªÆôÊ±¼ä
+    // è®°å½•å¼€å¯æ—¶é—´
     void recordOpenTime();
 
-    void openChest();                          // ¿ªÆô±¦Ïä
-    void playOpenAnimation();                  // ²¥·Å¿ªÆô¶¯»­
-    void onOpenAnimationFinished();            // ¶¯»­Íê³É»Øµ÷
-    std::string generateRandomItem() const;     // Éú³ÉËæ»úÎïÆ·
-    cocos2d::Animation* createChestAnimation(); // ´´½¨±¦Ïä¶¯»­
+    void openChest();                           // å¼€å¯å®ç®±
+    void playOpenAnimation();                   // æ’­æ”¾å¼€å¯åŠ¨ç”»
+    void onOpenAnimationFinished();             // åŠ¨ç”»å®Œæˆå›è°ƒ
+    std::string generateRandomItem() const;     // ç”Ÿæˆéšæœºç‰©å“
+    cocos2d::Animation* createChestAnimation(); // åˆ›å»ºå®ç®±åŠ¨ç”»
 
-    // ÎïÆ·»ñµÃĞÅÏ¢½á¹¹Ìå
+    // ç‰©å“è·å¾—ä¿¡æ¯ç»“æ„ä½“
     struct ItemInfo {
         std::string itemId;
         int quantity;
     };
 
-    std::vector<ItemInfo> _obtainedItems; // ´æ´¢»ñµÃµÄËùÓĞÎïÆ·
-    void showItemsSummaryPopup();         // ÏÔÊ¾ÎïÆ·»ã×Üµ¯´°
+    std::vector<ItemInfo> _obtainedItems; // å­˜å‚¨è·å¾—çš„æ‰€æœ‰ç‰©å“
+    void showItemsSummaryPopup();         // æ˜¾ç¤ºç‰©å“æ±‡æ€»å¼¹çª—
 };
