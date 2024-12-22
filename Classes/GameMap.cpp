@@ -2,7 +2,7 @@
 #include"GameTime.h"
 #include"LightManager.h"
 #include "CropManager.h"
-
+#include<exception>
 USING_NS_CC;
 GameMap* GameMap::_instance = nullptr;
 
@@ -46,11 +46,11 @@ bool GameMap::loadMap(const std::string& mapName) {
     std::string mapPath = "maps/" + mapName + ".tmx";
 
     // 创建新地图
-    _tileMap = TMXTiledMap::create(mapPath);
-    if (!_tileMap) {
-        return false;
-    }
-    _tileMap->retain();
+  
+       _tileMap = TMXTiledMap::create(mapPath);
+       if (_tileMap == nullptr)
+           return false;    
+     _tileMap->retain();
 
     // 获取地图和屏幕尺寸
     const Size mapSize = _tileMap->getMapSize();

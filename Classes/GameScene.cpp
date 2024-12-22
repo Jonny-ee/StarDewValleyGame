@@ -620,9 +620,15 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
     // 检查是否是切换到Town地图
     if (mapName == "Town") {
         // 如果是12月25日，传送到Town_Christmas
-        if (currentMonth == 12 && currentDay == 25) {
+        if (currentMonth == 3 && currentDay == 3) {
             CCLOG("Switching to Town_Christmas map");
-            _gameMap->loadMap("Town_Christmas");
+            try { _gameMap->loadMap("Town_Christmas"); }
+            catch (const std::exception& e)
+            {
+                CCLOG("wrong Path");
+                _gameMap->loadMap("Town");
+                throw;
+            }
         }
         else {
             // 否则传送到普通的Town地图
