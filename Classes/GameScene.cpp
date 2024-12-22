@@ -414,7 +414,8 @@ void GameScene::update(float dt)
 
     // 更新作物提示
     CropManager::getInstance()->updateTips(playerTilePos, player->getCurrentTool());
-
+    // 更新杀虫状态
+    CropManager::getInstance()->updateBugKilling(dt);
     // 检查所有事件
     for (auto event : _events)
     {
