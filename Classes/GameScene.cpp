@@ -611,11 +611,15 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
     if (_gameMap) {
         _gameMap->getTileMap()->removeFromParent();  // 从显示层级中移除旧地图
     }
-
+    auto _gameTime = GameTime::getInstance();
+    auto currentMonth = _gameTime->getMonth();
+    auto currentDay = _gameTime->getDay();
     // 检查是否是切换到Town地图
     if (mapName == "Town") {
         // 如果是12月25日，传送到Town_Christmas
         if (currentMonth == 3 && currentDay == 3) {
+            AudioManager::getInstance()->pauseBGM();
+            AudioManager::getInstance()->playBGM("Christmas.mp3");
             CCLOG("Switching to Town_Christmas map");
             try { _gameMap->loadMap("Town_Christmas"); }
             catch (const std::exception& e)
@@ -626,12 +630,16 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
             }
         }
         else {
+            AudioManager::getInstance()->pauseBGM();
+            AudioManager::getInstance()->playBGM("normal.mp3");
             // 否则传送到普通的Town地图
             CCLOG("Switching to Town map");
             _gameMap->loadMap("Town");
         }
     }
     else {
+        AudioManager::getInstance()->pauseBGM();
+        AudioManager::getInstance()->playBGM("normal.mp3");
         // 其他地图的处理逻辑
         _gameMap->loadMap(mapName);
     }
@@ -716,7 +724,7 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
     if (mapName == "Mine") {
         CCLOG("Switch to the mine map...");
 
-        const  int currentYear = gameTime->getYear();
+        const  int currentYear = _gameTime->getYear();
 
         // 检查是否需要刷新宝箱
         bool shouldRefreshChests = false;

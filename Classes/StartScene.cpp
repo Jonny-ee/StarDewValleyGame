@@ -38,8 +38,8 @@ bool StartScene::init() {
             visibleSize.height / 2 + origin.y));
 
         // 调整图片大小以适应屏幕
-        float scaleX = visibleSize.width / startLogo->getContentSize().width/2;
-        float scaleY = visibleSize.height / startLogo->getContentSize().height/2;
+        float scaleX = visibleSize.width / startLogo->getContentSize().width/3;
+        float scaleY = visibleSize.height / startLogo->getContentSize().height/3;
         startLogo->setScale(scaleX, scaleY);
 
         this->addChild(startLogo);
