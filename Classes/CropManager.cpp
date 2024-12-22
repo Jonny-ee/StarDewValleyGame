@@ -1,15 +1,15 @@
 #include "CropManager.h"
 
-// ³õÊ¼»¯¾²Ì¬³ÉÔ±±äÁ¿
-CropManager* CropManager::_instance = nullptr;  // ÊµÀı
+// åˆå§‹åŒ–é™æ€æˆå‘˜å˜é‡
+CropManager* CropManager::_instance = nullptr;  // å®ä¾‹
 
 /*
- * »ñÈ¡Å©×÷Îï¹ÜÀíÏµÍ³µ¥ÀıÊµÀı
- * @return Å©×÷Îï¹ÜÀíÏµÍ³ÊµÀıÖ¸Õë
+ * è·å–å†œä½œç‰©ç®¡ç†ç³»ç»Ÿå•ä¾‹å®ä¾‹
+ * @return å†œä½œç‰©ç®¡ç†ç³»ç»Ÿå®ä¾‹æŒ‡é’ˆ
  */
 CropManager* CropManager::getInstance()
 {
-    if (!_instance)  // Èç¹ûÊµÀı²»´æÔÚ£¬´´½¨ÊµÀı
+    if (!_instance)  // å¦‚æœå®ä¾‹ä¸å­˜åœ¨ï¼Œåˆ›å»ºå®ä¾‹
     {
         _instance = new CropManager();
     }
@@ -17,91 +17,91 @@ CropManager* CropManager::getInstance()
 }
 
 /*
- * ¼ì²éÖ¸¶¨Î»ÖÃÊÇ·ñ¿ÉÒÔ¿ª¿Ñ
- * @param tilePos Òª¼ì²éµÄÍ¼Æ¬×ø±ê
- * @return Èç¹û¿ÉÒÔ¿ª¿Ñ·µ»Øtrue£¬·ñÔò·µ»Øfalse
+ * æ£€æŸ¥æŒ‡å®šä½ç½®æ˜¯å¦å¯ä»¥å¼€å¦
+ * @param tilePos è¦æ£€æŸ¥çš„å›¾ç‰‡åæ ‡
+ * @return å¦‚æœå¯ä»¥å¼€å¦è¿”å›trueï¼Œå¦åˆ™è¿”å›false
  */
 bool CropManager::canTill(const Vec2& tilePos) const
 {
-    if (!_gameMap)  // ¼ì²éµØÍ¼ÊÇ·ñ´æÔÚ
+    if (!_gameMap)  // æ£€æŸ¥åœ°å›¾æ˜¯å¦å­˜åœ¨
         return false;
 
-    if (_gameMap->getMapName() != "Farm")  // Ö»ÔÚÔÚFarmµØÍ¼¿ª¿Ñ
+    if (_gameMap->getMapName() != "Farm")  // åªåœ¨åœ¨Farmåœ°å›¾å¼€å¦
         return false;
 
-    auto backLayer = _gameMap->getTileMap()->getLayer("Back");  // »ñÈ¡±³¾°Í¼²ã
-    if (!backLayer)  // ¼ì²éÍ¼²ãÊÇ·ñ´æÔÚ
+    auto backLayer = _gameMap->getTileMap()->getLayer("Back");  // è·å–èƒŒæ™¯å›¾å±‚
+    if (!backLayer)  // æ£€æŸ¥å›¾å±‚æ˜¯å¦å­˜åœ¨
         return false;
 
-    int tileGID = backLayer->getTileGIDAt(tilePos);  // »ñÈ¡Ö¸¶¨Î»ÖÃµÄÍ¼¿éID
+    int tileGID = backLayer->getTileGIDAt(tilePos);  // è·å–æŒ‡å®šä½ç½®çš„å›¾å—ID
 
-    return std::find(TILLABLE_TILES.begin(), TILLABLE_TILES.end(), tileGID) != TILLABLE_TILES.end();  // ¼ì²éÊÇ·ñÊÇ¿É¿ª¿ÑÍ¼¿é
+    return std::find(TILLABLE_TILES.begin(), TILLABLE_TILES.end(), tileGID) != TILLABLE_TILES.end();  // æ£€æŸ¥æ˜¯å¦æ˜¯å¯å¼€å¦å›¾å—
 }
 
 /*
- * ¿ª¿ÑÖ¸¶¨Î»ÖÃµÄÍÁµØ
- * @param tilePos Òª¿ª¿ÑµÄÍ¼Æ¬×ø±ê
- * @return ¿ª¿Ñ³É¹¦·µ»Øtrue£¬Ê§°Ü·µ»Øfalse
+ * å¼€å¦æŒ‡å®šä½ç½®çš„åœŸåœ°
+ * @param tilePos è¦å¼€å¦çš„å›¾ç‰‡åæ ‡
+ * @return å¼€å¦æˆåŠŸè¿”å›trueï¼Œå¤±è´¥è¿”å›false
  */
 bool CropManager::tillSoil(const Vec2& tilePos)
 {
-    if (!canTill(tilePos))  // ¼ì²éÊÇ·ñ¿ÉÒÔ¿ª¿Ñ
+    if (!canTill(tilePos))  // æ£€æŸ¥æ˜¯å¦å¯ä»¥å¼€å¦
         return false;
 
-    auto backLayer = _gameMap->getTileMap()->getLayer("Back");  // »ñÈ¡±³¾°Í¼²ã
-    if (!backLayer)  // ¼ì²éÍ¼²ãÊÇ·ñ´æÔÚ
+    auto backLayer = _gameMap->getTileMap()->getLayer("Back");  // è·å–èƒŒæ™¯å›¾å±‚
+    if (!backLayer)  // æ£€æŸ¥å›¾å±‚æ˜¯å¦å­˜åœ¨
         return false;
 
-    backLayer->setTileGID(TILLED_TILE_ID, tilePos);  // ½«Í¼¿éÉèÖÃÎªÒÑ¿ª¿Ñ×´Ì¬
+    backLayer->setTileGID(TILLED_TILE_ID, tilePos);  // å°†å›¾å—è®¾ç½®ä¸ºå·²å¼€å¦çŠ¶æ€
 
     return true;
 }
 
 /*
- * ¼ì²éÖ¸¶¨Î»ÖÃÊÇ·ñ¿ÉÒÔÒÆ³ı×ÊÔ´
- * @param tilePos Òª¼ì²éµÄÍ¼¿é×ø±ê
- * @return Èç¹û¿ÉÒÔÒÆ³ı×ÊÔ´·µ»Øtrue£¬·ñÔò·µ»Øfalse
+ * æ£€æŸ¥æŒ‡å®šä½ç½®æ˜¯å¦å¯ä»¥ç§»é™¤èµ„æº
+ * @param tilePos è¦æ£€æŸ¥çš„å›¾å—åæ ‡
+ * @return å¦‚æœå¯ä»¥ç§»é™¤èµ„æºè¿”å›trueï¼Œå¦åˆ™è¿”å›false
  */
 bool CropManager::resourceCanRemove(const Vec2& tilePos) const
 {
-    if (!_gameMap)  // ¼ì²éµØÍ¼ÊÇ·ñ´æÔÚ
+    if (!_gameMap)  // æ£€æŸ¥åœ°å›¾æ˜¯å¦å­˜åœ¨
         return false;
 
-    if (_gameMap->getMapName() != "Farm")  // Ö»ÔÚÔÚFarmµØÍ¼³ı²İËéÊ¯
+    if (_gameMap->getMapName() != "Farm")  // åªåœ¨åœ¨Farmåœ°å›¾é™¤è‰ç¢çŸ³
         return false;
 
-    auto backLayer = _gameMap->getTileMap()->getLayer("Back");  // »ñÈ¡resourceÍ¼²ã
-    if (!backLayer)  // ¼ì²éÍ¼²ãÊÇ·ñ´æÔÚ
+    auto backLayer = _gameMap->getTileMap()->getLayer("Back");  // è·å–resourceå›¾å±‚
+    if (!backLayer)  // æ£€æŸ¥å›¾å±‚æ˜¯å¦å­˜åœ¨
         return false;
 
-    int tileGID = backLayer->getTileGIDAt(tilePos);  // »ñÈ¡Ö¸¶¨Î»ÖÃµÄÍ¼¿éID
+    int tileGID = backLayer->getTileGIDAt(tilePos);  // è·å–æŒ‡å®šä½ç½®çš„å›¾å—ID
 
-    return std::find(RESOURCE_TILES.begin(), RESOURCE_TILES.end(), tileGID) != RESOURCE_TILES.end();  // ¼ì²éÊÇ·ñÊÇ¿ÉÒÆ³ıµÄ×ÊÔ´Í¼¿é
+    return std::find(RESOURCE_TILES.begin(), RESOURCE_TILES.end(), tileGID) != RESOURCE_TILES.end();  // æ£€æŸ¥æ˜¯å¦æ˜¯å¯ç§»é™¤çš„èµ„æºå›¾å—
 }
 
 
 /*
- * ÒÆ³ıÖ¸¶¨Î»ÖÃµÄ×ÊÔ´
- * @param tilePos ÒªÒÆ³ı×ÊÔ´µÄÍ¼¿é×ø±ê
- * @return Èç¹û³É¹¦ÒÆ³ı·µ»Øtrue£¬·ñÔò·µ»Øfalse
+ * ç§»é™¤æŒ‡å®šä½ç½®çš„èµ„æº
+ * @param tilePos è¦ç§»é™¤èµ„æºçš„å›¾å—åæ ‡
+ * @return å¦‚æœæˆåŠŸç§»é™¤è¿”å›trueï¼Œå¦åˆ™è¿”å›false
  */
 bool CropManager::removeResource(const Vec2& tilePos)
 {
-    if (!resourceCanRemove(tilePos))  // ¼ì²éÊÇ·ñ¿ÉÒÔÒÆ³ı×ÊÔ´
+    if (!resourceCanRemove(tilePos))  // æ£€æŸ¥æ˜¯å¦å¯ä»¥ç§»é™¤èµ„æº
         return false;
 
-    auto backLayer = _gameMap->getTileMap()->getLayer("Back");  // »ñÈ¡±³¾°Í¼²ã
-    if (!backLayer)  // ¼ì²éÍ¼²ãÊÇ·ñ´æÔÚ
+    auto backLayer = _gameMap->getTileMap()->getLayer("Back");  // è·å–èƒŒæ™¯å›¾å±‚
+    if (!backLayer)  // æ£€æŸ¥å›¾å±‚æ˜¯å¦å­˜åœ¨
         return false;
 
-    // ¸üĞÂ×ÊÔ´Í¼²ã£¬½«×ÊÔ´Í¼¿éÌæ»»ÎªÒÑÒÆ³ıµÄÍ¼¿é
+    // æ›´æ–°èµ„æºå›¾å±‚ï¼Œå°†èµ„æºå›¾å—æ›¿æ¢ä¸ºå·²ç§»é™¤çš„å›¾å—
     backLayer->setTileGID(RESOURCE_REMOVED_TILE_ID, tilePos);
 
     return true;
 }
 
 /*
- * ¼ì²éÖ¸¶¨Î»ÖÃÊÇ·ñ¿ÉÒÔ½½Ë®
+ * æ£€æŸ¥æŒ‡å®šä½ç½®æ˜¯å¦å¯ä»¥æµ‡æ°´
  */
 bool CropManager::canWater(const Vec2& tilePos) const
 {
@@ -112,12 +112,12 @@ bool CropManager::canWater(const Vec2& tilePos) const
     if (!backLayer)
         return false;
 
-    // ¼ì²éÊÇ·ñÊÇÒÑ¿ª¿ÑµÄÍÁµØ
+    // æ£€æŸ¥æ˜¯å¦æ˜¯å·²å¼€å¦çš„åœŸåœ°
     return backLayer->getTileGIDAt(tilePos) == TILLED_TILE_ID;
 }
 
 /*
- * ½½Ë®Ö¸¶¨Î»ÖÃµÄÍÁµØ
+ * æµ‡æ°´æŒ‡å®šä½ç½®çš„åœŸåœ°
  */
 bool CropManager::waterSoil(const Vec2& tilePos)
 {
@@ -126,22 +126,22 @@ bool CropManager::waterSoil(const Vec2& tilePos)
     auto backLayer = _gameMap->getTileMap()->getLayer("Back");
     if (!backLayer)
         return false;
-    // »ñÈ¡Ä¿±êÍßÆ¬¾«Áé
+    // è·å–ç›®æ ‡ç“¦ç‰‡ç²¾çµ
     Sprite* tile = backLayer->getTileAt(tilePos);
     if (!tile)
         return false;
-    // ´´½¨½½Ë®Ğ§¹û
+    // åˆ›å»ºæµ‡æ°´æ•ˆæœ
     createWaterEffect(tile);
-    // ÏÔÊ¾½½Ë®ÌáÊ¾
+    // æ˜¾ç¤ºæµ‡æ°´æç¤º
     showWateringPopup();
-    // ¸üĞÂ×÷ÎïµÄË®·Ö×´Ì¬
+    // æ›´æ–°ä½œç‰©çš„æ°´åˆ†çŠ¶æ€
     for (size_t i = 0; i < _cropInfos.size(); i++)
     {
         if (_cropInfos[i].tilePos == tilePos)
         {
             CCLOG("Watering crop at position (%f, %f)", tilePos.x, tilePos.y);
             _cropInfos[i].isWatered = true;
-            _cropInfos[i].waterLevel = 2;  // »Ö¸´µ½³ä×ã×´Ì¬
+            _cropInfos[i].waterLevel = 2;  // æ¢å¤åˆ°å……è¶³çŠ¶æ€
             if (i < _crops.size() && _crops[i])
             {
                 if (auto corn = dynamic_cast<Corn*>(_crops[i]))
@@ -162,50 +162,50 @@ bool CropManager::waterSoil(const Vec2& tilePos)
 }
 
 /*
- * ´´½¨½½Ë®Ğ§¹û
+ * åˆ›å»ºæµ‡æ°´æ•ˆæœ
  */
 void CropManager::createWaterEffect(Sprite* tile)
 {
-    // ÉèÖÃ½½Ë®ºóµÄÑÕÉ«
+    // è®¾ç½®æµ‡æ°´åçš„é¢œè‰²
     tile->setColor(WATER_COLOR);
 
-    // ´´½¨»Ö¸´Ô­É«µÄ¶¯»­ĞòÁĞ
+    // åˆ›å»ºæ¢å¤åŸè‰²çš„åŠ¨ç”»åºåˆ—
     auto delay = DelayTime::create(WATER_DURATION);
     auto fadeBack = TintTo::create(FADE_DURATION, 255, 255, 255);
     tile->runAction(Sequence::create(delay, fadeBack, nullptr));
 }
 
 /*
- * ÏÔÊ¾½½Ë®ÌáÊ¾
+ * æ˜¾ç¤ºæµ‡æ°´æç¤º
  */
 void CropManager::showWateringPopup()
 {
     if (!_gameScene || !_gameMap) return;
 
-    // »ñÈ¡Íæ¼ÒÎ»ÖÃ
+    // è·å–ç©å®¶ä½ç½®
     auto player = Player::getInstance();
     if (!player) return;
     Vec2 playerPos = player->getPosition();
 
-    // ´´½¨°ëÍ¸Ã÷±³¾°
+    // åˆ›å»ºåŠé€æ˜èƒŒæ™¯
     auto popupBg = LayerColor::create(Color4B(0, 0, 0, 150), 200, 80);
 
-    // ´´½¨ÎÄ±¾±êÇ©
+    // åˆ›å»ºæ–‡æœ¬æ ‡ç­¾
     auto label = Label::createWithSystemFont("Watering!", "Arial", 24);
     label->setPosition(Vec2(100, 40));
     label->setColor(Color3B::WHITE);
     popupBg->addChild(label);
 
-    // ÉèÖÃµ¯´°Î»ÖÃµ½Íæ¼ÒÍ·¶¥
+    // è®¾ç½®å¼¹çª—ä½ç½®åˆ°ç©å®¶å¤´é¡¶
     popupBg->setPosition(Vec2(
-        playerPos.x - 100,  // ¾ÓÖĞÏÔÊ¾
-        playerPos.y + 50    // ÔÚÍæ¼ÒÉÏ·½
+        playerPos.x - 100,  // å±…ä¸­æ˜¾ç¤º
+        playerPos.y + 50    // åœ¨ç©å®¶ä¸Šæ–¹
     ));
 
-    // Ìí¼Óµ½ÓÎÏ·³¡¾°
+    // æ·»åŠ åˆ°æ¸¸æˆåœºæ™¯
     _gameScene->addChild(popupBg, 1000);
 
-    // ´´½¨¶¯»­ĞòÁĞ
+    // åˆ›å»ºåŠ¨ç”»åºåˆ—
     popupBg->setScale(0);
     popupBg->runAction(Sequence::create(
         ScaleTo::create(0.2f, 1.0f),
@@ -215,7 +215,7 @@ void CropManager::showWateringPopup()
         nullptr
     ));
 
-    // Ìí¼Óµã»÷¼àÌıÆ÷
+    // æ·»åŠ ç‚¹å‡»ç›‘å¬å™¨
     auto listener = EventListenerTouchOneByOne::create();
     listener->onTouchBegan = [popupBg](Touch* touch, Event* event) {
         popupBg->runAction(Sequence::create(
@@ -229,53 +229,63 @@ void CropManager::showWateringPopup()
 }
 
 /*
- * ´¦ÀíÊó±ê°´ÏÂÊÂ¼ş£¬Ö´ĞĞ¿ª¿Ñ²Ù×÷
- * @param mousePos Êó±êÎ»ÖÃ
- * @param player Íæ¼Ò¶ÔÏóÖ¸Õë
+ * å¤„ç†é¼ æ ‡æŒ‰ä¸‹äº‹ä»¶ï¼Œæ‰§è¡Œå¼€å¦æ“ä½œ
+ * @param mousePos é¼ æ ‡ä½ç½®
+ * @param player ç©å®¶å¯¹è±¡æŒ‡é’ˆ
  */
 void CropManager::onMouseDown(const Vec2& mousePos, Player* player)
 {
-    if (!player || !_gameMap)               // ¼ì²é±ØÒª¶ÔÏó
+    if (!player || !_gameMap)               // æ£€æŸ¥å¿…è¦å¯¹è±¡
     {
         return;
     }
 
-    if (_gameMap->getMapName() != "Farm")   // È·±£Ö»ÔÚFarmµØÍ¼ÖĞÖ´ĞĞ
+    if (_gameMap->getMapName() != "Farm")   // ç¡®ä¿åªåœ¨Farmåœ°å›¾ä¸­æ‰§è¡Œ
     {
         return;
     }
 
-    Vec2 playerPos = player->getPosition();                         // »ñÈ¡Íæ¼ÒÎ»ÖÃ
-    Vec2 playerTilePos = _gameMap->convertToTileCoord(playerPos);   // ×ª»»ÎªÍßÆ¬×ø±ê
+    Vec2 playerPos = player->getPosition();                         // è·å–ç©å®¶ä½ç½®
+    Vec2 playerTilePos = _gameMap->convertToTileCoord(playerPos);   // è½¬æ¢ä¸ºç“¦ç‰‡åæ ‡
 
-    // ¸ù¾İµ±Ç°¹¤¾ßÖ´ĞĞÏàÓ¦²Ù×÷
+    // æ ¹æ®å½“å‰å·¥å…·æ‰§è¡Œç›¸åº”æ“ä½œ
     if (player->getCurrentTool() == Player::ToolType::SHOVEL)
     {
-        if (canTill(playerTilePos))                 // ¼ì²éÊÇ·ñ¿ÉÒÔ¿ª¿Ñ
+        if (canTill(playerTilePos))                 // æ£€æŸ¥æ˜¯å¦å¯ä»¥å¼€å¦
         {
-            if (tillSoil(playerTilePos))            // ³¢ÊÔ¿ª¿ÑÍÁµØ
+            if (tillSoil(playerTilePos))            // å°è¯•å¼€å¦åœŸåœ°
             {
-                player->performAction(mousePos);    // Ö´ĞĞ¿ª¿Ñ¶¯×÷
+                player->performAction(mousePos);    // æ‰§è¡Œå¼€å¦åŠ¨ä½œ
             }
         }
     }
     else if (player->getCurrentTool() == Player::ToolType::WATERING)
     {
-        if (canWater(playerTilePos))                // ¼ì²éÊÇ·ñ¿ÉÒÔ½½Ë®
+        if (canWater(playerTilePos))                // æ£€æŸ¥æ˜¯å¦å¯ä»¥æµ‡æ°´
         {
-            if (waterSoil(playerTilePos))           // ³¢ÊÔ½½Ë®
+            if (waterSoil(playerTilePos))           // å°è¯•æµ‡æ°´
             {
-                player->performAction(mousePos);    // Ö´ĞĞ½½Ë®¶¯×÷
+                player->performAction(mousePos);    // æ‰§è¡Œæµ‡æ°´åŠ¨ä½œ
+            }
+        }
+    }
+    else if (player->getCurrentTool() == Player::ToolType::AXE)
+    {
+        if (resourceCanRemove(playerTilePos))                // æ£€æŸ¥æ˜¯å¦å¯ä»¥æ¸…é™¤èµ„æº
+        {
+            if (removeResource(playerTilePos))           // å°è¯•æ¸…é™¤èµ„æº
+            {
+                player->performAction(mousePos);    // æ‰§è¡Œæ¸…é™¤èµ„æºåŠ¨ä½œ
             }
         }
     }
 }
 
 /*
- * ÏÔÊ¾ÌáÊ¾ÎÄ±¾
- * @param text ÒªÏÔÊ¾µÄÎÄ±¾
- * @param tilePos ÍßÆ¬×ø±ê
- * @param duration ÏÔÊ¾³ÖĞøÊ±¼ä£¨0±íÊ¾³ÖĞøÏÔÊ¾£©
+ * æ˜¾ç¤ºæç¤ºæ–‡æœ¬
+ * @param text è¦æ˜¾ç¤ºçš„æ–‡æœ¬
+ * @param tilePos ç“¦ç‰‡åæ ‡
+ * @param duration æ˜¾ç¤ºæŒç»­æ—¶é—´ï¼ˆ0è¡¨ç¤ºæŒç»­æ˜¾ç¤ºï¼‰
  */
 void CropManager::showTip(const std::string& text, const Vec2& tilePos, float duration) const
 {
@@ -292,18 +302,18 @@ void CropManager::showTip(const std::string& text, const Vec2& tilePos, float du
     tipLabel->setString(text);
     tipLabel->setVisible(true);
 
-    // ÉèÖÃÎ»ÖÃÔÚ¸ûµØÉÏ·½
+    // è®¾ç½®ä½ç½®åœ¨è€•åœ°ä¸Šæ–¹
     if (_gameMap)
     {
-        // Ö±½ÓÊ¹ÓÃ GameMap µÄ×ø±ê×ª»»º¯Êı
+        // ç›´æ¥ä½¿ç”¨ GameMap çš„åæ ‡è½¬æ¢å‡½æ•°
         Vec2 worldPos = _gameMap->convertToWorldCoord(tilePos);
-        // ÔÚÊÀ½ç×ø±êµÄ»ù´¡ÉÏÊÊµ±Æ«ÒÆ
+        // åœ¨ä¸–ç•Œåæ ‡çš„åŸºç¡€ä¸Šé€‚å½“åç§»
         tipLabel->setPosition(Vec2(worldPos.x + 20, worldPos.y + 40));
     }
 
     if (duration > 0)
     {
-        tipLabel->stopAllActions();  // Í£Ö¹Ö®Ç°µÄ¶¯×÷
+        tipLabel->stopAllActions();  // åœæ­¢ä¹‹å‰çš„åŠ¨ä½œ
         auto sequence = Sequence::create(
             DelayTime::create(duration),
             CallFunc::create([this]() {
@@ -316,7 +326,7 @@ void CropManager::showTip(const std::string& text, const Vec2& tilePos, float du
 }
 
 /*
- * Òş²ØÌáÊ¾ÎÄ±¾
+ * éšè—æç¤ºæ–‡æœ¬
  */
 void CropManager::hideTip() const
 {
@@ -327,13 +337,13 @@ void CropManager::hideTip() const
 }
 
 /*
- * ¼ì²éÖ¸¶¨ÍßÆ¬Î»ÖÃÊÇ·ñÒÑÓĞ×÷Îï
- * @param tilePos Òª¼ì²éµÄÍßÆ¬×ø±ê
- * @return Èç¹û¸ÃÎ»ÖÃÒÑÓĞ×÷Îï·µ»Øtrue£¬·ñÔò·µ»Øfalse
+ * æ£€æŸ¥æŒ‡å®šç“¦ç‰‡ä½ç½®æ˜¯å¦å·²æœ‰ä½œç‰©
+ * @param tilePos è¦æ£€æŸ¥çš„ç“¦ç‰‡åæ ‡
+ * @return å¦‚æœè¯¥ä½ç½®å·²æœ‰ä½œç‰©è¿”å›trueï¼Œå¦åˆ™è¿”å›false
  */
 bool CropManager::hasCropAt(const Vec2& tilePos) const
 {
-    // ¼ì²é¸ÃÎ»ÖÃÊÇ·ñÒÑÓĞ×÷Îï
+    // æ£€æŸ¥è¯¥ä½ç½®æ˜¯å¦å·²æœ‰ä½œç‰©
     for (const auto& info : _cropInfos)
     {
         if (info.tilePos == tilePos)
@@ -345,19 +355,19 @@ bool CropManager::hasCropAt(const Vec2& tilePos) const
 }
 
 /*
- * ÊµÊ±¸üĞÂÅ©×÷ÎïÏà¹ØÌáÊ¾
- * @param playerTilePos Íæ¼ÒËùÔÚµÄÍßÆ¬×ø±ê
- * @param playerTool Íæ¼Òµ±Ç°¹¤¾ß
+ * å®æ—¶æ›´æ–°å†œä½œç‰©ç›¸å…³æç¤º
+ * @param playerTilePos ç©å®¶æ‰€åœ¨çš„ç“¦ç‰‡åæ ‡
+ * @param playerTool ç©å®¶å½“å‰å·¥å…·
  */
 void CropManager::updateTips(const Vec2& playerTilePos, Player::ToolType playerTool) const
 {
-    // Èç¹û²»ÔÚÅ©³¡µØÍ¼£¬²»ÏÔÊ¾ÌáÊ¾
+    // å¦‚æœä¸åœ¨å†œåœºåœ°å›¾ï¼Œä¸æ˜¾ç¤ºæç¤º
     if (!_gameMap || _gameMap->getMapName() != "Farm")
     {
         hideTip();
         return;
     }
-    // Ê×ÏÈ¼ì²éÊÇ·ñÓĞ³æº¦
+    // é¦–å…ˆæ£€æŸ¥æ˜¯å¦æœ‰è™«å®³
     for (const auto& info : _cropInfos)
     {
         if (info.tilePos == playerTilePos && info.hasInsectPest)
@@ -366,7 +376,7 @@ void CropManager::updateTips(const Vec2& playerTilePos, Player::ToolType playerT
             return;
         }
     }
-    // ¼ì²é¸ÃÎ»ÖÃÊÇ·ñÊÇ¸ûµØ
+    // æ£€æŸ¥è¯¥ä½ç½®æ˜¯å¦æ˜¯è€•åœ°
     auto backLayer = _gameMap->getTileMap()->getLayer("Back");
     if (!backLayer)
     {
@@ -375,17 +385,17 @@ void CropManager::updateTips(const Vec2& playerTilePos, Player::ToolType playerT
     }
     int tileGID = backLayer->getTileGIDAt(playerTilePos);
 
-    // ¿ÕÊÖÇÒÔÚ¸ûµØÉÏ
+    // ç©ºæ‰‹ä¸”åœ¨è€•åœ°ä¸Š
     if (playerTool == Player::ToolType::NONE && tileGID == TILLED_TILE_ID && !hasCropAt(playerTilePos))
     {
         showTip("Press P to plant", playerTilePos);
         return;
     }
 
-    // ×°±¸¸«Í·ÇÒÔÚÓĞ×÷ÎïµÄµØ¿éÉÏ
+    // è£…å¤‡æ–§å¤´ä¸”åœ¨æœ‰ä½œç‰©çš„åœ°å—ä¸Š
     if (playerTool == Player::ToolType::AXE && hasCropAt(playerTilePos))
     {
-        // ¼ì²é×÷ÎïÊÇ·ñ³ÉÊì
+        // æ£€æŸ¥ä½œç‰©æ˜¯å¦æˆç†Ÿ
         for (const auto& crop : _cropInfos)
         {
             if (crop.tilePos == playerTilePos && crop.growthStage == FINAL_GROWTH_STAGE)
@@ -395,14 +405,14 @@ void CropManager::updateTips(const Vec2& playerTilePos, Player::ToolType playerT
             }
         }
     }
-    // ¼ì²éÊÇ·ñ¿ÉÒÔÊ©·Ê
+    // æ£€æŸ¥æ˜¯å¦å¯ä»¥æ–½è‚¥
     if (canFertilize(playerTilePos) &&
         ItemSystem::getInstance()->getItemCount("fertilizer") > 0)
     {
         showTip("Press F to fertilize", playerTilePos);
         return;
     }
-    // ÆäËûÇé¿öÒş²ØÌáÊ¾£¨³ıÁËµ±Ç°Î»ÖÃÒÑÓĞ×÷Îï£¬¼´¿ÉÄÜÖØ¸´ÖÖÖ²£©
+    // å…¶ä»–æƒ…å†µéšè—æç¤ºï¼ˆé™¤äº†å½“å‰ä½ç½®å·²æœ‰ä½œç‰©ï¼Œå³å¯èƒ½é‡å¤ç§æ¤ï¼‰
     if (!hasCropAt(playerTilePos))
     {
         hideTip();
@@ -410,9 +420,9 @@ void CropManager::updateTips(const Vec2& playerTilePos, Player::ToolType playerT
 }
 
 /*
- * ¼ì²éÖ¸¶¨Î»ÖÃÊÇ·ñ¿ÉÒÔÖÖÖ²
- * @param tilePos Òª¼ì²éµÄÍßÆ¬×ø±ê
- * @return Èç¹û¿ÉÒÔÖÖÖ²·µ»Øtrue£¬·ñÔò·µ»Øfalse
+ * æ£€æŸ¥æŒ‡å®šä½ç½®æ˜¯å¦å¯ä»¥ç§æ¤
+ * @param tilePos è¦æ£€æŸ¥çš„ç“¦ç‰‡åæ ‡
+ * @return å¦‚æœå¯ä»¥ç§æ¤è¿”å›trueï¼Œå¦åˆ™è¿”å›false
  */
 bool CropManager::canPlant(const Vec2& tilePos) const
 {
@@ -423,22 +433,22 @@ bool CropManager::canPlant(const Vec2& tilePos) const
     if (!backLayer)
         return false;
 
-    // ¼ì²éÊÇ·ñÒÑÓĞ×÷Îï
+    // æ£€æŸ¥æ˜¯å¦å·²æœ‰ä½œç‰©
     if (hasCropAt(tilePos))
     {
         showTip("Cannot plant here again!", tilePos);
         return false;
     }
 
-    // ¼ì²éÊÇ·ñÊÇÒÑ¸ûµØ»òÒÑ½½Ë®µÄ¸ûµØ
+    // æ£€æŸ¥æ˜¯å¦æ˜¯å·²è€•åœ°æˆ–å·²æµ‡æ°´çš„è€•åœ°
     int tileGID = backLayer->getTileGIDAt(tilePos);
     return tileGID == TILLED_TILE_ID;
 }
 
 /*
- * ÔÚÖ¸¶¨Î»ÖÃÖÖÖ²ÓñÃ×
- * @param tilePos ÒªÖÖÖ²µÄÍßÆ¬×ø±ê
- * @return ÖÖÖ²³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+ * åœ¨æŒ‡å®šä½ç½®ç§æ¤ç‰ç±³
+ * @param tilePos è¦ç§æ¤çš„ç“¦ç‰‡åæ ‡
+ * @return ç§æ¤æˆåŠŸè¿”å›trueï¼Œå¦åˆ™è¿”å›false
  */
 bool CropManager::plantCorn(const Vec2& tilePos)
 {
@@ -447,7 +457,7 @@ bool CropManager::plantCorn(const Vec2& tilePos)
         return false;
     }
 
-    // ¼ì²éÍæ¼Ò±³°üÖĞÊÇ·ñÓĞÓñÃ×ÖÖ×Ó
+    // æ£€æŸ¥ç©å®¶èƒŒåŒ…ä¸­æ˜¯å¦æœ‰ç‰ç±³ç§å­
     auto itemSystem = ItemSystem::getInstance();
     if (!itemSystem->hasEnoughItems("corn seed", 1))
     {
@@ -455,38 +465,38 @@ bool CropManager::plantCorn(const Vec2& tilePos)
         return false;
     }
 
-    // ¿Û³ıÒ»¸öÓñÃ×ÖÖ×Ó
+    // æ‰£é™¤ä¸€ä¸ªç‰ç±³ç§å­
     if (!itemSystem->removeItem("corn seed", 1))
     {
         return false;
     }
 
-    // »ñÈ¡ÊÀ½ç×ø±ê²¢Ó¦ÓÃÆ«ÒÆ
+    // è·å–ä¸–ç•Œåæ ‡å¹¶åº”ç”¨åç§»
     Vec2 worldPos = _gameMap->convertToWorldCoord(tilePos);
     worldPos.x += CROP_OFFSET_X;
     worldPos.y += CROP_OFFSET_Y;
 
-    // ´´½¨ÓñÃ××÷Îï
+    // åˆ›å»ºç‰ç±³ä½œç‰©
     auto corn = Corn::create(worldPos);
     if (corn)
     {
         _gameScene->addChild(corn, 0);
         _crops.push_back(corn);
 
-        // ¼ÇÂ¼×÷ÎïĞÅÏ¢
+        // è®°å½•ä½œç‰©ä¿¡æ¯
         CropInfo info;
         info.position = worldPos;
         info.tilePos = tilePos;
         info.growthStage = 0;
         info.type = "corn";
 
-        // ¼ÇÂ¼ÖÖÖ²Ê±¼ä
+        // è®°å½•ç§æ¤æ—¶é—´
         auto gameTime = GameTime::getInstance();
         info.plantDay = gameTime->getDay();
         info.plantMonth = gameTime->getMonth();
         info.plantYear = gameTime->getYear();
-        info.waterLevel = 1;        // ³õÊ¼ÊÓÎª½ÏÎªÈ±Ë®£¨ĞèÒª½½Ë®µÚ¶şÌì²Å»á³¤£©
-        info.isWatered = false;     // ÖÖÖ²Ê±ÊÓÎªÎ´½½Ë®
+        info.waterLevel = 1;        // åˆå§‹è§†ä¸ºè¾ƒä¸ºç¼ºæ°´ï¼ˆéœ€è¦æµ‡æ°´ç¬¬äºŒå¤©æ‰ä¼šé•¿ï¼‰
+        info.isWatered = false;     // ç§æ¤æ—¶è§†ä¸ºæœªæµ‡æ°´
 
         _cropInfos.push_back(info);
 
@@ -499,9 +509,9 @@ bool CropManager::plantCorn(const Vec2& tilePos)
 }
 
 /*
- * ÔÚÖ¸¶¨Î»ÖÃÖÖÖ²·¬ÇÑ
- * @param tilePos ÒªÖÖÖ²µÄÍßÆ¬×ø±ê
- * @return ÖÖÖ²³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+ * åœ¨æŒ‡å®šä½ç½®ç§æ¤ç•ªèŒ„
+ * @param tilePos è¦ç§æ¤çš„ç“¦ç‰‡åæ ‡
+ * @return ç§æ¤æˆåŠŸè¿”å›trueï¼Œå¦åˆ™è¿”å›false
  */
 bool CropManager::plantTomato(const Vec2& tilePos)
 {
@@ -509,42 +519,42 @@ bool CropManager::plantTomato(const Vec2& tilePos)
     {
         return false;
     }
-    // ¼ì²éÍæ¼Ò±³°üÖĞÊÇ·ñÓĞ·¬ÇÑÖÖ×Ó
+    // æ£€æŸ¥ç©å®¶èƒŒåŒ…ä¸­æ˜¯å¦æœ‰ç•ªèŒ„ç§å­
     auto itemSystem = ItemSystem::getInstance();
     if (!itemSystem->hasEnoughItems("tomato seed", 1))
     {
         CCLOG("No tomato seeds available");
         return false;
     }
-    // ¿Û³ıÒ»¸ö·¬ÇÑÖÖ×Ó
+    // æ‰£é™¤ä¸€ä¸ªç•ªèŒ„ç§å­
     if (!itemSystem->removeItem("tomato seed", 1))
     {
         return false;
     }
-    // »ñÈ¡ÊÀ½ç×ø±ê²¢Ó¦ÓÃÆ«ÒÆ
+    // è·å–ä¸–ç•Œåæ ‡å¹¶åº”ç”¨åç§»
     Vec2 worldPos = _gameMap->convertToWorldCoord(tilePos);
     worldPos.x += CROP_OFFSET_X;
     worldPos.y += CROP_OFFSET_Y;
-    // ´´½¨·¬ÇÑ×÷Îï
+    // åˆ›å»ºç•ªèŒ„ä½œç‰©
     auto tomato = Tomato::create(worldPos);
     if (tomato)
     {
         _gameScene->addChild(tomato, 0);
         _crops.push_back(tomato);
-        // ¼ÇÂ¼×÷ÎïĞÅÏ¢
+        // è®°å½•ä½œç‰©ä¿¡æ¯
         CropInfo info;
         info.position = worldPos;
         info.tilePos = tilePos;
         info.growthStage = 0;
         info.type = "tomato";
-        // ¼ÇÂ¼ÖÖÖ²Ê±¼ä
+        // è®°å½•ç§æ¤æ—¶é—´
         auto gameTime = GameTime::getInstance();
         info.plantDay = gameTime->getDay();
         info.plantMonth = gameTime->getMonth();
         info.plantYear = gameTime->getYear();
-        info.waterLevel = 1;        // ³õÊ¼ÊÓÎª½ÏÎªÈ±Ë®
-        info.isWatered = false;     // ÖÖÖ²Ê±ÊÓÎªÎ´½½Ë®
-        info.growthCounter = 0;     // ³É³¤¼ÆÊıÆ÷³õÊ¼»¯Îª0
+        info.waterLevel = 1;        // åˆå§‹è§†ä¸ºè¾ƒä¸ºç¼ºæ°´
+        info.isWatered = false;     // ç§æ¤æ—¶è§†ä¸ºæœªæµ‡æ°´
+        info.growthCounter = 0;     // æˆé•¿è®¡æ•°å™¨åˆå§‹åŒ–ä¸º0
         _cropInfos.push_back(info);
         CCLOG("Tomato planted on day %d, month %d, year %d",
             info.plantDay, info.plantMonth, info.plantYear);
@@ -554,16 +564,16 @@ bool CropManager::plantTomato(const Vec2& tilePos)
 }
 
 /*
- * ¸ù¾İµ±Ç°µÄÖÖ×ÓÀàĞÍÅĞ¶ÏÖÖÖ²×÷Îï
- * @param tilePos ÒªÖÖÖ²µÄÍßÆ¬×ø±ê
- * @return ×°±¸ÓĞĞ§ÖÖ×Ó·µ»Øtrue£¬·ñÔò·µ»Øfalse
+ * æ ¹æ®å½“å‰çš„ç§å­ç±»å‹åˆ¤æ–­ç§æ¤ä½œç‰©
+ * @param tilePos è¦ç§æ¤çš„ç“¦ç‰‡åæ ‡
+ * @return è£…å¤‡æœ‰æ•ˆç§å­è¿”å›trueï¼Œå¦åˆ™è¿”å›false
  */
 bool CropManager::plantCrop(const Vec2& tilePos)
 {
     auto player = Player::getInstance();
     if (!player)
         return false;
-    // ¸ù¾İµ±Ç°Ñ¡ÔñµÄÖÖ×ÓÀàĞÍÀ´ÖÖÖ²
+    // æ ¹æ®å½“å‰é€‰æ‹©çš„ç§å­ç±»å‹æ¥ç§æ¤
     switch (player->getCurrentSeed())
     {
         case Player::SeedType::CORN:
@@ -577,8 +587,8 @@ bool CropManager::plantCrop(const Vec2& tilePos)
 }
 
 /*
- * ³õÊ¼»¯¼üÅÌ¼àÌıÆ÷
- * ¼àÌıP¼üÓÃÓÚÖÖÖ²²Ù×÷
+ * åˆå§‹åŒ–é”®ç›˜ç›‘å¬å™¨
+ * ç›‘å¬Pé”®ç”¨äºç§æ¤æ“ä½œ
  */
 void CropManager::initKeyboardListener()
 {
@@ -591,10 +601,10 @@ void CropManager::initKeyboardListener()
             if (!player)
                 return;
 
-            // »ñÈ¡Íæ¼ÒÎ»ÖÃ
+            // è·å–ç©å®¶ä½ç½®
             Vec2 playerPos = player->getPosition();
             Vec2 playerTilePos = _gameMap->convertToTileCoord(playerPos);
-            if (keyCode == EventKeyboard::KeyCode::KEY_P)  // P¼üÖÖÖ²
+            if (keyCode == EventKeyboard::KeyCode::KEY_P)  // Pé”®ç§æ¤
             {
                 if (player->getCurrentTool() == Player::ToolType::NONE)
                 {
@@ -604,9 +614,9 @@ void CropManager::initKeyboardListener()
                     }
                 }
             }
-            else if (keyCode == EventKeyboard::KeyCode::KEY_H)  // H¼üÊÕ»ñ
+            else if (keyCode == EventKeyboard::KeyCode::KEY_H)  // Hé”®æ”¶è·
             {
-                if (player->getCurrentTool() == Player::ToolType::AXE)  // ĞèÒª×°±¸¸«Í·
+                if (player->getCurrentTool() == Player::ToolType::AXE)  // éœ€è¦è£…å¤‡æ–§å¤´
                 {
                     CCLOG("Trying to harvest with axe...");
                     if (canHarvest(playerTilePos))
@@ -622,7 +632,7 @@ void CropManager::initKeyboardListener()
                     }
                 }
             }
-            else if (keyCode == EventKeyboard::KeyCode::KEY_F)  // F¼üÊ©·Ê
+            else if (keyCode == EventKeyboard::KeyCode::KEY_F)  // Fé”®æ–½è‚¥
             {
                 auto player = Player::getInstance();
                 if (!player)
@@ -648,7 +658,7 @@ void CropManager::initKeyboardListener()
                 }
                 else
                 {
-                    // »ñÈ¡Íæ¼ÒÎ»ÖÃ£¬¼ì²é¸½½üµÄ×÷ÎïÊÇ·ñÓĞ³æº¦
+                    // è·å–ç©å®¶ä½ç½®ï¼Œæ£€æŸ¥é™„è¿‘çš„ä½œç‰©æ˜¯å¦æœ‰è™«å®³
                     auto player = Player::getInstance();
                     if (!player) return;
 
@@ -664,12 +674,12 @@ void CropManager::initKeyboardListener()
 }
 
 /*
- * ¸üĞÂËùÓĞ×÷ÎïµÄÉú³¤×´Ì¬
- * Ã¿Ììµ÷ÓÃÒ»´Î
+ * æ›´æ–°æ‰€æœ‰ä½œç‰©çš„ç”Ÿé•¿çŠ¶æ€
+ * æ¯å¤©è°ƒç”¨ä¸€æ¬¡
  */
 void CropManager::updateCrops()
 {
-    // ¼ì²é³æº¦£¨Ã¿ÌìÖ´ĞĞÒ»´Î£©
+    // æ£€æŸ¥è™«å®³ï¼ˆæ¯å¤©æ‰§è¡Œä¸€æ¬¡ï¼‰
     auto gameTime = GameTime::getInstance();
     static int lastCheckDay = -1;
     if (gameTime->getDay() != lastCheckDay)
@@ -681,15 +691,15 @@ void CropManager::updateCrops()
     for (size_t i = 0; i < _cropInfos.size(); i++)
     {
         auto& info = _cropInfos[i];
-        // ÏÈ¼ì²éË®·Ö×´Ì¬
+        // å…ˆæ£€æŸ¥æ°´åˆ†çŠ¶æ€
         if (info.waterLevel <= 0)
         {
-            // ÇåÀí³æº¦¾«Áé£¨ĞÂÔö£©
+            // æ¸…ç†è™«å®³ç²¾çµï¼ˆæ–°å¢ï¼‰
             if (info.hasInsectPest && info.bugSprite)
             {
                 info.bugSprite->removeFromParent();
             }
-            // ÇåÀí×÷Îï¾«Áé
+            // æ¸…ç†ä½œç‰©ç²¾çµ
             if (i < _crops.size() && _crops[i])
             {
                 _crops[i]->removeFromParent();
@@ -699,11 +709,11 @@ void CropManager::updateCrops()
             i--;
             continue;
         }
-        // ¸ù¾İ×÷ÎïÀàĞÍÅĞ¶ÏÊÇ·ñ¿ÉÒÔÉú³¤
-        // ÓñÃ×µÄÉú³¤Âß¼­
+        // æ ¹æ®ä½œç‰©ç±»å‹åˆ¤æ–­æ˜¯å¦å¯ä»¥ç”Ÿé•¿
+        // ç‰ç±³çš„ç”Ÿé•¿é€»è¾‘
         if (info.type == "corn")
         {
-            // ÓñÃ×Ö»ĞèÒª½½Ë®¾ÍÄÜÉú³¤
+            // ç‰ç±³åªéœ€è¦æµ‡æ°´å°±èƒ½ç”Ÿé•¿
             if (info.isWatered &&
                 info.growthStage < Corn::getTotalGrowthStages() - 1)
             {
@@ -717,24 +727,24 @@ void CropManager::updateCrops()
                 }
             }
         }
-        // ·¬ÇÑµÄÉú³¤Âß¼­
+        // ç•ªèŒ„çš„ç”Ÿé•¿é€»è¾‘
         else if (info.type == "tomato")
         {
-            // È·±£ growthCounter ²»»á³öÏÖ¸ºÊı
-            if (info.growthCounter > 1000000) {  // Èç¹û³öÏÖÒì³£´óµÄÊı×Ö
-                info.growthCounter = 0;  // ÖØÖÃÎª0
+            // ç¡®ä¿ growthCounter ä¸ä¼šå‡ºç°è´Ÿæ•°
+            if (info.growthCounter > 1000000) {  // å¦‚æœå‡ºç°å¼‚å¸¸å¤§çš„æ•°å­—
+                info.growthCounter = 0;  // é‡ç½®ä¸º0
             }
-            if (info.isWatered)  // ½ñÌì½½ÁËË®
+            if (info.isWatered)  // ä»Šå¤©æµ‡äº†æ°´
             {
                 info.growthCounter++;
                 CCLOG("Tomato at position (%.1f, %.1f) - Growth counter increased to: %u",
                     info.position.x, info.position.y, info.growthCounter);
-                // Ö»ÓĞµ±¼ÆÊıÆ÷´ïµ½2Ê±²ÅÉú³¤
+                // åªæœ‰å½“è®¡æ•°å™¨è¾¾åˆ°2æ—¶æ‰ç”Ÿé•¿
                 if (info.growthCounter == 2 &&
                     info.growthStage < Tomato::getTotalGrowthStages() - 1)
                 {
                     info.growthStage++;
-                    info.growthCounter = 0;  // Éú³¤ºóÖØÖÃ¼ÆÊıÆ÷
+                    info.growthCounter = 0;  // ç”Ÿé•¿åé‡ç½®è®¡æ•°å™¨
                     CCLOG("Tomato growing to stage: %d", info.growthStage);
                     if (i < _crops.size() && _crops[i])
                     {
@@ -745,16 +755,16 @@ void CropManager::updateCrops()
                     }
                 }
             }
-            else if (info.waterLevel < 2)  // Ö»ÓĞµ±Ë®·Ö²»×ãÊ±²ÅÖØÖÃ¼ÆÊıÆ÷
+            else if (info.waterLevel < 2)  // åªæœ‰å½“æ°´åˆ†ä¸è¶³æ—¶æ‰é‡ç½®è®¡æ•°å™¨
             {
                 info.growthCounter = 0;
                 CCLOG("Tomato growth counter reset due to insufficient water level");
             }
         }
 
-        // ½µµÍË®·Ö×´Ì¬
+        // é™ä½æ°´åˆ†çŠ¶æ€
         info.waterLevel--;
-        // ¸üĞÂË®·Ö×´Ì¬ÏÔÊ¾
+        // æ›´æ–°æ°´åˆ†çŠ¶æ€æ˜¾ç¤º
         if (i < _crops.size() && _crops[i])
         {
             if (auto corn = dynamic_cast<Corn*>(_crops[i]))
@@ -766,13 +776,13 @@ void CropManager::updateCrops()
                 tomato->updateWaterStatus(info.waterLevel);
             }
         }
-        // ÖØÖÃ½½Ë®×´Ì¬
+        // é‡ç½®æµ‡æ°´çŠ¶æ€
         info.isWatered = false;
     }
 }
 
 /*
- * ±£´æµ±Ç°µØÍ¼ÉÏËùÓĞ×÷ÎïµÄĞÅÏ¢
+ * ä¿å­˜å½“å‰åœ°å›¾ä¸Šæ‰€æœ‰ä½œç‰©çš„ä¿¡æ¯
  */
 void CropManager::saveCrops()
 {
@@ -785,15 +795,15 @@ void CropManager::saveCrops()
             info.position = crop->getPosition();
             info.tilePos = _gameMap->convertToTileCoord(crop->getPosition());
 
-            // ÔÚÏÖÓĞµÄ _cropInfos ÖĞ²éÕÒ¶ÔÓ¦Î»ÖÃµÄ×÷ÎïĞÅÏ¢
+            // åœ¨ç°æœ‰çš„ _cropInfos ä¸­æŸ¥æ‰¾å¯¹åº”ä½ç½®çš„ä½œç‰©ä¿¡æ¯
             auto it = std::find_if(_cropInfos.begin(), _cropInfos.end(),
                 [&info](const CropInfo& existingInfo) {
                     return existingInfo.position == info.position;
                 });
             if (it != _cropInfos.end())
             {
-                // Èç¹ûÕÒµ½ÁË£¬Ê¹ÓÃÏÖÓĞµÄËùÓĞĞÅÏ¢
-                info = *it;  // ¸´ÖÆËùÓĞĞÅÏ¢£¬°üÀ¨ growthCounter
+                // å¦‚æœæ‰¾åˆ°äº†ï¼Œä½¿ç”¨ç°æœ‰çš„æ‰€æœ‰ä¿¡æ¯
+                info = *it;  // å¤åˆ¶æ‰€æœ‰ä¿¡æ¯ï¼ŒåŒ…æ‹¬ growthCounter
             }
             else
             {
@@ -804,9 +814,9 @@ void CropManager::saveCrops()
                 info.plantYear = gameTime->getYear();
                 info.waterLevel = 1;
                 info.isWatered = false;
-                info.growthCounter = 0;  // ³õÊ¼»¯¼ÆÊıÆ÷
+                info.growthCounter = 0;  // åˆå§‹åŒ–è®¡æ•°å™¨
 
-                // ¸ù¾İ×÷ÎïÀàĞÍÉèÖÃ
+                // æ ¹æ®ä½œç‰©ç±»å‹è®¾ç½®
                 if (dynamic_cast<Corn*>(crop))
                 {
                     info.type = "corn";
@@ -823,11 +833,11 @@ void CropManager::saveCrops()
 }
 
 /*
- * ¼ÓÔØ²¢ÖØĞÂ´´½¨±£´æµÄ×÷Îï
+ * åŠ è½½å¹¶é‡æ–°åˆ›å»ºä¿å­˜çš„ä½œç‰©
  */
 void CropManager::loadCrops()
 {
-    // Ö»ÔÚFarmµØÍ¼¼ÓÔØ×÷Îï
+    // åªåœ¨Farmåœ°å›¾åŠ è½½ä½œç‰©
     if (!_gameMap || _gameMap->getMapName() != "Farm")
     {
         CCLOG("Not loading crops: not in Farm map");
@@ -866,7 +876,7 @@ void CropManager::loadCrops()
 }
 
 /*
- * ÇåÀíµ±Ç°µØÍ¼ÉÏµÄËùÓĞ×÷Îï¾«Áé
+ * æ¸…ç†å½“å‰åœ°å›¾ä¸Šçš„æ‰€æœ‰ä½œç‰©ç²¾çµ
  */
 void CropManager::clearCrops()
 {
@@ -881,9 +891,9 @@ void CropManager::clearCrops()
 }
 
 /*
- * ¼ì²éÖ¸¶¨Î»ÖÃÊÇ·ñ¿ÉÒÔÊÕ»ñ
- * @param tilePos Òª¼ì²éµÄÍßÆ¬×ø±ê
- * @return Èç¹û×÷ÎïÒÑ³ÉÊì¿ÉÒÔÊÕ»ñ·µ»Øtrue£¬·ñÔò·µ»Øfalse
+ * æ£€æŸ¥æŒ‡å®šä½ç½®æ˜¯å¦å¯ä»¥æ”¶è·
+ * @param tilePos è¦æ£€æŸ¥çš„ç“¦ç‰‡åæ ‡
+ * @return å¦‚æœä½œç‰©å·²æˆç†Ÿå¯ä»¥æ”¶è·è¿”å›trueï¼Œå¦åˆ™è¿”å›false
  */
 bool CropManager::canHarvest(const Vec2& tilePos) const
 {
@@ -898,9 +908,9 @@ bool CropManager::canHarvest(const Vec2& tilePos) const
 }
 
 /*
- * ÊÕ»ñÖ¸¶¨Î»ÖÃµÄ×÷Îï
- * @param tilePos ÒªÊÕ»ñµÄÍßÆ¬×ø±ê
- * @return ÊÕ»ñ³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+ * æ”¶è·æŒ‡å®šä½ç½®çš„ä½œç‰©
+ * @param tilePos è¦æ”¶è·çš„ç“¦ç‰‡åæ ‡
+ * @return æ”¶è·æˆåŠŸè¿”å›trueï¼Œå¦åˆ™è¿”å›false
  */
 bool CropManager::harvestCrop(const Vec2& tilePos)
 {
@@ -908,26 +918,26 @@ bool CropManager::harvestCrop(const Vec2& tilePos)
     {
         if (_cropInfos[i].tilePos == tilePos && _cropInfos[i].growthStage == FINAL_GROWTH_STAGE)
         {
-            // ´´½¨ÊÕ»ñµôÂä
+            // åˆ›å»ºæ”¶è·æ‰è½
             createHarvestDrop(_cropInfos[i].position);
 
-            // »ñÈ¡µ±Ç°ÖÖÖ²µÈ¼¶
+            // è·å–å½“å‰ç§æ¤ç­‰çº§
             auto skillSystem = SkillSystem::getInstance();
             int currentLevel = skillSystem->getSkillLevel(SkillType::FARMING);
 
-            // Ôö¼ÓÖÖÖ²¾­Ñé
+            // å¢åŠ ç§æ¤ç»éªŒ
             skillSystem->gainExp(SkillType::FARMING, 10);
 
-            // ¼ì²éÊÇ·ñ¸Õ¸ÕÉıµ½3¼¶
+            // æ£€æŸ¥æ˜¯å¦åˆšåˆšå‡åˆ°3çº§
             if (currentLevel < 3 && skillSystem->getSkillLevel(SkillType::FARMING) >= 3)
             {
-                // ´ïµ½3¼¶ºó¸øÓè·¬ÇÑÖÖ×Ó
+                // è¾¾åˆ°3çº§åç»™äºˆç•ªèŒ„ç§å­
                 auto itemSystem = ItemSystem::getInstance();
                 itemSystem->addItem("tomato seed", 1);
                 CCLOG("Unlocked tomato seed at farming level 3");
             }
 
-            // ÒÆ³ı×÷Îï
+            // ç§»é™¤ä½œç‰©
             if (i < _crops.size() && _crops[i])
             {
                 _crops[i]->removeFromParent();
@@ -943,16 +953,16 @@ bool CropManager::harvestCrop(const Vec2& tilePos)
 }
 
 /*
- * ´´½¨ÊÕ»ñºóµÄµôÂäÎï
- * @param position µôÂäÎïÉú³ÉµÄÊÀ½ç×ø±êÎ»ÖÃ
- * ¹¦ÄÜ£º
- * 1.´´½¨µôÂäÎï¾«Áé
- * 2.ÉèÖÃµôÂäÎïÍâ¹ÛºÍÎ»ÖÃ
- * 3.Ìí¼Ó×Ô¶¯Ê°È¡¼ì²â
+ * åˆ›å»ºæ”¶è·åçš„æ‰è½ç‰©
+ * @param position æ‰è½ç‰©ç”Ÿæˆçš„ä¸–ç•Œåæ ‡ä½ç½®
+ * åŠŸèƒ½ï¼š
+ * 1.åˆ›å»ºæ‰è½ç‰©ç²¾çµ
+ * 2.è®¾ç½®æ‰è½ç‰©å¤–è§‚å’Œä½ç½®
+ * 3.æ·»åŠ è‡ªåŠ¨æ‹¾å–æ£€æµ‹
  */
 void CropManager::createHarvestDrop(const Vec2& position)
 {
-    // ÔÚ´´½¨µôÂäÎïÊ±¾ÍÈ·¶¨ÀàĞÍ
+    // åœ¨åˆ›å»ºæ‰è½ç‰©æ—¶å°±ç¡®å®šç±»å‹
     std::string cropType;
     for (const auto& info : _cropInfos)
     {
@@ -962,27 +972,27 @@ void CropManager::createHarvestDrop(const Vec2& position)
             break;
         }
     }
-    // Èç¹ûÃ»ÕÒµ½×÷ÎïÀàĞÍ£¬·µ»Ø
+    // å¦‚æœæ²¡æ‰¾åˆ°ä½œç‰©ç±»å‹ï¼Œè¿”å›
     if (cropType.empty())
         return;
-    // ´´½¨µôÂäÎï¾«Áé
+    // åˆ›å»ºæ‰è½ç‰©ç²¾çµ
     auto drop = Sprite::create("Plants.png");
     if (drop)
     {
-        // ¸ù¾İ±£´æµÄ×÷ÎïÀàĞÍÉèÖÃµôÂäÎïÌùÍ¼ÇøÓò
+        // æ ¹æ®ä¿å­˜çš„ä½œç‰©ç±»å‹è®¾ç½®æ‰è½ç‰©è´´å›¾åŒºåŸŸ
         if (cropType == "corn")
         {
-            drop->setTextureRect(Rect(80, 0, 16, 16));      // ÓñÃ×ÊÕ»ñÎï
+            drop->setTextureRect(Rect(80, 0, 16, 16));      // ç‰ç±³æ”¶è·ç‰©
         }
         else if (cropType == "tomato")
         {
-            drop->setTextureRect(Rect(80, 16, 16, 16));     // ·¬ÇÑÊÕ»ñÎï
+            drop->setTextureRect(Rect(80, 16, 16, 16));     // ç•ªèŒ„æ”¶è·ç‰©
         }
-        // ÉèÖÃÎ»ÖÃ£¨ÉÔÎ¢Æ«ÒÆÒ»µã£¬±ÜÃâÍêÈ«ÖØµş£©
+        // è®¾ç½®ä½ç½®ï¼ˆç¨å¾®åç§»ä¸€ç‚¹ï¼Œé¿å…å®Œå…¨é‡å ï¼‰
         drop->setPosition(position + Vec2(30, 0));
         drop->setScale(2.0f);
         _gameScene->addChild(drop);
-        // ´´½¨¶¨Ê±Æ÷À´¼ì²é¾àÀë£¬Ê¹ÓÃ²¶»ñµÄcropType
+        // åˆ›å»ºå®šæ—¶å™¨æ¥æ£€æŸ¥è·ç¦»ï¼Œä½¿ç”¨æ•è·çš„cropType
         auto scheduler = Director::getInstance()->getScheduler();
         scheduler->schedule([this, drop, cropType](float dt) {
             auto player = Player::getInstance();
@@ -990,7 +1000,7 @@ void CropManager::createHarvestDrop(const Vec2& position)
             {
                 if (player->getPosition().distance(drop->getPosition()) < 16)
                 {
-                    // Ö±½ÓÊ¹ÓÃ±£´æµÄ×÷ÎïÀàĞÍÌí¼ÓÎïÆ·
+                    // ç›´æ¥ä½¿ç”¨ä¿å­˜çš„ä½œç‰©ç±»å‹æ·»åŠ ç‰©å“
                     auto itemSystem = ItemSystem::getInstance();
                     if (cropType == "corn")
                     {
@@ -1000,7 +1010,7 @@ void CropManager::createHarvestDrop(const Vec2& position)
                     {
                         itemSystem->addItem("tomato", 1);
                     }
-                    // ÒÆ³ıµôÂäÎï
+                    // ç§»é™¤æ‰è½ç‰©
                     drop->removeFromParent();
                     Director::getInstance()->getScheduler()->unschedule("check_drop_distance", drop);
                 }
@@ -1010,9 +1020,9 @@ void CropManager::createHarvestDrop(const Vec2& position)
 }
 
 /*
- * ²éÖ¸¶¨Î»ÖÃÊÇ·ñ¿ÉÒÔÊ©·Ê
- * @param tilePos Òª¼ì²éµÄÍßÆ¬×ø±ê
- * @return Èç¹û¿ÉÒÔÊ©·Ê·µ»Øtrue£¬·ñÔò·µ»Øfalse
+ * æŸ¥æŒ‡å®šä½ç½®æ˜¯å¦å¯ä»¥æ–½è‚¥
+ * @param tilePos è¦æ£€æŸ¥çš„ç“¦ç‰‡åæ ‡
+ * @return å¦‚æœå¯ä»¥æ–½è‚¥è¿”å›trueï¼Œå¦åˆ™è¿”å›false
  */
 bool CropManager::canFertilize(const Vec2& tilePos) const
 {
@@ -1027,9 +1037,9 @@ bool CropManager::canFertilize(const Vec2& tilePos) const
 }
 
 /*
- * ¶ÔÖ¸¶¨Î»ÖÃµÄ×÷Îï½øĞĞÊ©·Ê
- * @param tilePos ÒªÊ©·ÊµÄÍßÆ¬×ø±ê
- * @return Ê©·Ê³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+ * å¯¹æŒ‡å®šä½ç½®çš„ä½œç‰©è¿›è¡Œæ–½è‚¥
+ * @param tilePos è¦æ–½è‚¥çš„ç“¦ç‰‡åæ ‡
+ * @return æ–½è‚¥æˆåŠŸè¿”å›trueï¼Œå¦åˆ™è¿”å›false
  */
 bool CropManager::fertilizeCrop(const Vec2& tilePos)
 {
@@ -1042,13 +1052,13 @@ bool CropManager::fertilizeCrop(const Vec2& tilePos)
     {
         if (_cropInfos[i].tilePos == tilePos && _cropInfos[i].growthStage < FINAL_GROWTH_STAGE)
         {
-            // ÏûºÄ·ÊÁÏ
+            // æ¶ˆè€—è‚¥æ–™
             itemSystem->removeItem("fertilizer", 1);
 
-            // Ôö¼ÓÉú³¤½×¶Î
+            // å¢åŠ ç”Ÿé•¿é˜¶æ®µ
             _cropInfos[i].growthStage++;
 
-            // ¸üĞÂ×÷ÎïÏÔÊ¾
+            // æ›´æ–°ä½œç‰©æ˜¾ç¤º
             if (i < _crops.size() && _crops[i])
             {
                 if (_cropInfos[i].type == "corn")
@@ -1073,12 +1083,12 @@ bool CropManager::fertilizeCrop(const Vec2& tilePos)
 }
 
 /*
- * ´´½¨³æº¦¾«Áé
- * @param info ×÷ÎïĞÅÏ¢½á¹¹ÌåÒıÓÃ
- * ¹¦ÄÜ£º
- * 1.ÒÆ³ıÒÑ´æÔÚµÄ³æº¦¾«Áé
- * 2.´´½¨ĞÂµÄ³æº¦¾«Áé
- * 3.ÉèÖÃ¾«ÁéµÄÎ»ÖÃºÍÍâ¹Û
+ * åˆ›å»ºè™«å®³ç²¾çµ
+ * @param info ä½œç‰©ä¿¡æ¯ç»“æ„ä½“å¼•ç”¨
+ * åŠŸèƒ½ï¼š
+ * 1.ç§»é™¤å·²å­˜åœ¨çš„è™«å®³ç²¾çµ
+ * 2.åˆ›å»ºæ–°çš„è™«å®³ç²¾çµ
+ * 3.è®¾ç½®ç²¾çµçš„ä½ç½®å’Œå¤–è§‚
  */
 void CropManager::createBugSprite(CropInfo& info)
 {
@@ -1090,44 +1100,44 @@ void CropManager::createBugSprite(CropInfo& info)
     info.bugSprite = Sprite::create("bug.png");
     if (info.bugSprite)
     {
-        // ÉèÖÃ³æ×ÓÍ¼Æ¬ÏÔÊ¾ÇøÓò£¨µÚÒ»ĞĞµÚÒ»¸ö£¬16x16£©
+        // è®¾ç½®è™«å­å›¾ç‰‡æ˜¾ç¤ºåŒºåŸŸï¼ˆç¬¬ä¸€è¡Œç¬¬ä¸€ä¸ªï¼Œ16x16ï¼‰
         info.bugSprite->setTextureRect(Rect(0, 0, 16, 16));
-        // ÉèÖÃÎ»ÖÃ£¨Ê¹ÓÃ×÷ÎïµÄÊÀ½ç×ø±ê£©
+        // è®¾ç½®ä½ç½®ï¼ˆä½¿ç”¨ä½œç‰©çš„ä¸–ç•Œåæ ‡ï¼‰
         info.bugSprite->setPosition(info.position);
-        // Ìí¼Óµ½³¡¾°
+        // æ·»åŠ åˆ°åœºæ™¯
         _gameScene->addChild(info.bugSprite, 1);
     }
 }
 
 /*
- * ¼ì²éËùÓĞ×÷ÎïµÄ³æº¦×´Ì¬
- * ¹¦ÄÜ£º
- * 1.±éÀúËùÓĞ×÷Îï¼ì²éÊÇ·ñÈ¾ÉÏ³æº¦
- * 2.´¦ÀíÒÑÓĞ³æº¦µÄ×÷Îï
- * 3.ÒÆ³ıÒò³æº¦ËÀÍöµÄ×÷Îï
+ * æ£€æŸ¥æ‰€æœ‰ä½œç‰©çš„è™«å®³çŠ¶æ€
+ * åŠŸèƒ½ï¼š
+ * 1.éå†æ‰€æœ‰ä½œç‰©æ£€æŸ¥æ˜¯å¦æŸ“ä¸Šè™«å®³
+ * 2.å¤„ç†å·²æœ‰è™«å®³çš„ä½œç‰©
+ * 3.ç§»é™¤å› è™«å®³æ­»äº¡çš„ä½œç‰©
  */
 void CropManager::checkInsectPest()
 {
-    // ±éÀúËùÓĞ×÷Îï£¬¼ì²éÊÇ·ñÈ¾ÉÏ³æº¦
+    // éå†æ‰€æœ‰ä½œç‰©ï¼Œæ£€æŸ¥æ˜¯å¦æŸ“ä¸Šè™«å®³
     for (auto& info : _cropInfos)
     {
-        if (!info.hasInsectPest)  // µ±Ç°Ã»ÓĞ³æº¦µÄÇé¿öÏÂ
+        if (!info.hasInsectPest)  // å½“å‰æ²¡æœ‰è™«å®³çš„æƒ…å†µä¸‹
         {
-            // Ëæ»úÅĞ¶¨ÊÇ·ñÈ¾ÉÏ³æº¦ (30%¸ÅÂÊ)
+            // éšæœºåˆ¤å®šæ˜¯å¦æŸ“ä¸Šè™«å®³ (30%æ¦‚ç‡)
             if (rand() % 100 < 30)
             {
                 info.hasInsectPest = true;
                 createBugSprite(info);
             }
         }
-        else  // ÒÑÓĞ³æº¦ÇÒÎ´´¦Àí£¬×÷ÎïËÀÍö
+        else  // å·²æœ‰è™«å®³ä¸”æœªå¤„ç†ï¼Œä½œç‰©æ­»äº¡
         {
-            // ÒÆ³ı³æº¦¾«Áé
+            // ç§»é™¤è™«å®³ç²¾çµ
             if (info.bugSprite)
             {
                 info.bugSprite->removeFromParent();
             }
-            // ÒÆ³ı×÷Îï
+            // ç§»é™¤ä½œç‰©
             for (size_t i = 0; i < _cropInfos.size(); i++)
             {
                 if (_cropInfos[i].tilePos == info.tilePos)
@@ -1147,13 +1157,13 @@ void CropManager::checkInsectPest()
 }
 
 /*
- * ¿ªÊ¼É±³æĞ¡ÓÎÏ·
- * @param tilePos Òª½øĞĞÉ±³æµÄÍßÆ¬×ø±ê
- * @return Èç¹û¸ÃÎ»ÖÃÓĞ³æº¦²¢¿ªÊ¼ÓÎÏ··µ»Øtrue£¬·ñÔò·µ»Øfalse
+ * å¼€å§‹æ€è™«å°æ¸¸æˆ
+ * @param tilePos è¦è¿›è¡Œæ€è™«çš„ç“¦ç‰‡åæ ‡
+ * @return å¦‚æœè¯¥ä½ç½®æœ‰è™«å®³å¹¶å¼€å§‹æ¸¸æˆè¿”å›trueï¼Œå¦åˆ™è¿”å›false
  */
 bool CropManager::startBugKilling(const Vec2& tilePos)
 {
-    // ¼ì²é¸ÃÎ»ÖÃÊÇ·ñÓĞ³æº¦µÄ×÷Îï
+    // æ£€æŸ¥è¯¥ä½ç½®æ˜¯å¦æœ‰è™«å®³çš„ä½œç‰©
     for (auto& info : _cropInfos)
     {
         if (info.tilePos == tilePos && info.hasInsectPest)
@@ -1170,36 +1180,36 @@ bool CropManager::startBugKilling(const Vec2& tilePos)
 }
 
 /*
- * ¸üĞÂÉ±³æĞ¡ÓÎÏ·×´Ì¬
- * @param dt Ö¡¼ä¸ôÊ±¼ä
- * ¹¦ÄÜ£º
- * 1.¸üĞÂÊ£ÓàÊ±¼ä
- * 2.ÏÔÊ¾ÓÎÏ·×´Ì¬
- * 3.ÅĞ¶¨ÓÎÏ·½á¹û
+ * æ›´æ–°æ€è™«å°æ¸¸æˆçŠ¶æ€
+ * @param dt å¸§é—´éš”æ—¶é—´
+ * åŠŸèƒ½ï¼š
+ * 1.æ›´æ–°å‰©ä½™æ—¶é—´
+ * 2.æ˜¾ç¤ºæ¸¸æˆçŠ¶æ€
+ * 3.åˆ¤å®šæ¸¸æˆç»“æœ
  */
 void CropManager::updateBugKilling(float dt)
 {
     if (!_isBugKilling)
         return;
     _bugKillingTimeLeft -= dt;
-    // ¸üĞÂµ¹¼ÆÊ±ÌáÊ¾ºÍµã»÷´ÎÊı
+    // æ›´æ–°å€’è®¡æ—¶æç¤ºå’Œç‚¹å‡»æ¬¡æ•°
     showTip(StringUtils::format("Time: %.1f  Clicks: %d/%d",
         _bugKillingTimeLeft, _currentClicks, _requiredClicks),
         _currentBugTilePos);
     if (_bugKillingTimeLeft <= 0)
     {
         _isBugKilling = false;
-        // ÅĞ¶¨½á¹û
+        // åˆ¤å®šç»“æœ
         bool success = _currentClicks >= _requiredClicks;
         if (success)
         {
-            // ÒÆ³ı³æº¦
+            // ç§»é™¤è™«å®³
             for (auto& info : _cropInfos)
             {
                 if (info.tilePos == _currentBugTilePos)
                 {
                     info.hasInsectPest = false;
-                    // ÒÆ³ı³æº¦¾«Áé
+                    // ç§»é™¤è™«å®³ç²¾çµ
                     if (info.bugSprite)
                     {
                         info.bugSprite->removeFromParent();
