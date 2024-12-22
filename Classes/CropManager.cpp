@@ -694,7 +694,7 @@ void CropManager::updateCrops()
         // 先检查水分状态
         if (info.waterLevel <= 0)
         {
-            // 清理虫害精灵（新增）
+            // 清理虫害精灵
             if (info.hasInsectPest && info.bugSprite)
             {
                 info.bugSprite->removeFromParent();
@@ -1005,10 +1005,12 @@ void CropManager::createHarvestDrop(const Vec2& position)
                     if (cropType == "corn")
                     {
                         itemSystem->addItem("corn", 1);
+                        itemSystem->addItem("corn seed", 1);
                     }
                     else if (cropType == "tomato")
                     {
                         itemSystem->addItem("tomato", 1);
+                        itemSystem->addItem("tomato seed", 1);
                     }
                     // 移除掉落物
                     drop->removeFromParent();
@@ -1083,6 +1085,23 @@ bool CropManager::fertilizeCrop(const Vec2& tilePos)
 }
 
 /*
+ * 根据当地图更新虫害显示状态
+ * 功能：在Farm地图显示虫害，在其他地图隐藏虫害
+ */
+void CropManager::updateBugVisibility()
+{
+    bool shouldShow = (_gameMap && _gameMap->getMapName() == "Farm");
+
+    for (auto& info : _cropInfos)
+    {
+        if (info.bugSprite)
+        {
+            info.bugSprite->setVisible(shouldShow);
+        }
+    }
+}
+
+/*
  * 创建虫害精灵
  * @param info 作物信息结构体引用
  * 功能：
@@ -1123,8 +1142,8 @@ void CropManager::checkInsectPest()
     {
         if (!info.hasInsectPest)  // 当前没有虫害的情况下
         {
-            // 随机判定是否染上虫害 (30%概率)
-            if (rand() % 100 < 30)
+            // 随机判定是否染上虫害 (40%概率)
+            if (rand() % 100 < 40)
             {
                 info.hasInsectPest = true;
                 createBugSprite(info);

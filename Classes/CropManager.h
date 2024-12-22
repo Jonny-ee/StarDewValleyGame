@@ -136,6 +136,7 @@ private:
     int _requiredClicks = 15;                   // 需要的空格次数
     int _currentClicks = 0;
     Vec2 _currentBugTilePos;
+    void updateBugVisibility();                 // 更新虫害是否显示
 
     const float BUG_KILLING_TIME_LIMIT = 3.0f;  // 3秒时间限制
     const float INSECT_PEST_CHANCE = 0.3f;      // 虫害概率 30%

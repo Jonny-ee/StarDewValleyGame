@@ -51,7 +51,7 @@ void InventoryUI::createUI()
     _bgLayer->setPosition(Vec2(-this->getPosition().x, -this->getPosition().y));
     this->addChild(_bgLayer);
     // 物品列表
-    std::vector<std::string> items = { "wood", "apple", "CatFood", "corn", "bread", "tomato", "fish", "mermaid's KISS(*)", "stone", "corn seed", "tomato seed" };
+    std::vector<std::string> items = { "wood", "apple", "CatFood", "corn", "bread", "tomato", "fish", "mermaid's KISS(*)", "stone", "corn seed", "tomato seed", "fertilizer"};
 
     // 计算布局参数
     float itemHeight = 45;  // 减小每个物品行的高度
@@ -81,7 +81,7 @@ void InventoryUI::createUI()
         _bgLayer->addChild(itemBg);
 
         // 创建物品名称标签
-        auto nameLabel = Label::createWithSystemFont("???", "Arial", 24);
+        auto nameLabel = Label::createWithSystemFont("To be discovered...", "Arial", 24);
         nameLabel->setPosition(Vec2(visibleSize.width / 2 - panelWidth / 2 + 30, startY));
         nameLabel->setAnchorPoint(Vec2(0, 0.5f));
         nameLabel->setTextColor(Color4B::BLACK);
@@ -124,14 +124,14 @@ void InventoryUI::updateDisplay()
         int count = itemSystem->getItemCount(itemId);
         countLabel->setString(std::to_string(count));
 
-        // 如果物品曾经获得过，就显示名称，否则显示???
+        // 如果物品曾经获得过，就显示名称，否则显示To be discovered...
         if (itemSystem->hasDiscovered(itemId))
         {
             nameLabel->setString(itemId);
         }
         else
         {
-            nameLabel->setString("???");
+            nameLabel->setString("To be discovered...");
         }
     }
 }

@@ -251,9 +251,8 @@ bool GameScene::init()
     }
 
     ItemSystem* itemSystem = ItemSystem::getInstance();
-    itemSystem->addItem("corn seed", 5);
-    itemSystem->addItem("tomato seed", 5);
-    itemSystem->addItem("fertilizer", 5);
+    itemSystem->addItem("corn seed", 3);
+    itemSystem->addItem("fertilizer", 3);
 
     auto weatherManager = WeatherManager::getInstance();
     weatherManager->setWeather(NormalWeather::create());
@@ -684,6 +683,9 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
             }
         }
 
+        CropManager::getInstance()->updateBugVisibility();  // 更新虫害显示状态
+        CCLOG("Switching to Farm map, loading crops...");
+
         // 如果有进行中的任务，重新创建任务UI
         const auto questSystem = QuestSystem::getInstance();
 
@@ -703,6 +705,7 @@ void GameScene::switchToMap(const std::string& mapName, const cocos2d::Vec2& tar
     // 在其他地图隐藏种子图标
     else
     {
+        CropManager::getInstance()->updateBugVisibility();  // 更新虫害显示状态
         if (seedIcon)
         {
             seedIcon->setVisible(false);
