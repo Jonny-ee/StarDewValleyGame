@@ -7,10 +7,6 @@ class Maru : public NPC
 public:
     static Maru* create();
     virtual bool init();
-
-   // void startConversation(); // 开始对话
-   // std::string getRandomDialogue();
-
     void staticAnimation() override;
 private:
     void initializeDefaultBehavior(); // 初始化玛鲁 NPC 的默认行为
