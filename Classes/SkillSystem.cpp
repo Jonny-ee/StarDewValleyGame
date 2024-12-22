@@ -99,7 +99,7 @@ void SkillSystem::gainExp(SkillType type, int amount) {
     }
 
     // ¸üÐÂUIÏÔÊ¾
-    if (skillUI) {
+    if (skillUI) {-
         skillUI->updateSkillDisplay(type, skillLevels[type],
             skillExp[type], calculateExpNeeded(skillLevels[type]));
     }
