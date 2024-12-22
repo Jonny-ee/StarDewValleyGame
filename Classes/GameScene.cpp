@@ -1656,7 +1656,7 @@ void GameScene::handleWoodQuest(Lewis* lewis, QuestState questState) {
 
         // 创建任务提示UI，使用固定位置
         if (!_questTipLabel) {
-            _questTipLabel = Label::createWithTTF("", "fonts/arial.ttf", 24);
+            _questTipLabel = Label::createWithSystemFont("", "Arial", 24);
             if (_questTipLabel) {
                 const Size visibleSize = Director::getInstance()->getVisibleSize();
                 // 将Label添加为HUD层的子节点
@@ -1723,7 +1723,7 @@ void GameScene::handleBridgeQuest(Lewis* lewis, QuestState questState) {
 
         // 创建任务提示UI
         if (!_questTipLabel) {
-            _questTipLabel = Label::createWithTTF("", "fonts/arial.ttf", 24);
+            _questTipLabel = Label::createWithSystemFont("", "Arial", 24);
             if (_questTipLabel) {
                 this->addChild(_questTipLabel, 10);
                 _questTipLabel->setAnchorPoint(Vec2(1, 1));
